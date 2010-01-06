@@ -9,7 +9,13 @@
 
 \alias{edges_i}
 
+\alias{arcs_i}
+
+\alias{arcs_j}
+
 \alias{edges_ij}
+
+\alias{mutual_i}
 
 \alias{mutual_ij}
 
@@ -30,7 +36,7 @@
 
   By using suitable terms, it is possible to specify 
 
-- the p_1 model for directed networks of Holland and Leinhardt (1981) and its extension to undirected random graph models with Dirichlet process priors (see edges_i).
+- the p_1 model for directed networks of Holland and Leinhardt (1981) and its extension to undirected random graph models with Dirichlet process priors (see arcs_i, arcs_j, mutual_i, and edges_i).
 While the p_1 model for undirected and directed networks with parametric priors contains O(n) parameters (n = number of nodes) and therefore is not parsimonious,
 the non-parametric Dirichlet process prior encourages a small number of unique parameters and therefore represents an elegant alternative to parametric priors.
 
@@ -45,11 +51,23 @@ Additional terms, e.g. covariate-dependent terms, can be found in \code{ergm.ter
 
 \arguments{
 
-\item{edges_i(k) (undirected, directed network)}{adding the term \code{edges_i} to the model adds node-dependent edge terms to the model;
+\item{edges_i(k) (undirected network)}{adding the term \code{edges_i} to the model adds node-dependent edge terms to the model;
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
+
+\item{arcs_i(k) (directed network)}{adding the term \code{arcs_i} to the model adds node-dependent outdegree terms to the model;
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
+
+\item{arcs_j(k) (directed network)}{adding the term \code{arcs_j} to the model adds node-dependent indegree terms to the model;
 the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
 }
 
 \item{edges_ij(k) (undirected, directed network)}{adding the term \code{edges_ij} to the model adds block-dependent edge terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
+
+\item{mutual_i(k) (directed network)}{adding the term \code{mutual_i} to the model adds additive, block-dependent mutual edge terms to the model.
 the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
 }
 
@@ -101,7 +119,7 @@ hergm(d ~ edges_i)
 # Load directed network with 18 nodes (see ?sampson)
 data(sampson) 
 # p_1 model for directed network with Dirichlet process prior
-hergm(samplike ~ edges_i + mutual)
+hergm(samplike ~ arcs_i + arcs_j + mutual)
 
 # Load undirected network with 15 nodes (see ?example)
 data(example)

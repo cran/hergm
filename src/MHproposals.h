@@ -6,12 +6,7 @@
  *  open source, and has the attribution requirements (GPL Section 7) in
  *    http://statnetproject.org/attribution
  *
- * Copyright 2003 Mark S. Handcock, University of Washington
- *                David R. Hunter, Penn State University
- *                Carter T. Butts, University of California - Irvine
- *                Steven M. Goodreau, University of Washington
- *                Martina Morris, University of Washington
- * Copyright 2007 The statnet Development Team
+ *  Copyright 2010 the statnet development team
  */
 #ifndef MHproposals_H
 #define MHproposals_H
@@ -42,13 +37,13 @@ void MH_randomtoggle (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_TNT (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_TNT10 (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_ConstantEdges (MHproposal *MHp, DegreeBound *bd, Network *nwp);
-void MH_CondDegTetra (MHproposal *MHp, DegreeBound *bd, Network *nwp);
+void MH_CondDegreeTetrad (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_CondDegreeDist (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_CondOutDegreeDist (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_CondInDegreeDist (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_CondDegree (MHproposal *MHp, DegreeBound *bd, Network *nwp);
-void MH_CondDegHexadToggles (MHproposal *MHp, DegreeBound *bd, Network *nwp);
-void MH_CondDegTetradToggles (MHproposal *MHp, DegreeBound *bd, Network *nwp);
+void MH_CondDegreeHexadToggles (MHproposal *MHp, DegreeBound *bd, Network *nwp);
+void MH_CondDegreeTetradToggles (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_RandomNode (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 void MH_randomtoggleNonObserved (MHproposal *MHp, DegreeBound *bd, Network *nwp);
 

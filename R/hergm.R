@@ -5,12 +5,17 @@ hergm <- function(formula,
                  eta = NULL,
                  eta_mean = NULL, 
                  eta_sd = NULL,
+                 eta_mean_mean = NULL,
+                 eta_mean_sd = NULL,
+                 eta_precision_shape = NULL,
+                 eta_precision_rate = NULL,
                  parallel = 1, 
                  simulate = FALSE, 
                  seeds = NULL, 
                  samplesize = 1e+5, 
                  burnin = 1e+4, 
                  interval = 1e+2,
+                 mh_scale = NULL,
                  output = FALSE,
                  verbose = -1, 
                  name = NULL,
@@ -20,10 +25,32 @@ hergm <- function(formula,
   control <- control.ergm()
   options()
   nw <- ergm.getnetwork(formula)
+  control$drop <- FALSE
   model <- ergm.getmodel(formula, nw, drop=control$drop, expanded=TRUE)
   MCMCsamplesize <- samplesize
   Clist <- ergm.Cprepare(nw, model)
   Clist.miss <- ergm.design(nw, model, verbose=verbose)
+  if (verbose >= 2)
+    {
+    for (i in 1:Clist$nterms)
+      {
+      if (model$terms[[i]]$name == "edges_i") 
+        { 
+        cat("\n\n")
+        print(summary(nw ~ degree(0:(Clist$n-1)), drop = TRUE))
+        }
+      else if (model$terms[[i]]$name == "arcs_i") 
+        {
+        cat("\n\n")
+        print(summary(nw ~ odegree(0:(Clist$n-1)), drop = TRUE))
+        }
+      else if (model$terms[[i]]$name == "arcs_j") 
+        {
+        cat("\n\n")
+        print(summary(nw ~ idegree(0:(Clist$n-1)), drop = TRUE))
+        }
+      }
+    }
   d <- Clist$nstats
   constraints <- ~.
   MHproposal <- MHproposal(constraints,weights=control$prop.weights,control$prop.args,nw,model,class="c")
@@ -33,7 +60,7 @@ hergm <- function(formula,
   MCMCparams$meanstats <- Clist$meanstats
   print(
     system.time(
-      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, parallel, simulate, seeds, output)
+      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, mh_scale, output)
     )
   )
   cat("\n")

@@ -6,12 +6,7 @@
  *  open source, and has the attribution requirements (GPL Section 7) in
  *    http://statnetproject.org/attribution
  *
- * Copyright 2003 Mark S. Handcock, University of Washington
- *                David R. Hunter, Penn State University
- *                Carter T. Butts, University of California - Irvine
- *                Steven M. Goodreau, University of Washington
- *                Martina Morris, University of Washington
- * Copyright 2007 The statnet Development Team
+ *  Copyright 2010 the statnet development team
  */
 #include "MCMC.h"
 
@@ -55,7 +50,7 @@ void MCMC_wrapper (int *heads, int *tails, int *dnedges,
   nmax = (Edge)*maxedges; /* coerce double *maxedges to type Edge */
   bip = (Vertex)*bipartite; /* coerce double *bipartite to type Vertex */
   
-  /* GetRNGstate(); */  /* R function enabling uniform RNG */ /* 666 */
+  /* GetRNGstate(); */
   
   directed_flag = *dflag;
 
@@ -160,7 +155,7 @@ void MCMC_wrapper (int *heads, int *tails, int *dnedges,
   NetworkDestroy(nw);
   if (n_medges>0 || hammingterm > 0  || formationterm > 0)
     NetworkDestroy(&nw[1]);
-  /* PutRNGstate(); */  /* Disable RNG before returning */ /* 666 */
+  /* PutRNGstate(); */
 }
 
 
@@ -638,7 +633,7 @@ void MCMCPhase12 (int *heads, int *tails, int *dnedges,
   nmax = (Vertex)*maxedges; /* coerce double *maxedges to type Vertex */
   bip = (Vertex)*bipartite; /* coerce double *bipartite to type Vertex */
   
-  /* GetRNGstate(); */  /* R function enabling uniform RNG */ /* 666 */
+  /* GetRNGstate(); */
   
   directed_flag = *dflag;
 
@@ -735,7 +730,7 @@ void MCMCPhase12 (int *heads, int *tails, int *dnedges,
   NetworkDestroy(nw);
   if (n_medges>0 || hammingterm > 0  || formationterm > 0)
     NetworkDestroy(&nw[1]);
-  /* PutRNGstate(); */  /* Disable RNG before returning */ /* 666 */
+  /* PutRNGstate(); */
 }
 
 /*********************

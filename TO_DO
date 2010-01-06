@@ -1,0 +1,3 @@
+- directed graphs: sample
+- between-block parameters
+- approaches to deal with future segfaults: PROTECT, C stand alone program based on hergm.c

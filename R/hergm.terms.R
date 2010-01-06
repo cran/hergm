@@ -99,6 +99,7 @@
 ######################################################### 
 InitErgm.edges_i <- function(nw, m, arglist, ...) # Michael 
 {
+  ergm.checkdirected("edges_i", is.directed(nw), requirement = FALSE)
   a <- ergm.checkargs("edges_i", 
     arglist,
     varnames = c("number"),
@@ -115,7 +116,7 @@ InitErgm.edges_i <- function(nw, m, arglist, ...) # Michael
   number <- a$number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0.5
   #print(theta)
   m$terms[[termnumber]] <- list(name = "edges_i", 
                                 soname = "hergm",
@@ -123,6 +124,68 @@ InitErgm.edges_i <- function(nw, m, arglist, ...) # Michael
                                 dependence = FALSE)
   #print(m$terms[[termnumber]])
   m$coef.names <- c(m$coef.names, "edges_i")
+  m
+}
+
+######################################################### 
+InitErgm.arcs_i <- function(nw, m, arglist, ...) # Michael 
+{
+  ergm.checkdirected("arcs_i", is.directed(nw), requirement = TRUE)
+  a <- ergm.checkargs("arcs_i", 
+    arglist,
+    varnames = c("number"),
+    vartypes = c("numeric"),
+    defaultvalues = list(nw$gal$n),
+    required = c(FALSE)) 
+  termnumber <- 1 + length(m$terms)
+  #print("InitErgm.arcs_i")
+  n <- nw$gal$n # Number of nodes
+  #print(n)
+  indicator <- vector(mode = "numeric", length = n) # Category indicators  
+  for (i in 1:length(indicator)) indicator[i] <- 1
+  #print(indicator)
+  number <- a$number # (Maximum) number of categories
+  #print(number)
+  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
+  for (i in 1:length(theta)) theta[i] <- 1 
+  #print(theta)
+  m$terms[[termnumber]] <- list(name = "arcs_i", 
+                                soname = "hergm",
+                                inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
+                                dependence = FALSE)
+  #print(m$terms[[termnumber]])
+  m$coef.names <- c(m$coef.names, "arcs_i")
+  m
+}
+
+######################################################### 
+InitErgm.arcs_j <- function(nw, m, arglist, ...) # Michael 
+{
+  ergm.checkdirected("arcs_j", is.directed(nw), requirement = TRUE)
+  a <- ergm.checkargs("arcs_j", 
+    arglist,
+    varnames = c("number"),
+    vartypes = c("numeric"),
+    defaultvalues = list(nw$gal$n),
+    required = c(FALSE)) 
+  termnumber <- 1 + length(m$terms)
+  #print("InitErgm.arcs_j")
+  n <- nw$gal$n # Number of nodes
+  #print(n)
+  indicator <- vector(mode = "numeric", length = n) # Category indicators  
+  for (i in 1:length(indicator)) indicator[i] <- 1
+  #print(indicator)
+  number <- a$number # (Maximum) number of categories
+  #print(number)
+  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
+  for (i in 1:length(theta)) theta[i] <- 1 
+  #print(theta)
+  m$terms[[termnumber]] <- list(name = "arcs_j", 
+                                soname = "hergm",
+                                inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
+                                dependence = FALSE)
+  #print(m$terms[[termnumber]])
+  m$coef.names <- c(m$coef.names, "arcs_j")
   m
 }
 
@@ -144,7 +207,7 @@ InitErgm.edges_ij <- function(nw, m, arglist, ...) # Michael
   #print(indicator)
   number <- a$number # (Maximum) number of categories
   #print(number)
-  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
+  theta <- vector(mode = "numeric", length = number * number) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
   m$terms[[termnumber]] <- list(name = "edges_ij", 
@@ -157,9 +220,40 @@ InitErgm.edges_ij <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
+InitErgm.mutual_i <- function(nw, m, arglist, ...) # Michael 
+{
+  ergm.checkdirected("mutual_i", is.directed(nw), requirement = TRUE)
+  a <- ergm.checkargs("mutual_i", 
+    arglist,
+    varnames = c("number"),
+    vartypes = c("numeric"),
+    defaultvalues = list(nw$gal$n),
+    required = c(FALSE)) 
+  termnumber <- 1 + length(m$terms)
+  #print("InitErgm.mutual_i")
+  n <- nw$gal$n # Number of nodes
+  #print(n)
+  indicator <- vector(mode = "numeric", length = n) # Category indicators  
+  for (i in 1:length(indicator)) indicator[i] <- 1
+  #print(indicator)
+  number <- a$number # (Maximum) number of categories
+  #print(number)
+  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
+  for (i in 1:length(theta)) theta[i] <- 1 
+  #print(theta)
+  m$terms[[termnumber]] <- list(name = "mutual_i", 
+                                soname = "hergm",
+                                inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
+                                dependence = FALSE) 
+  #print(m$terms[[termnumber]])
+  m$coef.names <- c(m$coef.names, "mutual_i")
+  m
+}
+
+######################################################### 
 InitErgm.mutual_ij <- function(nw, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("mutual_ij", is.directed(nw), requirement=TRUE)
+  ergm.checkdirected("mutual_ij", is.directed(nw), requirement = TRUE)
   a <- ergm.checkargs("mutual_ij", 
     arglist,
     varnames = c("number"),
@@ -190,6 +284,7 @@ InitErgm.mutual_ij <- function(nw, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.triangle_ijk <- function(nw, m, arglist, ...) # Michael 
 {
+  ergm.checkdirected("triangle_ijk", is.directed(nw), requirement = FALSE)
   a <- ergm.checkargs("triangle_ijk", 
     arglist,
     varnames = c("number"),
@@ -220,7 +315,7 @@ InitErgm.triangle_ijk <- function(nw, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.ttriple_ijk <- function(nw, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("ttriple_ijk", is.directed(nw), requirement=TRUE)
+  ergm.checkdirected("ttriple_ijk", is.directed(nw), requirement = TRUE)
   a <- ergm.checkargs("ttriple_ijk", 
     arglist,
     varnames = c("number"),
@@ -251,7 +346,7 @@ InitErgm.ttriple_ijk <- function(nw, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.ctriple_ijk <- function(nw, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("ctriple_ijk", is.directed(nw), requirement=TRUE)
+  ergm.checkdirected("ctriple_ijk", is.directed(nw), requirement = TRUE)
   a <- ergm.checkargs("ctriple_ijk", 
     arglist,
     varnames = c("number"),
@@ -282,6 +377,7 @@ InitErgm.ctriple_ijk <- function(nw, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.twostar_i <- function(nw, m, arglist, ...) # Michael 
 {
+  ergm.checkdirected("twostar_i", is.directed(nw), requirement = TRUE)
   a <- ergm.checkargs("twostar_i", 
     arglist,
     varnames = c("number"),
@@ -312,7 +408,7 @@ InitErgm.twostar_i <- function(nw, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.twostar_ijk <- function(nw, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("twostar_ijk", (is.directed(nw))==FALSE, requirement=TRUE)
+  ergm.checkdirected("twostar_ijk", is.directed(nw), requirement = FALSE)
   a <- ergm.checkargs("twostar_ijk", 
     arglist,
     varnames = c("number"),

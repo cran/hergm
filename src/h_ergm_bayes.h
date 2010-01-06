@@ -15,9 +15,12 @@ typedef struct
 Joint prior of parameters generating data: Gaussian
 */
 {
-  double *mean1; /* Mean of marginal Gaussian prior of non-hierarchical ergm terms */
-  double *mean2; /* Mean of marginal Gaussian prior of hierarchical ergm terms */
-  double **b; 
+  double *mean2_mean; /* Mean of Gaussian prior of mean of baseline distribution of Dirichlet / stick-breaking prior */
+  double *mean2_precision; /* Precision of Gaussian prior of mean of baseline distribution of Dirichlet / stick-breaking prior */
+  double precision2_shape; /* Shape of Gamma prior of precision of Gaussian baseline distribution of Dirichlet / stick-breaking prior */
+  double precision2_rate; /* Rate (inverse scale) of Gamma prior of precision of Gaussian baseline distribution of Dirichlet / stick-breaking prior */
+  double *mean1; /* Mean of Gaussian prior */
+  double *mean2; /* Mean of Gaussian baseline distribution of Dirichlet / stick-breaking prior */
   double **cf1; /* Cholesky factor of covariance matrix of conditional Gaussian prior of non-structural parameters */
   double **cf2; /* Cholesky factor of covariance matrix of conditional Gaussian prior of structural parameters */
   double **precision1; /* Precision (inverse covariance) matrix of conditional Gaussian prior of non-structural parameters */
@@ -65,9 +68,21 @@ input: number of non-hierchical, hierarchical ergm terms
 output: prior
 */
 
-priorstructure* Initialize_Prior(int d1, int d2, double *mean1, double *mean2, double *b, double *cf1, double *cf2, double *precision1, double *precision2);
+priorstructure* Initialize_Prior(int d1, int d2, double *mean2_mean, double *mean2_precision, double precision2_shape, double precision2_rate, double *mean1, double *mean2, double *b, double *cf1, double *cf2, double *precision1, double *precision2);
 /* 
 input: number of non-hierarchical, hierarchical ergm terms, R input in the form of vectors and (by vec operator) vectorized matrices
 output: prior of non-structural, structural parameters
+*/
+
+void Finalize_Prior_ls(priorstructure_ls *prior_ls);
+/*
+input: shape, rate (inverse scale) of Gamma prior of clustering parameter
+output: prior
+*/
+
+void Finalize_Priorstructure(priorstructure *prior, int d1, int d2);
+/*
+input: number of non-hierchical, hierarchical ergm terms
+output: prior
 */
 

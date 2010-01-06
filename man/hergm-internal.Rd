@@ -43,7 +43,13 @@
 
 \alias{InitErgm.edges_i} 
 
+\alias{InitErgm.arcs_i} 
+
+\alias{InitErgm.arcs_j} 
+
 \alias{InitErgm.edges_ij}
+
+\alias{InitErgm.mutual_i} 
 
 \alias{InitErgm.mutual_ij} 
 

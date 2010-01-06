@@ -1,16 +1,65 @@
-hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate, parallel, output, name, verbose) # Michael
+hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate, parallel, output, name, verbose) # Michael
 {
+  if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms	
   hierarchical <- vector(mode = "integer", length = terms) # Indicator: hierarchical hergm term
   max_number <- Clist$n # Default: (maximum) number of categories
   min_size <- Clist$n # Structural parameters corresponding to categories with min_size..n nodes show up in hergm pmf
   dependence <- 0 # Default: no dyad-dependence
   n_between <- 0 # Default: no between-block terms
+  q_i <- vector(mode = "numeric", length = Clist$n) # Proposal distribution of nodes: sample nodes, then sample category indicator of sampled node
+  for (i in 1:Clist$n) 
+    {
+    q_i[i] <- 1 / Clist$n # Default: discrete uniform; depending on the model specification, default values may be overwritten
+    }
   for (i in 1:terms) # For given hergm term... 
     {
-    if (is.null(model$terms[[i]]$dependence)) dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
-    else if (model$terms[[i]]$dependence == TRUE) dependence <- 1 # Dyad-dependence
+    if (model$terms[[i]]$name != "mutual")
+      {
+      if (is.null(model$terms[[i]]$dependence)) dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
+      else if (model$terms[[i]]$dependence == TRUE) dependence <- 1 # Dyad-dependence
+      }
     if (model$terms[[i]]$name == "edges_i") # hergm term
+      {
+      hierarchical[i] <- 1
+      min_size_i <- 1
+      if (min_size_i < min_size) min_size <- min_size_i
+      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
+      if (max_number_i < max_number) max_number <- max_number_i   
+      degree <- vector(mode = "numeric", length = Clist$n)    
+      for (i in 1:Clist$n) 
+        { 
+        for (j in 1:Clist$n) 
+          { 
+          degree[i] <- degree[i] + d[i,j] 
+          } 
+        }
+      range <- max(degree) - min(degree) 
+      max_odds <- 3
+      T <- range / log(max_odds) 
+      sum <- 0
+      for (i in 1:Clist$n) 
+        { 
+        q_i[i] <- exp(degree[i] / T) # Implication: the log-odds of the probability of selecting nodes with maximum degree cannot exceed 2, or the odds cannot exceed exp(range / T) = exp(log(max_odds)) = max_odds; note that T can be interpreted as the tempature (inverse canonical parameter of discrete exponential family distribution 
+        sum <- sum + q_i[i]
+        }
+      if (verbose >= 2) cat("\nProbability of selection of nodes:")
+      for (i in 1:Clist$n) 
+        { 
+        q_i[i] <- q_i[i] / sum
+        if (verbose >= 2) cat(" ",q_i[i]) 
+        }
+      if (verbose >= 2) cat("\n")
+      }     
+    else if (model$terms[[i]]$name == "arcs_i") # hergm term
+      {
+      hierarchical[i] <- 1 
+      min_size_i <- 1
+      if (min_size_i < min_size) min_size <- min_size_i
+      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
+      if (max_number_i < max_number) max_number <- max_number_i
+      }     
+    else if (model$terms[[i]]$name == "arcs_j") # hergm term
       {
       hierarchical[i] <- 1 
       min_size_i <- 1
@@ -25,7 +74,15 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       if (max_number_i < max_number) max_number <- max_number_i
-      n_between <- n_between + 1
+      n_between <- 1
+      }     
+    else if (model$terms[[i]]$name == "mutual_i") # hergm term
+      {
+      hierarchical[i] <- 1 
+      min_size_i <- 2
+      if (min_size_i < min_size) min_size <- min_size_i
+      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
+      if (max_number_i < max_number) max_number <- max_number_i
       }     
     else if (model$terms[[i]]$name == "mutual_ij") # hergm term
       {
@@ -34,7 +91,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       if (max_number_i < max_number) max_number <- max_number_i
-      n_between <- n_between + 1
       }     
     else if (model$terms[[i]]$name == "triangle_ijk") # hergm term
       {
@@ -96,11 +152,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
         } 
       }     
     }
-  if ((dependence == 0) && (nw$gal$directed == TRUE)) 
-    {
-    dependence <- 1
-    #print("Directed network: switching from M-H-2 to M-H-1...")
-    }
   d <- Clist$nstats # Number of parameters
   structural <- vector(mode = "integer", length = d) # Indicator: structural parameters 
   theta <- vector(mode = "numeric", length = d) 
@@ -134,9 +185,23 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     }
   if (d2 == 0) max_number <- 1
   # Prior
+  if (is.null(eta_mean) || is.null(eta_sd)) hyper_prior <- TRUE
+  else hyper_prior <- FALSE
   if (is.null(eta)) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
   if (is.null(alpha_shape)) alpha_shape <- 1
   if (is.null(alpha_rate)) alpha_rate <- 1
+  if (is.null(eta_mean_mean)) eta_mean_mean <- vector(mode = "numeric", length = d2)
+  eta_mean_precision <- vector(mode = "numeric", length = d2)
+  if (is.null(eta_mean_sd)) 
+    {
+    for (i in 1:d2) eta_mean_precision[i] <- 0.25
+    }
+  else 
+    {
+    for (i in 1:d2) eta_mean_precision[i] <- 1 / (eta_mean_sd[i] * eta_mean_sd[i])
+    }
+  if (is.null(eta_precision_shape)) eta_precision_shape <- 1
+  if (is.null(eta_precision_rate)) eta_precision_rate <- 1
   if (is.null(eta_mean)) eta_mean <- vector(mode = "numeric", length = d)
   eta_sigma <- matrix(data = 0, nrow = d, ncol = d)
   for (i in 1:d) 
@@ -230,7 +295,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   if (is.null(eta)) eta <- vector(mode = "numeric", length = d)
   indicator <- vector(mode = "numeric", length = Clist$n)
 
-  if (is.null(verbose)) verbose <- -1 
   max_iteration <- MCMCparams$samplesize
   terms <- length_mcmc(d1, d2, max_number, Clist$n)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
@@ -254,6 +318,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
 
   # Build object hergm_list
   hergm_list <- list()
+  hergm_list$hyper_prior <- hyper_prior
   hergm_list$dependence <- dependence
   hergm_list$hierarchical <- hierarchical
   hergm_list$d <- d
@@ -265,6 +330,10 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$alpha_shape <- alpha_shape
   hergm_list$alpha_rate <- alpha_rate
   hergm_list$alpha <- alpha
+  hergm_list$eta_mean_mean <- eta_mean_mean
+  hergm_list$eta_mean_precision <- eta_mean_precision
+  hergm_list$eta_precision_shape <- eta_precision_shape
+  hergm_list$eta_precision_rate <- eta_precision_rate
   hergm_list$eta_mean1 <- eta_mean1
   hergm_list$eta_mean2 <- eta_mean2
   hergm_list$theta <- theta
@@ -290,6 +359,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$Clist <- Clist
   hergm_list$simulate <- simulate
   hergm_list$mh_accept <- mh_accept
+  hergm_list$q_i <- q_i
   hergm_list$call_RNGstate <- call_RNGstate
   hergm_list$parallel <- parallel
 

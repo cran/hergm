@@ -6,12 +6,7 @@
  *  open source, and has the attribution requirements (GPL Section 7) in
  *    http://statnetproject.org/attribution
  *
- * Copyright 2003 Mark S. Handcock, University of Washington
- *                David R. Hunter, Penn State University
- *                Carter T. Butts, University of California - Irvine
- *                Steven M. Goodreau, University of Washington
- *                Martina Morris, University of Washington
- * Copyright 2007 The statnet Development Team
+ *  Copyright 2010 the statnet development team
  */
 
 #ifndef CHANGESTATS_H
@@ -210,13 +205,16 @@ D_CHANGESTAT_FN(d_triangle);
 D_CHANGESTAT_FN(d_tripercent);
 D_CHANGESTAT_FN(d_ttriple);
 D_CHANGESTAT_FN(d_edges_i); /* Michael */
+D_CHANGESTAT_FN(d_arcs_i); /* Michael */
+D_CHANGESTAT_FN(d_arcs_j); /* Michael */
 D_CHANGESTAT_FN(d_edges_ij); /* Michael */
+D_CHANGESTAT_FN(d_mutual_i); /* Michael */
 D_CHANGESTAT_FN(d_mutual_ij); /* Michael */
 D_CHANGESTAT_FN(d_triangle_ijk); /* Michael */
 D_CHANGESTAT_FN(d_ttriple_ijk); /* Michael */
 D_CHANGESTAT_FN(d_ctriple_ijk); /* Michael */
 D_CHANGESTAT_FN(d_twostar_i); /* Michael */
 D_CHANGESTAT_FN(d_twostar_ijk); /* Michael */
+
               
 #endif
-

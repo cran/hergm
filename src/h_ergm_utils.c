@@ -1,5 +1,23 @@
 #include "h_ergm_utils.h"
 
+double ln(double x)
+{
+  double y;
+  if (x < epsilon) y = log(epsilon);
+  else if (x > maximum) y = log(maximum);
+  else y = log(x);
+  return y;
+}
+
+double e(double x)
+{
+  double y;
+  if (x < log(epsilon)) y = epsilon;
+  else if (x > log(maximum)) y = maximum;
+  else y = exp(x);
+  return y;
+}
+
 int Sample_Discrete(double *p)
 /*
 input: probability vector p
@@ -8,7 +26,6 @@ output: value of discrete random variable with pmf p
 {
   int i;
   double sum, u;
-  /* GetRNGstate(); */
   u = unif_rand(); /* Sample uniform[0,1] */
   i = 0;
   sum = p[0];
@@ -17,68 +34,21 @@ output: value of discrete random variable with pmf p
     i = i + 1;
     sum = sum + p[i];
     }
-  /* PutRNGstate(); */
   return i;
 }
 
-double Multinomial_PMF(int n, int d, int *x, double *p)
-/*
-input: sample size n, dimension d, random vector x, probability vector p
-output: multinomial(n,p) pmf on log scale 
-*/
-{
-  int i;
-  double log_pmf;
-  log_pmf = Stirling(n); /* Stirling's approximation of n! on log scale */
-  for (i = 0; i < d; i++) 
-    {
-    log_pmf = log_pmf - Stirling(x[i]); 
-    }
-  for (i = 0; i < d; i++) 
-    {
-    log_pmf = log_pmf + (x[i] * ln(p[i])); 
-    }
-  return log_pmf;
-}
-
-void Mean_Conditional_MVN(int d_x, int d_y, double *mean_x, double *mean_y, double *x, double **b, double *conditional_mean_y)
-/* 
-input: dimensions of vectors x, y, mean vectors of marginal (multivariate) normal distributions of vectors x, y, vector x 
-output: mean of conditional (multivariate) normal distribution of vector y given vector x
-*/
-{
-  int i, j;
-  double sum, *z;
-  if (d_x == 0.0) Set_D_D(d_y,conditional_mean_y,mean_y);
-  else 
-    {
-    z = D(d_x);
-    for (i = 0; i < d_x; i++)
-      {
-      z[i] = x[i] - mean_x[i]; /* Center x */
-      }
-    for (i = 0; i < d_y; i++)
-      {
-      sum = 0.0;
-      for (j = 0; j < d_x; j++)
-        {
-        sum = sum + (b[i][j] * z[j]);
-        }
-      conditional_mean_y[i] = mean_y[i] + sum;
-      }
-    }
-}
-
-void Sample_MVN(int d, double *m, double **C, double *x)
+double* Sample_MVN(int d, double *m, double **C)
 /* 
 input: dimension d, mean vector m, Cholesky factor C of covariance matrix S = C t(C)
 output: random vector x with multivariate normal(m,S) pdf
 */
 {
   int i, j;
-  double sum, *z;
-  /* GetRNGstate(); */
-  z = D(d);
+  double sum, *x, *z;
+  x = (double*) calloc(d,sizeof(double));
+  if (x == NULL) { Rprintf("\n\ncalloc failed: SampleMVN, x\n\n"); exit(1); }
+  z = (double*) calloc(d,sizeof(double));
+  if (z == NULL) { Rprintf("\n\ncalloc failed: SampleMVN, z\n\n"); exit(1); }
   for (i = 0; i < d; i++)
     {
     z[i] = norm_rand(); /* Sample normal(0,1) */
@@ -92,7 +62,8 @@ output: random vector x with multivariate normal(m,S) pdf
       }
     x[i] = m[i] + sum;
     }
-  /* PutRNGstate(); */
+  free(z);
+  return x;
 }
 
 double MVN_PDF(int d, double *x, double *m, double **P)
@@ -104,7 +75,8 @@ output: multivariate normal(m,inverse(P)) kernel on log scale
   int i, j;
   double log_kernel, *y;
   log_kernel = 0.0;
-  y = D(d);
+  y = (double*) calloc(d,sizeof(double));
+  if (y == NULL) { Rprintf("\n\ncalloc failed: MVN_PDF, y\n\n"); exit(1); }
   for (i = 0; i < d; i++)
     {
     y[i] = x[i] - m[i]; /* Center x */
@@ -117,6 +89,7 @@ output: multivariate normal(m,inverse(P)) kernel on log scale
       }
     }
   log_kernel = - (log_kernel / 2); /* Log kernel */
+  free(y);
   return log_kernel;
 }
 
@@ -128,7 +101,6 @@ output: decision: accept proposal or not
 {
   int accept;
   double p, u;
-  /* GetRNGstate(); */
   if (log_ratio < 0.0) 
     {
     u = unif_rand(); /* Sample uniform[0,1] */
@@ -137,7 +109,6 @@ output: decision: accept proposal or not
     else accept = 0; /* Reject proposal with probability 1 - p */
     }
   else accept = 1; /* Accept proposal with probability 1 */
-  /* PutRNGstate(); */
   return accept;
 }
 

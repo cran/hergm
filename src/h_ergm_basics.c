@@ -1,107 +1,5 @@
 #include "h_ergm_basics.h"
 
-double Epsilon()
-/*
-output: smallest double number which can be used in computations
-*/
-{
-  double e, x;
-  x = 1.0;
-  do 
-    {
-    e = x;
-    x = x / 2.0;
-    }
-  while ((1.0 + x) != 1.0);
-  return e;
-}
-
-double ln(double x)
-{
-  double y;
-  if (x < epsilon) y = log(epsilon);
-  else if (x > maximum) y = log(maximum);
-  else y = log(x);
-  return y;
-}
-
-double e(double x)
-{
-  double y;
-  if (x < log(epsilon)) y = epsilon;
-  else if (x > log(maximum)) y = maximum;
-  else y = exp(x);
-  return y;
-}
-
-double Stirling(int n)
-/*
-input: integer n
-output: Stirling's approximation of n! on log scale:
-- Stirling's approximation: proportional to sqrt(n) (n / e)^n 
-- Stirling's approximation on log scale: 0.5 log(n) + n log(n / e) = (n + 0.5) log(n) - n
-*/
-{
-  double s;
-  if (n == 0) s = 0; /* log(0!) = log(1) = 0 */
-  else s = ((n + 0.5) * ln(n)) - n;
-  return s;
-}
-
-int* I(int d)
-/*
-input: dimension of vector
-output: vector
-*/
-{
-  int *vector;
-  vector = (int*) S_alloc(d,sizeof(int));
-  return vector;
-}
-
-int** II(int d1, int d2)
-/*
-input: order of matrix
-output: matrix
-*/
-{
-  int i; 
-  int **matrix;
-  matrix = (int**) S_alloc(d1,sizeof(int*));
-  for (i = 0; i < d1; i++)
-    {
-    matrix[i] = (int*) S_alloc(d2,sizeof(int)); 
-    }
-  return matrix;
-}
-
-double* D(int d)
-/*
-input: dimension of vector
-output: vector
-*/
-{
-  double *vector;
-  vector = (double*) S_alloc(d,sizeof(double));
-  return vector;
-}
-
-double** DD(int d1, int d2)
-/*
-input: order of matrix
-output: matrix
-*/
-{
-  int i; 
-  double **matrix;
-  matrix = (double**) S_alloc(d1,sizeof(double*));
-  for (i = 0; i < d1; i++)
-    {
-    matrix[i] = (double*) S_alloc(d2,sizeof(double)); 
-    }
-  return matrix;
-}
-
 void Set_I_I(int d, int *vector1, int *vector2)
 /*
 input: two vectors
@@ -126,7 +24,7 @@ output: matrix 1 = matrix2
     {
     for (j = 0; j < d2; j++)
       {
-      matrix1[i] = matrix2[i];
+      matrix1[i][j] = matrix2[i][j];
       }
     }
 }
@@ -155,7 +53,7 @@ output: matrix 1 = matrix2
     {
     for (j = 0; j < d2; j++)
       {
-      matrix1[i] = matrix2[i];
+      matrix1[i][j] = matrix2[i][j];
       }
     }
 }
@@ -186,33 +84,29 @@ output: vector
     }
 }
 
-void Set_Column_Column(int d, double **matrix1, int column, double **matrix2)
-/*
-input: dimension of columns, matrix, column 
-output: matrix
-*/ 
-{
-  int i;
-  for (i = 0; i < d; i++)
-    {
-    matrix1[i][column] = matrix2[i][column];
-    }
-}
-
-void Scale(int d1, int d2, double **matrix1, double s, double **matrix2)
+double** Scale(int d1, int d2, double **matrix, double scale)
 /* 
 input: order of matrix, matrix, scale
 output: scaled matrix
 */ 
 {
   int i, j;
+  double **x;
+  x = (double**) calloc(d1,sizeof(double*));
+  if (x == NULL) { Rprintf("\n\ncalloc failed: Scale, x\n\n"); exit(1); }
+  for (i = 0; i < d1; i++)
+    {
+    x[i] = (double*) calloc(d2,sizeof(double));
+    if (x[i] == NULL) { Rprintf("\n\ncalloc failed: Scale, x[%i]\n\n",i); exit(1); }
+    }
   for (i = 0; i < d1; i++)
     {
     for (j = 0; j < d2; j++)
       {
-      matrix2[i][j] = matrix1[i][j] * s;
+      x[i][j] = matrix[i][j] * scale;
       }
     }
+  return x;
 }
 
 void Print_I(int d, int *vector)

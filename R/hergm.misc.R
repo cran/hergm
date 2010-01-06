@@ -3,8 +3,9 @@ length_mcmc <- function(d1, d2, k, n)
 # output: number of elements stored on iteration of MCMC algorithm
 {
   d <- d1 + d2
-  terms <- d1 + (d2 * (k + 1)) + n + k + k + 1 + d 
+  terms <- d1 + (2 * d2) + (d2 * (k + 1)) + n + k + k + 1 + d 
   #terms <- d1 # Number of ergm terms
+  #       + (2 * d2) # Number of mean and precision parameters of Gaussian baseline distribution of Dirichlet / stick-breaking prior
   #       + ((d2 + 1) * k) # Number of hergm terms
   #       + n # Number of category indicators  
   #       + k # Number of category sizes 

@@ -10,7 +10,7 @@
 The package \code{hergm} implements exponential-family random graph models with Dirichlet process / stick-breaking priors,
 including
 
-- the p_1 model for directed networks of Holland and Leinhardt (1981) and its extension to undirected random graph models with Dirichlet process priors (see edges_i).
+- the p_1 model for directed networks of Holland and Leinhardt (1981) and its extension to undirected random graph models with Dirichlet process priors (see arcs_i, arcs_j, mutual_i, and edges_i).
 While the p_1 model for undirected and directed networks with parametric priors contains O(n) parameters (n = number of nodes) and therefore is not parsimonious,
 the non-parametric Dirichlet process prior encourages a small number of unique parameters and therefore represents an elegant alternative to parametric priors.
 
@@ -32,12 +32,17 @@ hergm(formula,
       eta = NULL,
       eta_mean = NULL, 
       eta_sd = NULL,
+      eta_mean_mean = NULL,
+      eta_mean_sd = NULL,
+      eta_precision_shape = NULL,
+      eta_precision_rate = NULL,
       parallel = 1, 
       simulate = FALSE, 
       seeds = NULL, 
       samplesize = 1e+5, 
       burnin = 1e+4, 
       interval = 1e+2,
+      mh_scale = NULL,
       output = FALSE,
       verbose = -1, 
       name = NULL,
@@ -60,6 +65,10 @@ hergm(formula,
 
 \item{eta_mean, eta_sd}{means and standard deviations of Gaussian baseline distribution of Dirichlet process / stick-breaking prior of natural parameters.}
 
+\item{eta_mean_mean, eta_mean_sd}{means and standard deviations of Gaussian prior of mean of Gaussian baseline distribution of Dirichlet process / stick-breaking prior.}
+
+\item{eta_precision_shape, eta_precision_rate}{shape and rate (inverse scale) parameter of Gamma prior of precision parameter of Gaussian baseline distribution of Dirichlet process / stick-breaking prior.}
+
 \item{parallel}{number of computing nodes; if more than one, computing is parallel.}
 
 \item{simulate}{if TRUE, simulation of networks, otherwise Bayesian inference.}
@@ -71,6 +80,8 @@ hergm(formula,
 \item{burnin}{if simulate = TRUE, number of burn-in iterations.}
 
 \item{interval}{if simulate = TRUE, number of proposals between sampled networks.}
+
+\item{mh_scale}{if simulate = FALSE, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
 
 \item{output}{if TRUE, full output, otherwise limited output.}
 

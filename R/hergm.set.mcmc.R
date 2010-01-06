@@ -1,4 +1,4 @@
-hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, parallel, simulate, seeds, output)
+hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, output, scalefactor)
 {
 
   # Prepare I
@@ -12,7 +12,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alp
   # Prepare II
   Clist <- ergm.Cprepare(nw, model)
   maxedges <- max(50000, Clist$nedges)
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = -1)
+  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = -1)
   sample <- list()
   sample$newnwheads = maxedges + 1
   sample$mcmc = length(hergm_list$mcmc)
@@ -20,7 +20,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alp
   sample$sample_tails = length(hergm_list$sample_tails)
 
   # Metropolis-Hastings: finding scale factor
-  scalefactor <- 2.5
+  if ((is.null(scalefactor)) || (scalefactor <= 0.0)) scalefactor <- 1.0
   hergm_list$scalefactor <- scalefactor
   s <- hergm.wrapper(seeds[1], hergm_list)
   iteration <- 1
@@ -32,7 +32,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alp
   while ((s$mh_accept < 0.25) && (iteration <= 10))
     {  
     iteration <- iteration + 1
-    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = -1)
+    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = -1)
     scalefactor <- scalefactor / 2
     hergm_list$scalefactor <- scalefactor
     s <- hergm.wrapper(seeds[1], hergm_list)

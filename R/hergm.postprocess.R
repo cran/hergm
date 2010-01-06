@@ -21,13 +21,23 @@ hergm.postprocess <- function(n = NULL,
   terms <- length_mcmc(d1, d2, k, n)  
   if (burnin > 6000) cat("\nWarning: number of burn-in iterations specified as ", burnin, ", but function hergm cannot return MCMC samples of size > 6000.\n", sep = "")
   if (samplesize > 6000) cat("\nWarning: MCMC sample size specified as ", samplesize, ", but function hergm cannot return MCMC samples of size > 6000.\n", sep = "")
+
   if (length(mcmc) != (parallel * samplesize * terms))
     {
+    cat("Arguments:")    
+    cat("\n- length(mcmc) = ", length(mcmc))
+    cat("\n- parallel = ", parallel)
+    cat("\n- samplesize = ", samplesize)
+    cat("\n- n = ", n)
+    cat("\n- k = ", k)
+    cat("\n- d1 = ", d1)
+    cat("\n- d2 = ", d2)
+    cat("\n- terms = ", terms)
     cat("\n")
     error_message <- paste("hergm.postprocess: arguments inconsistent: length(mcmc) is not as expected, indicating that either mcmc or other arguments are incorrect.")
     stop(error_message, call. = FALSE)
     }
-  if (k > 15) 
+  if (k > 10) 
     {
     if (relabel == TRUE) cat("\nWarning: relabeling too time-consuming: skipping relabeling.\n")
     relabel <- FALSE
@@ -45,10 +55,18 @@ hergm.postprocess <- function(n = NULL,
     }
   mcmc_samplesize <- parallel * (samplesize - burnin)
   mcmc_sample <- matrix(mcmc_sample, nrow = mcmc_samplesize, ncol = terms, byrow = TRUE)
+  if (mcmc_samplesize <= 0) 
+    {
+    cat("\n")
+    error_message <- paste("Warning: sample size is smaller than burn-in.")
+    stop(error_message, call. = FALSE)
+    }
 
   # Initialize arrays
   s <- list()
   s$theta <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d1) 
+  s$htheta_mean <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d2)
+  s$htheta_precision <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d2)
   s$htheta <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d2 * (k + 1))
   s$indicator <- matrix(data = 0, nrow = mcmc_samplesize, ncol = n)
   s$size <- matrix(data = 0, nrow = mcmc_samplesize, ncol = k)
@@ -67,6 +85,16 @@ hergm.postprocess <- function(n = NULL,
         column <- column + 1
         s$theta[row,i] <- mcmc_sample[row,column]
         }
+      }
+    for (i in 1:d2) 
+      {
+      column <- column + 1
+      s$htheta_mean[row,i] <- mcmc_sample[row,column]
+      }
+    for (i in 1:d2) 
+      {
+      column <- column + 1
+      s$htheta_precision[row,i] <- mcmc_sample[row,column]
       }
     for (i in 1:(d2 * (k + 1))) 
       {
@@ -103,6 +131,8 @@ hergm.postprocess <- function(n = NULL,
     # Write MCMC sample to files
     if (is.null(name)) name <- "hergm"
     if (d1 > 0) write(t(s$theta), paste(sep = "",name,"_parameter.out"), ncolumns = d1)
+    write(t(s$htheta_mean), paste(sep = "",name,"_mean_block_parameter.out"), ncolumns = d2)
+    write(t(s$htheta_precision), paste(sep = "",name,"_precision_block_parameter.out"), ncolumns = d2)
     write(t(s$htheta), paste(sep = "",name,"_block_parameter.out"), ncolumns = d2 * (k + 1))
     write(t(s$indicator), paste(sep = "",name,"_indicator.out"), ncolumns = n)
     write(t(s$size), paste(sep = "",name,"_size.out"), ncolumns = k)
@@ -114,14 +144,38 @@ hergm.postprocess <- function(n = NULL,
     filename <- paste(sep = "", name, "_alpha.pdf")
     pdf(filename)
     plot(density(s$alpha, from = 0), main = "", xlab = "", ylab = "")
+    abline(v = c(quantile(s$alpha, 0.05), quantile(s$alpha, 0.95)))
+    abline(v = 0, lty = 2)
     dev.off()
+
+    # Means of block parameters
+    for (i in 1:d2) 
+      {
+      filename <- paste(sep = "", name, "_mean_block_parameter_", i, ".pdf")
+      pdf(filename)
+      plot(density(s$htheta_mean[,i]), main = "", xlab = "", ylab = "")
+      abline(v = c(quantile(s$htheta_mean[,i], 0.05), quantile(s$htheta_mean[,i], 0.95)))
+      abline(v = 0, lty = 2)
+      dev.off()
+      }
+
+    # Precisions of block parameters
+    for (i in 1:d2) 
+      {
+      filename <- paste(sep = "", name, "_precision_block_parameter_", i, ".pdf")
+      pdf(filename)
+      plot(density(s$htheta_precision[,i], from = 0), main = "", xlab = "", ylab = "")
+      abline(v = c(quantile(s$htheta_precision[,i], 0.05), quantile(s$htheta_precision[,i], 0.95)))
+      abline(v = 0, lty = 2)
+      dev.off()
+      }
 
     # Relabel sample
     if (relabel == TRUE)
       {
       minimizer <- hergm.min_loss(k, paste(sep = "", name, "_indicator.out"), 0, 100) # Specify number of iterations of post-processing algorithm
       s$q <- minimizer$p
-      hergm.pie(name, n, minimizer$p)
+      # hergm.pie(name, n, minimizer$p)
       index <- 0
       for (h_term in 1:d2)
         {
@@ -161,8 +215,18 @@ hergm.postprocess <- function(n = NULL,
         {
         filename <- paste(sep = "", name, "_parameter_", i, ".pdf")
         pdf(filename)
-        if (d1 == 1) plot(density(s$theta), main = paste(sep = "", 1), xlab = "", ylab = "")
-        else plot(density(s$theta[,i]), main = paste(sep = "", i), xlab = "", ylab = "")
+        if (d1 == 1) 
+          {
+          plot(density(s$theta), main = paste(sep = "", 1), xlab = "", ylab = "")
+          abline(v = c(quantile(s$theta, 0.05), quantile(s$theta, 0.95)))
+          abline(v = 0, lty = 2)
+          }
+        else 
+          {
+          plot(density(s$theta[,i]), main = paste(sep = "", i), xlab = "", ylab = "")
+          abline(v = c(quantile(s$theta[,i], 0.05), quantile(s$theta[,i], 0.95)))
+          abline(v = 0, lty = 2)
+          }
         dev.off()
         }
       }

@@ -6,12 +6,7 @@
  *  open source, and has the attribution requirements (GPL Section 7) in
  *    http://statnetproject.org/attribution
  *
- * Copyright 2003 Mark S. Handcock, University of Washington
- *                David R. Hunter, Penn State University
- *                Carter T. Butts, University of California - Irvine
- *                Steven M. Goodreau, University of Washington
- *                Martina Morris, University of Washington
- * Copyright 2007 The statnet Development Team
+ *  Copyright 2010 the statnet development team
  */
 
 #include "changestats.h"
@@ -5463,14 +5458,81 @@ D_CHANGESTAT_FN(d_edges_i)
     index_t = N_NODES + (1 + c_t); /* Get parameter corresponding to category of node t; translate c_t by 1 */
     /*
     Rprintf("\npair of nodes %i, %i with indicators %f, %f:",h,t,INPUT_PARAM[h],INPUT_PARAM[t]);
+    Rprintf("\nc_h = %i, c_t = %i, index_h = %i, index_t = %i, INPUT_PARAM_h[%i] = %f, INPUT_PARAM_t[%i] = %f",c_h,c_t,index_h,index_t,index_h,INPUT_PARAM[index_h],index_t,INPUT_PARAM[index_t]);
+    */
+    change = edgemult * (INPUT_PARAM[index_h] + INPUT_PARAM[index_t]); /* Degree term: motivated by maximum entropy arguments */
+    CHANGE_STAT[0] += change; 
+    TOGGLE_IF_MORE_TO_COME(i);
+    }
+  UNDO_PREVIOUS_TOGGLES(i);
+}
+
+/* Michael */
+/*****************
+ changestat: d_arcs_i
+note: input parameters:
+0: (maximum) number of categories
+1..n: node-bound category indicators
+n+1..n+number: n+1 is within-category parameter of category 0, ..., n+number is within-category parameter of category number-1
+*****************/
+D_CHANGESTAT_FN(d_arcs_i) 
+{
+  int c, edgemult, i, index;
+  Vertex h, t;
+  double change;
+  /*
+  Rprintf("\n\nChange statistic arcs_i\n\n");
+  for (i = 0; i < (1 + N_NODES + INPUT_PARAM[0] + 1); i++) Rprintf("INPUT_PARAM[%i] = %f\n",i,INPUT_PARAM[i]);
+  */
+  CHANGE_STAT[0] = 0.0;
+  for (i = 0; i < ntoggles; i++)
+    {
+    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    c = INPUT_PARAM[h]; /* Category of node h: c in {0, ..., number-1} */
+    index = N_NODES + (1 + c); /* Get parameter corresponding to category of node h; translate c_h by 1 */
+    /*
+    Rprintf("\nnode %i with indicator %f:",h,INPUT_PARAM[h]);
     Rprintf("\nc = %i, index = %i, INPUT_PARAM[%i] = %f",c,index,index,INPUT_PARAM[index]);
     */
-    if (DIRECTED) change = edgemult * INPUT_PARAM[index_h]; /* Outdegree term: motivated by maximum entropy arguments (Park and Newman, 2004)*/
-    else 
-      {
-      change = edgemult * (INPUT_PARAM[index_h] + INPUT_PARAM[index_t]); /* Degree term: motivated by maximum entropy arguments (Park and Newman, 2004) */
-      change = change / 2; /* Factor 1/2: if all nodes are members of the same category, we would overcount by factor 2 */
-      }
+    change = edgemult * INPUT_PARAM[index]; 
+    CHANGE_STAT[0] += change; 
+    TOGGLE_IF_MORE_TO_COME(i);
+    }
+  UNDO_PREVIOUS_TOGGLES(i);
+}
+
+/* Michael */
+/*****************
+ changestat: d_arcs_j
+note: input parameters:
+0: (maximum) number of categories
+1..n: node-bound category indicators
+n+1..n+number: n+1 is within-category parameter of category 0, ..., n+number is within-category parameter of category number-1
+*****************/
+D_CHANGESTAT_FN(d_arcs_j) 
+{
+  int c, edgemult, i, index;
+  Vertex h, t;
+  double change;
+  /*
+  Rprintf("\n\nChange statistic arcs_j\n\n");
+  for (i = 0; i < (1 + N_NODES + INPUT_PARAM[0] + 1); i++) Rprintf("INPUT_PARAM[%i] = %f\n",i,INPUT_PARAM[i]);
+  */
+  CHANGE_STAT[0] = 0.0;
+  for (i = 0; i < ntoggles; i++)
+    {
+    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    c = INPUT_PARAM[t]; /* Category of node h: c in {0, ..., number-1} */
+    index = N_NODES + (1 + c); /* Get parameter corresponding to category of node h; translate c_h by 1 */
+    /*
+    Rprintf("\nnode %i with indicator %f:",t,INPUT_PARAM[t]);
+    Rprintf("\nc = %i, index = %i, INPUT_PARAM[%i] = %f",c,index,index,INPUT_PARAM[index]);
+    */
+    change = edgemult * INPUT_PARAM[index]; 
     CHANGE_STAT[0] += change; 
     TOGGLE_IF_MORE_TO_COME(i);
     }
@@ -5514,6 +5576,46 @@ D_CHANGESTAT_FN(d_edges_ij)
     }
   UNDO_PREVIOUS_TOGGLES(i);
 }
+
+/* Michael */
+/*****************
+ changestat: d_mutual_i
+note: input parameters:
+0: (maximum) number of categories
+1..n: node-bound category indicators
+n+1..n+number: n+1 is within-category parameter of category 0, ..., n+number is within-category parameter of category number-1
+*****************/
+D_CHANGESTAT_FN(d_mutual_i) 
+{
+  int c_h, c_t, edgemult, i, index_h, index_t;
+  Vertex h, t;
+  double change;
+  /*
+  Rprintf("\n\nChange statistic mutual_i\n\n");
+  for (i = 0; i < (1 + N_NODES + INPUT_PARAM[0] + 1); i++) Rprintf("INPUT_PARAM[%i] = %f\n",i,INPUT_PARAM[i]);
+  */
+  CHANGE_STAT[0] = 0.0;
+  for (i = 0; i < ntoggles; i++)
+    {
+    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    if (IS_OUTEDGE(t, h) == 0) edgemult = 0.0; /* If inedge does not exist, change in outedge is irrelevant */
+    else edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    c_h = INPUT_PARAM[h]; /* Category of node h: c in {0, ..., number-1} */
+    c_t = INPUT_PARAM[t]; /* Category of node t: c in {0, ..., number-1} */
+    index_h = N_NODES + (1 + c_h); /* Get parameter corresponding to category of node h; translate c_h by 1 */
+    index_t = N_NODES + (1 + c_t); /* Get parameter corresponding to category of node t; translate c_t by 1 */
+    /*
+    Rprintf("\npair of nodes %i, %i with indicators %f, %f:",h,t,INPUT_PARAM[h],INPUT_PARAM[t]);
+    Rprintf("\nc_h = %i, c_t = %i, index_h = %i, index_t = %i, INPUT_PARAM_h[%i] = %f, INPUT_PARAM_t[%i] = %f",c_h,c_t,index_h,index_t,index_h,INPUT_PARAM[index_h],index_t,INPUT_PARAM[index_t]);
+    */
+    change = edgemult * (INPUT_PARAM[index_h] + INPUT_PARAM[index_t]); /* Additive, node-dependent mutual edge parameter */
+    CHANGE_STAT[0] += change; 
+    TOGGLE_IF_MORE_TO_COME(i);
+    }
+  UNDO_PREVIOUS_TOGGLES(i);
+}
+
 
 /* Michael */
 /*****************
