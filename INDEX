@@ -1,0 +1,7 @@
+example                 Example data set
+hergm                   Hierarchical Exponential-Family Random Graph
+                        Models: Simulation and Bayesian inference
+hergm.postprocess       Hierarchical Exponential-Family Random Graph
+                        Models: Postprocessing of Bayesian MCMC samples
+hergm.terms             Hierarchical Exponential-Family Random Graph
+                        Models: Terms
