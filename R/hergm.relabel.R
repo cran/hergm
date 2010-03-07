@@ -228,10 +228,13 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
       }
     cat("\nLoss:",present_loss)
     if (is.finite(present_loss - last_loss)) change <- present_loss - last_loss
-    else change <- Inf
+    else change <- -Inf
     cat("\nChange",change)
-    if ((n_categories <= 5) & (change <= 0) & (change >= -0.01)) stop_criterion <- i
     last_loss <- present_loss
+    if (n_categories <= 5)
+      {
+      if (abs(change) <= 0.01) stop_criterion <- i
+      }
     }
   cat("\n\nMinimum loss:",min_min_loss)
   min_permutations <- min_min_permutations

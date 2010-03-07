@@ -4,12 +4,19 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
   if (simulate == FALSE) 
     { 
     if (is.null(mh_scale)) mh_scale <- 1
-    else if (mh_scale > 1) mh_scale <- mh_scale / 1000
-    mh_scale <- rep.int(mh_scale, 2)
-    if ((mh_scale[1] > 1) && (mh_scale[1] > 1)) scalefactor <- mh_scale
-    else scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
+    if (mh_scale > 1) 
+      {
+      mh_scale <- mh_scale / 1000
+      mh_scale <- rep.int(mh_scale, 2)
+      scalefactor <- mh_scale
+      }
+    else 
+      {
+      mh_scale <- rep.int(mh_scale, 2) 
+      scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
+      }
     }
-
+ 
   # Prepare
   Clist <- ergm.Cprepare(nw, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected

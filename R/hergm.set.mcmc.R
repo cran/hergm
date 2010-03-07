@@ -5,7 +5,8 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
   if (verbose >= 0) cat("\nMetropolis-Hastings algorithm: scale factor and acceptance rate:")
   cp_samplesize <- MCMCparams$samplesize # Store
   MCMCparams$samplesize <- round(parallel * cp_samplesize / 100)
-  if (MCMCparams$samplesize <= 100) MCMCparams$samplesize <- 100
+  if (MCMCparams$samplesize < 100) MCMCparams$samplesize <- 100
+  else if (MCMCparams$samplesize > 10000) MCMCparams$samplesize <- 10000
 
   # Prepare II
   Clist <- ergm.Cprepare(nw, model)

@@ -54,13 +54,13 @@ hergm.postprocess <- function(n = NULL,
     count <- count + (samplesize * terms)
     }
   mcmc_samplesize <- parallel * (samplesize - burnin)
-  mcmc_sample <- matrix(mcmc_sample, nrow = mcmc_samplesize, ncol = terms, byrow = TRUE)
   if (mcmc_samplesize <= 0) 
     {
     cat("\n")
-    error_message <- paste("Warning: sample size is smaller than burn-in.")
+    error_message <- paste("number of burn-in iterations exceeds number of post-burn-in iterations.")
     stop(error_message, call. = FALSE)
     }
+  mcmc_sample <- matrix(mcmc_sample, nrow = mcmc_samplesize, ncol = terms, byrow = TRUE)
 
   # Initialize arrays
   s <- list()
