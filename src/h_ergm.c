@@ -1539,6 +1539,8 @@ output: MCMC sample of unknowns from posterior
     if (dependence == 0) Rprintf("\nConditional dyad-independence model.\n");
     else Rprintf("\nConditional dyad-dependence model.\n");
     }
+  mheads = NULL;
+  mtails = NULL;
   /*************************/
   /* MCMC sample posterior */
   /*************************/

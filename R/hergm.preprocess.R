@@ -8,7 +8,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   n_between <- 0 # Default: no between-block terms
   for (i in 1:terms) # For given hergm term... 
     {
-    if (model$terms[[i]]$dependence == 1) dependence <- 1 # Dyad-dependence
+    if (is.null(model$terms[[i]]$dependence)) dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
+    else if (model$terms[[i]]$dependence == TRUE) dependence <- 1 # Dyad-dependence
     if (model$terms[[i]]$name == "edges_i") # hergm term
       {
       hierarchical[i] <- 1 

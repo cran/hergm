@@ -194,7 +194,7 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
   if (min(indicator) == 0) # Category indicators: if category labels are 0..n_categories-1, then translate by 1 to obtain category labels 1..n_categories
     {
     indicator <- indicator + 1 
-    cat("\nInputted category indicators translated by 1")
+    # cat("\nInputted category indicators translated by 1")
     }
   n_sample <- nrow(indicator) # MCMC sample size
   n_nodes <- ncol(indicator) # Number of nodes
@@ -241,7 +241,6 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
   name <- sub(pattern = "_indicator.out", replacement = "", filename)
   x <- c("Local minimum of loss function:", min_min_loss)
   write(x, paste(sep = "", name, "_min_loss.out"), ncolumns = 2)
-  if (n_categories <= 20) write(t(min_permutations), paste(sep = "", name, "_permutations.out"), ncolumns = n_categories)
   write(t(p), paste(sep = "", name, "_classification.out"), ncolumns = n_categories)
   write(t(indicator), paste(sep = "", name, "_indicator_min.out"), ncolumns = n_nodes)
   minimizer <- list()

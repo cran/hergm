@@ -19,6 +19,7 @@ hergm.postprocess(n = NULL,
                   burnin = NULL, 
                   samplesize = NULL, 
                   mcmc = NULL, 
+                  relabel = TRUE,
                   output = TRUE,
                   name = NULL, 
                   \dots)
@@ -57,6 +58,8 @@ The required computations can be time-consuming when the number of blocks \code{
 \item{samplesize}{MCMC sample size, including number of burn-in iterations; if parallel > 1, MCMC sample size per computing node.}
 
 \item{mcmc}{MCMC sample in the form of vector.}
+
+\item{relabel}{if TRUE, relabel MCMC sample.}
 
 \item{output}{if TRUE, full output, including relabeled MCMC sample; otherwise limited output.}
 

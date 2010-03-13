@@ -32,7 +32,7 @@ mcmc <- hergm( # See ?hergm
      interval = 1e+2, # If simulate = TRUE, number of proposals between sampled networks
      output = TRUE, # Output: if TRUE, full output, otherwise limited output
      name = name, # If output = TRUE, name of project is used to name output files
-     verbose = 1 # Console output: -1 none, 0 short, +1 long
+     verbose = -1 # Console output: -1 none, 0 short, +1 long
      )
 if (simulate == FALSE) processed_mcmc <- hergm.postprocess( # See ?hergm.postprocess
      n = n, # Number of nodes
@@ -43,6 +43,7 @@ if (simulate == FALSE) processed_mcmc <- hergm.postprocess( # See ?hergm.postpro
      burnin = 1e+3, # Number of burn-in iterations; if parallel > 1, 
      samplesize = returned_samplesize, # MCMC sample size, including number of burn-in iterations; if parallel > 1, MCMC sample size per computing node
      mcmc = mcmc, # MCMC sample in the form of vector
+     relabel = TRUE, # Relabel MCMC sample
      output = TRUE, # If TRUE, full output, including relabeled MCMC sample; otherwise limited output
      name = name # If output = TRUE, name of project is used to name output files
      )

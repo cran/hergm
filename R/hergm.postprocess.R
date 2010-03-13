@@ -6,6 +6,7 @@ hergm.postprocess <- function(n = NULL,
                               burnin = NULL, 
                               samplesize = NULL, 
                               mcmc = NULL, 
+                              relabel = TRUE,
                               output = TRUE,
                               name = NULL, 
                               ...)
@@ -25,6 +26,11 @@ hergm.postprocess <- function(n = NULL,
     cat("\n")
     error_message <- paste("hergm.postprocess: arguments inconsistent: length(mcmc) is not as expected, indicating that either mcmc or other arguments are incorrect.")
     stop(error_message, call. = FALSE)
+    }
+  if (k > 15) 
+    {
+    if (relabel == TRUE) cat("\nWarning: relabeling too time-consuming: skipping relabeling.\n")
+    relabel <- FALSE
     }
 
   # Preprocess MCMC sample: delete burn-in iterations and transform vector into matrix, where rows correspond to MCMC draws
@@ -111,7 +117,7 @@ hergm.postprocess <- function(n = NULL,
     dev.off()
 
     # Relabel sample
-    if (k <= 20) 
+    if (relabel == TRUE)
       {
       minimizer <- hergm.min_loss(k, paste(sep = "", name, "_indicator.out"), 0, 100) # Specify number of iterations of post-processing algorithm
       s$q <- minimizer$p
@@ -147,7 +153,6 @@ hergm.postprocess <- function(n = NULL,
         dev.off()
         }
       }
-    else cat("Sample not relabeled: number of permutations too large.")
 
     # Parameters
     if (d1 > 0)
