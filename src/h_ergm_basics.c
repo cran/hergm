@@ -1,4 +1,50 @@
+/***************************************************************************/
+/* Copyright 2009 Michael Schweinberger                                    */
+/*                                                                         */
+/* This file is part of hergm.                                             */
+/*                                                                         */
+/*    hergm is free software: you can redistribute it and/or modify        */
+/*    it under the terms of the GNU General Public License as published by */
+/*    the Free Software Foundation, either version 3 of the License, or    */
+/*    (at your option) any later version.                                  */
+/*                                                                         */
+/*    hergm is distributed in the hope that it will be useful,             */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/*    GNU General Public License for more details.                         */
+/*                                                                         */
+/*    You should have received a copy of the GNU General Public License    */
+/*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
+/*                                                                         */ 
+/***************************************************************************/
+
 #include "h_ergm_basics.h"
+
+double** Lower_Half_Matrix(int n)
+/* 
+input: number of rows of matrix
+output: pointer to lower half of n x n matrix
+*/ 
+{
+  int i, j;
+  double **x;
+  x = (double**) calloc(n+1,sizeof(double*)); /* Allocate memory for n rows 0..n (row 0 is redundant) */
+  if (x == NULL) 
+    { 
+    Rprintf("\n\ncalloc failed...\n\n"); 
+    exit(1); 
+    }
+  for (i = 0; i < n + 1; i++) /* For row i, allocate memory for elements 0..i (element 0 is redundant) */
+    {
+    x[i] = (double*) calloc(i,sizeof(double));
+    if (x[i] == NULL) 
+      { 
+      Rprintf("\n\ncalloc failed...\n\n"); 
+      exit(1); 
+      }
+    }
+  return x;
+}
 
 void Set_I_I(int d, int *vector1, int *vector2)
 /*
@@ -146,4 +192,5 @@ void Print_DD(int d1, int d2, double **matrix)
     Rprintf("\n");
     }
 }
+
 

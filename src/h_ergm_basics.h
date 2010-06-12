@@ -3,6 +3,15 @@
 #include <math.h>
 #include <Rmath.h>
 
+double** Lower_Half_Matrix(int n);
+/* 
+input: number of rows of matrix
+output: pointer to the upper half of n x n matrix
+note: 
+- number of elements is n (n - 1) / 2
+- elements are 0
+*/ 
+
 void Set_I_I(int d, int *vector1, int *vector2);
 /*
 input: two vectors
