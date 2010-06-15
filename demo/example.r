@@ -5,7 +5,7 @@ k <- 3 # Number of blocks
 simulate <- FALSE # If TRUE, simulation of networks, otherwise Bayesian inference
 parallel <- 1 # Parallel computing: number of computing nodes; if more than one, computing is parallel
 samplesize <- 1.2e+5 # If simulate = TRUE, number of networks to be sampled, otherwise number of draws from posterior; if computing is parallel, number of draws per computing node
-returned_samplesize <- min(6e+3, samplesize) # If simulate = FALSE, number of recorded draws from posterior; if compting is parallel, number of recorded draws per computing node
+returned_samplesize <- min(1.2e+4, samplesize) # If simulate = FALSE, number of recorded draws from posterior; if compting is parallel, number of recorded draws per computing node
 name <- "example"
 mcmc <- hergm( # See ?hergm
      d ~ edges_i(k), # Formula: network ~ terms: see ?network, ?hergm.terms, ?edges_i

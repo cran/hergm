@@ -1,4 +1,4 @@
-hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate, parallel, output, name, verbose) # Michael
+hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate, parallel, output, name, verbose) # Michael
 {
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms	
@@ -26,31 +26,32 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       if (max_number_i < max_number) max_number <- max_number_i   
-      degree <- vector(mode = "numeric", length = Clist$n)    
-      for (i in 1:Clist$n) 
-        { 
-        for (j in 1:Clist$n) 
+      if (simulate == FALSE)
+        {
+        degree <- vector(mode = "numeric", length = Clist$n)    
+        for (i in 1:Clist$n) 
           { 
-          degree[i] <- degree[i] + d[i,j] 
-          } 
-        }
-      range <- max(degree) - min(degree) 
-      max_odds <- 3
-      T <- range / log(max_odds) 
-      sum <- 0
-      for (i in 1:Clist$n) 
-        { 
-        q_i[i] <- exp(degree[i] / T) # Implication: the log-odds of the probability of selecting nodes with maximum degree cannot exceed 2, or the odds cannot exceed exp(range / T) = exp(log(max_odds)) = max_odds; note that T can be interpreted as the tempature (inverse canonical parameter of discrete exponential family distribution 
-        sum <- sum + q_i[i]
-        }
-      if (verbose >= 2) cat("\nProbability of selection of nodes:")
-      for (i in 1:Clist$n) 
-        { 
-        q_i[i] <- q_i[i] / sum
-        if (verbose >= 2) cat(" ",q_i[i]) 
-        }
-      if (verbose >= 2) cat("\n")
-      }     
+          degree[i] <- sum(nw[i,])
+          if (verbose >= 2) cat("\ndegree[",i,"] = ",degree[i])
+          }
+        range <- max(degree) - min(degree) 
+        max_odds <- 6
+        T <- range / log(max_odds) 
+        sum <- 0
+        for (i in 1:Clist$n) 
+          { 
+          q_i[i] <- exp(degree[i] / T) # Implication: the log-odds of the probability of selecting nodes with maximum degree cannot exceed 2, or the odds cannot exceed exp(range / T) = exp(log(max_odds)) = max_odds; note that T can be interpreted as the tempature (inverse canonical parameter of discrete exponential family distribution 
+          sum <- sum + q_i[i]
+          }
+        if (verbose >= 2) cat("\nProbability of selection of nodes:")
+        for (i in 1:Clist$n) 
+          { 
+          q_i[i] <- q_i[i] / sum
+          if (verbose >= 2) cat(" ",q_i[i]) 
+          }
+        if (verbose >= 2) cat("\n")
+        }     
+      }
     else if (model$terms[[i]]$name == "arcs_i") # hergm term
       {
       hierarchical[i] <- 1 
@@ -134,11 +135,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else hierarchical[i] <- 0 # Indicator: non-hierarchical hergm term
     }
-  if ((simulate == TRUE) && (max_number != Clist$n))
-    {
-    error_message <- paste("In case of simulations, the number of blocks should either be left unspecified or specified as the number of nodes (", Clist$n, ").", sep = "")
-    stop(error_message, call. = FALSE)
-    }
   for (i in 1:terms) # For given hergm term... 
     {
     if (hierarchical[i] == 1)
@@ -185,8 +181,12 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     }
   if (d2 == 0) max_number <- 1
   # Prior
-  if (is.null(eta_mean) || is.null(eta_sd)) hyper_prior <- TRUE
-  else hyper_prior <- FALSE
+  if (simulate == TRUE) 
+    {
+    if ((is.null(alpha)) || (is.null(eta)) || (is.null(indicator))) hyper_prior <- TRUE # Posterior predictive check
+    else hyper_prior <- FALSE # Simulation
+    }
+  else hyper_prior <- TRUE # Dirichlet process prior with hyper prior
   if (is.null(eta)) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
   if (is.null(alpha_shape)) alpha_shape <- 1
   if (is.null(alpha_rate)) alpha_rate <- 1
@@ -196,7 +196,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     {
     for (i in 1:d2) eta_mean_precision[i] <- 0.25
     }
-  else 
+  else
     {
     for (i in 1:d2) eta_mean_precision[i] <- 1 / (eta_mean_sd[i] * eta_mean_sd[i])
     }
@@ -290,15 +290,15 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     }
   #print(cf2 %*% t(cf2))
   #print(p2 %*% eta_sigma2)
-  eta <- matrix(data = 0, nrow = d2, ncol = max_number)
+  if (is.null(eta)) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
   if (is.null(alpha)) alpha <- 1
   if (is.null(eta)) eta <- vector(mode = "numeric", length = d)
-  indicator <- vector(mode = "numeric", length = Clist$n)
+  if (is.null(indicator)) indicator <- vector(mode = "numeric", length = Clist$n)
 
   max_iteration <- MCMCparams$samplesize
   terms <- length_mcmc(d1, d2, max_number, Clist$n)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
-  else dimension <- min(MCMCparams$samplesize, 6000)
+  else dimension <- min(MCMCparams$samplesize, 12000)
   mcmc <- vector(mode = "numeric", length = (dimension * terms))
 
   if (Clist$dir == FALSE) max_edges <- Clist$n * (Clist$n - 1) / 2 # Undirected

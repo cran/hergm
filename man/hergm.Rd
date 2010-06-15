@@ -36,6 +36,7 @@ hergm(formula,
       eta_mean_sd = NULL,
       eta_precision_shape = NULL,
       eta_precision_rate = NULL,
+      indicator = NULL,
       parallel = 1, 
       simulate = FALSE, 
       seeds = NULL, 
@@ -68,6 +69,8 @@ hergm(formula,
 \item{eta_mean_mean, eta_mean_sd}{means and standard deviations of Gaussian prior of mean of Gaussian baseline distribution of Dirichlet process / stick-breaking prior.}
 
 \item{eta_precision_shape, eta_precision_rate}{shape and rate (inverse scale) parameter of Gamma prior of precision parameter of Gaussian baseline distribution of Dirichlet process / stick-breaking prior.}
+
+\item{indicator}{if simulate = TRUE and indicator (of block membership) is specified, condition on specified indicator (of block membership).}
 
 \item{parallel}{number of computing nodes; if more than one, computing is parallel.}
 

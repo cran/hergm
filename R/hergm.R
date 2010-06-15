@@ -9,6 +9,7 @@ hergm <- function(formula,
                  eta_mean_sd = NULL,
                  eta_precision_shape = NULL,
                  eta_precision_rate = NULL,
+                 indicator = NULL,
                  parallel = 1, 
                  simulate = FALSE, 
                  seeds = NULL, 
@@ -60,7 +61,7 @@ hergm <- function(formula,
   MCMCparams$meanstats <- Clist$meanstats
   print(
     system.time(
-      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, mh_scale, output)
+      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, output)
     )
   )
   cat("\n")

@@ -234,6 +234,9 @@ output: statistic, inner product <parameter, statistic>
 {
   int i;
   double sum;
+  /*
+  Rprintf("\nMinus_Energy: number of edges = %i",*nedges);
+  */
   for (i = 0; i < d; i++) /* Statistic must be null */
     {
     statistic[i] = 0.0;
@@ -243,6 +246,9 @@ output: statistic, inner product <parameter, statistic>
   for (i = 0; i < d; i++)
     {
     sum = sum + (parameter[i] * statistic[i]);
+    /*
+    Rprintf("\nparameter[%i] = %-8.4f, statistic[%i] = %-8.4f, product = %-8.4f", i, parameter[i], i, statistic[i], parameter[i] * statistic[i]);
+    */
     }
   return sum;
 } 
@@ -502,5 +508,64 @@ output: minus energy of node i on log scale, computed under the assumption of co
   free(statistic);
   NetworkDestroy(&nw);
   return log_p_i_k;
+}
+
+int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails)
+/*
+input: number of nodes, indicator of directed network, number of edges, heads and tails of edge list
+output: degree sequence
+*/
+{
+  int *degree, i, j, k, sum;
+  degree = (int*) calloc(n,sizeof(int)); 
+  if (degree == NULL) { Rprintf("\n\ncalloc failed: Degree_Sequence, degree\n\n"); exit(1); }
+  for (k = 0; k < n_edges; k++)
+    {
+    i = heads[k] - 1;
+    j = tails[k] - 1;
+    degree[i] = degree[i] + 1;
+    if (directed == 0) degree[j] = degree[j] + 1;
+    }
+  return degree;
+}
+
+int* Degree_Freq(int n, int* degree)
+/*
+input: number of nodes, degree sequence
+output: degree frequencies
+*/
+{
+  int *degree_freq, i, k;
+  degree_freq = (int*) calloc(n,sizeof(int)); 
+  if (degree_freq == NULL) { Rprintf("\n\ncalloc failed: Degree_Freq, degree_freq\n\n"); exit(1); }
+  for (i = 0; i < n; i++)
+    {
+    k = degree[i];
+    degree_freq[k] = degree_freq[k] + 1;
+    }
+  return degree_freq;
+}
+
+double* Block_Degree_Freq(int n, int *degree, int block_number, int *block_size, int *block_indicator)
+/*
+input: number of nodes, degree sequence, number of blocks, size of blocks, indicator of block membership
+output: relative frequencies of degree by block
+*/
+{
+  int i, k;
+  double *block_degree_freq;
+  block_degree_freq = (double*) calloc(block_number,sizeof(double)); 
+  if (block_degree_freq == NULL) { Rprintf("\n\ncalloc failed: Block_Degree_Freq, block_degree_freq\n\n"); exit(1); }
+  for (i = 0; i < n; i++)
+    {
+    k = block_indicator[i];
+    block_degree_freq[k] = block_degree_freq[k] + degree[i];
+    }
+  for (k = 0; k < block_number; k++)
+    {
+    if (block_size[k] == 0) block_degree_freq[k] = 0.0;
+    else block_degree_freq[k] = block_degree_freq[k] / block_size[k];
+    }
+  return block_degree_freq;
 }
 

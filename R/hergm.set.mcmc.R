@@ -1,8 +1,11 @@
 hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, output, scalefactor)
 {
 
+  test_verbose <- -1
+  verbose <- test_verbose
+
   # Prepare I
-  if (verbose >= 0) cat("Metropolis-Hastings algorithm: scale factor and acceptance rate:")
+  if (verbose >= 0) cat("\nMetropolis-Hastings algorithm: scale factor and acceptance rate:")
   cp_samplesize <- MCMCparams$samplesize # Store
   MCMCparams$samplesize <- round(parallel * cp_samplesize / 100)
   if (MCMCparams$samplesize <= 10) MCMCparams$samplesize <- 10
@@ -12,16 +15,12 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alp
   # Prepare II
   Clist <- ergm.Cprepare(nw, model)
   maxedges <- max(50000, Clist$nedges)
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = -1)
-  sample <- list()
-  sample$newnwheads = maxedges + 1
-  sample$mcmc = length(hergm_list$mcmc)
-  sample$sample_heads = length(hergm_list$sample_heads)
-  sample$sample_tails = length(hergm_list$sample_tails)
+  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = test_verbose)
 
   # Metropolis-Hastings: finding scale factor
   if ((is.null(scalefactor)) || (scalefactor <= 0.0)) scalefactor <- 1.0
   hergm_list$scalefactor <- scalefactor
+  if (verbose >= 0) cat("\n")
   s <- hergm.wrapper(seeds[1], hergm_list)
   iteration <- 1
   if (verbose >= 0) cat("\n(", iteration, ")", " ", 
@@ -32,9 +31,10 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alp
   while ((s$mh_accept < 0.25) && (iteration <= 10))
     {  
     iteration <- iteration + 1
-    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = -1)
+    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate = FALSE, parallel, output = FALSE, name = "", verbose = test_verbose)
     scalefactor <- scalefactor / 2
     hergm_list$scalefactor <- scalefactor
+    if (verbose >= 0) cat("\n")
     s <- hergm.wrapper(seeds[1], hergm_list)
     if (verbose >= 0) cat("\n(", iteration, ")", " ", 
                         formatC(scalefactor, digits = 4, width = 6, format = "f", mode = "real"), 

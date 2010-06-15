@@ -26,6 +26,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.double(hergm_list$eta_mean_precision),
     as.double(hergm_list$eta_precision_shape),
     as.double(hergm_list$eta_precision_rate),
+    as.double(hergm_list$eta),
     as.integer(hergm_list$indicator),
     as.integer(hergm_list$Clist$heads), as.integer(hergm_list$Clist$tails),
     as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$Clist$maxpossibleedges), as.integer(hergm_list$Clist$n),
@@ -53,6 +54,7 @@ hergm.wrapper <- function(seed, hergm_list)
     sample_heads = as.integer(hergm_list$sample_heads),
     sample_tails = as.integer(hergm_list$sample_tails),
     as.integer(hergm_list$call_RNGstate),
+    as.integer(hergm_list$hyper_prior),
     PACKAGE="hergm")
     }
   else

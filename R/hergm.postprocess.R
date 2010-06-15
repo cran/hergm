@@ -19,15 +19,15 @@ hergm.postprocess <- function(n = NULL,
   # Check arguments
   d <- d1 + d2
   terms <- length_mcmc(d1, d2, k, n)  
-  if (burnin > 6000) cat("\nWarning: number of burn-in iterations specified as ", burnin, ", but function hergm cannot return MCMC samples of size > 6000.\n", sep = "")
-  if (samplesize > 6000) cat("\nWarning: MCMC sample size specified as ", samplesize, ", but function hergm cannot return MCMC samples of size > 6000.\n", sep = "")
+  if (burnin > 12000) cat("\nWarning: number of burn-in iterations specified as ", burnin, ", but function hergm cannot return MCMC samples of size > 12000.\n", sep = "")
+  if (samplesize > 12000) cat("\nWarning: MCMC sample size specified as ", samplesize, ", but function hergm cannot return MCMC samples of size > 12000.\n", sep = "")
 
   if (length(mcmc) != (parallel * samplesize * terms))
     {
     cat("Arguments:")    
     cat("\n- length(mcmc) = ", length(mcmc))
     cat("\n- parallel = ", parallel)
-    cat("\n- samplesize = ", samplesize)
+    cat("\n- samplesize = ", samplesize, " (note: if function hergm is called with samplesize > 12000, hergm returns 12000 draws)")
     cat("\n- n = ", n)
     cat("\n- k = ", k)
     cat("\n- d1 = ", d1)

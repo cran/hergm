@@ -1,23 +1,24 @@
-hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, mh_scale, output) 
+hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, output) 
 {
+
   if (simulate == FALSE) 
-    {
-    t <- system.time(scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, output, mh_scale)) # The last argument is the initial value of the scale factor
-    cat("\n")
-    print(t)
+    { 
+    if (is.null(mh_scale)) mh_scale <- 0
+    if (mh_scale > 1) scalefactor <- mh_scale / 1000 
+    else scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
     }
 
   # Prepare
   Clist <- ergm.Cprepare(nw, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else maxedges <- Clist$n * (Clist$n - 1) # Directed
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, simulate, parallel, output, name, verbose)
-  sample <- list()
-  sample$newnwheads = maxedges + 1
-  sample$mcmc = length(hergm_list$mcmc)
-  sample$sample_heads = length(hergm_list$sample_heads)
-  sample$sample_tails = length(hergm_list$sample_tails)
-  if (simulate == TRUE) 
+  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, simulate, parallel, output, name, verbose)
+  if (simulate == FALSE)
+    {
+    hergm_list$scalefactor <- scalefactor # Set scale factor
+    if (verbose >= 0) cat("\nFinal scale factor:", formatC(hergm_list$scalefactor, digits = 4, width = 6, format = "f", mode = "real"), "\n")
+    }
+  else if (hergm_list$hyper_prior == 1)
     {
     k <- number_clusters(hergm_list$alpha, hergm_list$Clist$n)
     cat("\nDirichlet process:")
@@ -25,11 +26,6 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
     cat("\n- mean of number of non-empty blocks: ", formatC(k$mean, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
     cat("\n- variance of number of non-empty blocks: ", formatC(k$variance, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
     cat("\n")   
-    }
-  else
-    {
-    hergm_list$scalefactor <- scalefactor # Set scale factor
-    if (verbose >= 0) cat("\nFinal scale factor:", formatC(hergm_list$scalefactor, digits = 4, width = 6, format = "f", mode = "real"), "\n")
     }
   flush.console() # Windows
 
@@ -102,8 +98,7 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
     output <- sample
     }
 
-  if (hergm_list$output == TRUE) cat("\n")
-  else cat("\n\n")
+  cat("\n")
 
   output
 }

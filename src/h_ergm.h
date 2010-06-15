@@ -64,22 +64,26 @@ output: indicators
 note: function more efficient than sister function Gibbs_Indicators_Independence
 */
 
+int Sample_Ergm_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames, char **sonames, 
+                        double *input, int print, int n_between, double scale_factor);
+/*
+input: ergm structure, latent structure, prior
+output: structural, non-structural parameters showing up in ergm pmf
+*/
+
+int Sample_Ls_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double scale_factor);
+/*
+input: ergm structure, latent structure, prior
+output: structural, non-structural parameters showing up in ergm pmf
+*/
+
 int Sample_Parameters_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
-                        int *heads, int *tails, int *dnedges,
-                        int *maxpossibleedges,
-                        int *dn, int *directed, int *bipartite, 
-                        int *nterms, char **funnames,
-                        char **sonames, 
-                        char **MHproposaltype, char **MHproposalpackage,
-                        int *samplesize, 
-                        int *burnin, int *interval,  
-                        int *newnetworkheads, 
-                        int *newnetworktails, 
-                        int *verbose, 
-                        int *attribs, int *maxout, int *maxin, int *minout,
-                        int *minin, int *condAllDegExact, int *attriblength, 
-                        int *maxedges,
-                        int *mheads, int *mtails, int *mdnedges,
+                        int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames, char **sonames, 
                         double *input_proposal, double *input_present, int print, int n_between, double scale_factor);
 /*
 input: ergm structure, latent structure, prior
@@ -125,7 +129,7 @@ input: prior structure, latent structure
 output: precisions of parameters
 */
 
-void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta);
+void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta, double scale_factor);
 /* 
 input: clustering parameter, priors, latent structure, ergm structure, user-specified initial value of non-structural parameters
 */
@@ -164,6 +168,7 @@ void Simulation(int *dyaddependence,
              double *m2_precision,
              double *p2_shape,
              double *p2_rate,
+             double *eta,
              int *indicator,
              int *heads, int *tails, int *dnedges,
              int *maxpossibleedges,
@@ -178,7 +183,7 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate);
+             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior);
 /*
 input: R input
 output: simulated graph

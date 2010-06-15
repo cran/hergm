@@ -84,3 +84,21 @@ input: input
 output: minus energy of node i on log scale, computed under the assumption of conditional dyad-independence given latent structure
 */
 
+int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails);
+/*
+input: number of nodes, indicator of directed network, number of edges, heads and tails of edge list
+output: degree sequence
+*/
+
+int* Degree_Freq(int n, int* degree);
+/*
+input: number of nodes, degree sequence
+output: degree frequencies
+*/
+
+double* Block_Degree_Freq(int n, int *degree, int block_number, int *block_size, int *block_indicator);
+/*
+input: number of nodes, degree sequence, number of blocks, size of blocks, indicator of block membership
+output: relative frequencies of degree by block
+*/
+
