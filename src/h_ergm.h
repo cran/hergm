@@ -67,7 +67,7 @@ note: function more efficient than sister function Gibbs_Indicators_Independence
 int Sample_Ergm_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input, int print, int n_between, double scale_factor);
+                        double *input, int print, int n_between, double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -75,7 +75,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 
 int Sample_Ls_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
-                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double scale_factor);
+                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -84,7 +84,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 int Sample_Parameters_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input_proposal, double *input_present, int print, int n_between, double scale_factor);
+                        double *input_proposal, double *input_present, int print, int n_between, double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -105,7 +105,7 @@ int Sample_Parameters_Dependence(ergmstructure *ergm, latentstructure *ls, prior
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, int n_between, double scale_factor, double *q_i);
+                        int *newnetworkheads, int *newnetworktails, int n_between, double *scale_factor, double *q_i);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -129,7 +129,7 @@ input: prior structure, latent structure
 output: precisions of parameters
 */
 
-void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta, double scale_factor);
+void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta, double *scale_factor);
 /* 
 input: clustering parameter, priors, latent structure, ergm structure, user-specified initial value of non-structural parameters
 */

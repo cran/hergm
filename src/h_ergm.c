@@ -333,7 +333,7 @@ output: indicators
 int Sample_Ergm_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input, int print, int n_between, double scale_factor)
+                        double *input, int print, int n_between, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -343,7 +343,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   double **cf, *ergm_theta, log_present, log_proposal, log_ratio, *theta_present, *theta_proposal;
   log_ratio = 0.0;
   /* Propose ergm->theta: random walk (ratio of proposal pdfs cancels): */
-  cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor); /* Rescale Cholesky factor of Gaussian prior */        
+  cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
   ergm_theta = Sample_MVN(ergm->d1,ergm->theta,cf); /* Random walk Metropolis-Hastings */
   log_proposal = MVN_PDF(ergm->d1,ergm_theta,prior->mean1,prior->precision1); /* Prior pdf: proposal */
   log_present = MVN_PDF(ergm->d1,ergm->theta,prior->mean1,prior->precision1); /* Prior pdf: present */
@@ -382,7 +382,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 
 int Sample_Ls_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
-                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double scale_factor)
+                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -404,7 +404,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   present = (double*) calloc(ls->d,sizeof(double));  
   if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, present\n\n"); exit(1); }
-  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor); /* Rescale Cholesky factor of Gaussian prior */ 
+  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
   for (i = 0; i < ls->number; i++) 
     {
     Get_Column(ls->d,present,ls->theta,i); /* Set mean to ls->theta[][i] */
@@ -454,7 +454,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 int Sample_Parameters_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input_proposal, double *input_present, int print, int n_between, double scale_factor)
+                        double *input_proposal, double *input_present, int print, int n_between, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -469,7 +469,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   /* Propose ergm->theta: */
   if (ergm->d1 > 0)
     {
-    cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor); /* Rescale Cholesky factor of Gaussian prior */        
+    cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
     ergm_theta = Sample_MVN(ergm->d1,ergm->theta,cf); /* Random walk Metropolis-Hastings */
     log_proposal = MVN_PDF(ergm->d1,ergm_theta,prior->mean1,prior->precision1); /* Prior pdf: proposal */
     log_present = MVN_PDF(ergm->d1,ergm->theta,prior->mean1,prior->precision1); /* Prior pdf: present */
@@ -490,7 +490,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   present = (double*) calloc(ls->d,sizeof(double));  
   if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, present\n\n"); exit(1); }
-  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor); /* Rescale Cholesky factor of Gaussian prior */ 
+  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
   for (i = 0; i < ls->number; i++) 
     {
     Get_Column(ls->d,present,ls->theta,i); /* Set mean to ls->theta[][i] */
@@ -556,7 +556,7 @@ int Sample_Parameters_Dependence(ergmstructure *ergm, latentstructure *ls, prior
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, int n_between, double scale_factor, double *q_i)
+                        int *newnetworkheads, int *newnetworktails, int n_between, double *scale_factor, double *q_i)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -614,7 +614,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     /* Propose ergm->theta: */
     if (ergm->d1 > 0)
       {
-      cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor); /* Rescale Cholesky factor of Gaussian prior */        
+      cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
       ergm_theta = Sample_MVN(ergm->d1,ergm->theta,cf); /* Random walk Metropolis-Hastings */
       log_proposal = MVN_PDF(ergm->d1,ergm_theta,prior->mean1,prior->precision1); /* Prior pdf: proposal */
       log_present = MVN_PDF(ergm->d1,ergm->theta,prior->mean1,prior->precision1); /* Prior pdf: present */
@@ -631,7 +631,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     /* Propose ls->theta: */
     present = (double*) calloc(ls->d,sizeof(double));  
     if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, present\n\n"); exit(1); }
-    cf = Scale(ls->d,ls->d,prior->cf2,scale_factor); /* Rescale Cholesky factor of Gaussian prior */ 
+    cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
     for (i = 0; i < ls->number; i++) 
       {
       Get_Column(ls->d,present,ls->theta,i); /* Set mean to ls->theta[][i] */
@@ -867,7 +867,7 @@ output: precisions of parameters
   return sample;
 }
 
-void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta, double scale_factor)
+void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta, double *scale_factor)
 /* 
 input: clustering parameter, priors, latent structure, ergm structure, user-specified initial value of non-structural parameters
 */
@@ -898,7 +898,7 @@ input: clustering parameter, priors, latent structure, ergm structure, user-spec
     }
   if (ergm->d1 > 0)
     {
-    cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor); /* Rescale Cholesky factor of Gaussian prior */        
+    cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
     sample = Sample_MVN(ergm->d1,prior->mean1,cf);
     Set_D_D(ergm->d1,ergm->theta,sample);
     free(sample);
@@ -908,7 +908,7 @@ input: clustering parameter, priors, latent structure, ergm structure, user-spec
       }
     free(cf);
     }
-  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor); /* Rescale Cholesky factor of Gaussian prior */ 
+  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
   for (i = 0; i < ls->number; i++) 
     {
     sample = Sample_MVN(ls->d,prior->mean2,cf); /* Random walk Metropolis-Hastings algorithm */
@@ -1415,7 +1415,7 @@ output: MCMC sample of unknowns from posterior
 {
   int null = 0;
   int batch, n_batches, batch_size, coordinate, console, *degree, *degree_freq, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, n_input, iteration, max_iteration, n, n_between, number, print, store, threshold, terms, *verbose;
-  double ls_alpha, accept, *block_degree_freq, local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, scale_factor, u;	
+  double ls_alpha, accept, *block_degree_freq, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, *scale_factor, u;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1461,7 +1461,9 @@ output: MCMC sample of unknowns from posterior
   else batch_size = trunc(max_iteration / n_batches);
   n_between = (int)*n_between_block_parameters; /* Number of between-category parameters */
   mdnedges = &null;
-  scale_factor = *scalefactor; /* Metropolis-Hasting algorithm: scale factor */
+  scale_factor = (double*) calloc(2,sizeof(double));   
+  if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); exit(1); }
+  Set_D_D(2,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
   ergm = Initialize_Ergm(terms,hierarchical,dim,dim1,dim2,structural); /* Ergm structure and non-structural parameters */
   prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,b,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
   ls = Initialize_Latentstructure(number,n,threshold,ergm->d2); /* Latent structure and structural parameters */
@@ -1512,7 +1514,10 @@ output: MCMC sample of unknowns from posterior
     Rprintf("\n%i of %i possible values observed\n",i,ls->n);
     }
   Initial_State(parallel,alpha,indicator,prior_ls,prior,ls,ergm,theta,scale_factor);
-  local_mh_accept = 0.0;
+  local_mh_accept = (double*) calloc(2,sizeof(double));
+  if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); exit(1); }
+  local_mh = (double*) calloc(2,sizeof(double));
+  if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); exit(1); }
   coordinate = -1;
   for (batch = 0; batch < n_batches; batch++) /* Batch */
     {
@@ -1556,15 +1561,37 @@ output: MCMC sample of unknowns from posterior
         if (ergm->d1 > 0)
           {
           u = unif_rand();
-          if (u < 0.00) accept = Sample_Ergm_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite, 
+          if (u < 0.5) 
+            {
+            local_mh[0] = local_mh[0] + 1;
+            local_mh_accept[0] = local_mh_accept[0] + Sample_Ergm_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite, 
                                    nterms,funnames,sonames,inputs,print,n_between,scale_factor);
-          else if (u < 0.00) Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,
-                                   inputs,inputs_h,print,n_between,scale_factor);
-          else accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
+            }
+          else if (u < 1) 
+            {
+            local_mh[1] = local_mh[1] + 1; 
+            local_mh_accept[1] = local_mh_accept[1] + Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,
+                                   funnames,sonames,inputs,inputs_h,print,n_between,scale_factor);
+             }
+          else 
+            {
+            local_mh[0] = local_mh[0] + 1; 
+            local_mh[1] = local_mh[1] + 1; 
+            accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
                                    heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,inputs,inputs_h,print,n_between,scale_factor);
+            local_mh_accept[0] = local_mh_accept[0] + accept;
+            local_mh_accept[1] = local_mh_accept[1] + accept;
+            }
           }
-        else accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
+        else 
+          {
+          local_mh[0] = local_mh[0] + 1; 
+          local_mh[1] = local_mh[1] + 1; 
+          accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
                                    heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,inputs,inputs_h,print,n_between,scale_factor);
+          local_mh_accept[0] = local_mh_accept[0] + accept;
+          local_mh_accept[1] = local_mh_accept[1] + accept;
+          }
         Gibbs_Indicators_Independence(ls,ergm,heads,tails,inputs_h,dnedges,dn,directed,bipartite,nterms,funnames,sonames,q_i); 
         }
       else accept = Sample_Parameters_Dependence(ergm,ls,prior, /* Auxiliary-variable M-H */
@@ -1572,7 +1599,6 @@ output: MCMC sample of unknowns from posterior
                            sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                            verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                            maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,n_between,scale_factor,q_i);
-      local_mh_accept = local_mh_accept + accept;
       Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
       ls_p = Sample_P(ls); /* Category probability vector */ 
       Set_D_D(ls->number,ls->p,ls_p);
@@ -1703,15 +1729,19 @@ output: MCMC sample of unknowns from posterior
   /************/
   /* Finalize */
   /************/
-  local_mh_accept = local_mh_accept / max_iteration;
-  *mh_accept = local_mh_accept;
+  if (local_mh[0] > 0) local_mh_accept[0] = local_mh_accept[0] / local_mh[0];
+  if (local_mh[1] > 0) local_mh_accept[1] = local_mh_accept[1] / local_mh[1];
+  Set_D_D(2,mh_accept,local_mh_accept);
   if (console >= 1)
     {
     Rprintf("\n");
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
     Rprintf("\nThinning: every %i-th draw recorded",batch_size);
-    Rprintf("\nAcceptance rate of Metropolis-Hastings algorithm: %6.4f",local_mh_accept);
+    Rprintf("\nAcceptance rate of Metropolis-Hastings algorithm (ergm terms): %6.4f",local_mh_accept[0]);
+    Rprintf("\nAcceptance rate of Metropolis-Hastings algorithm (hergm terms): %6.4f",local_mh_accept[1]);
     }
+  free(local_mh_accept);
+  free(local_mh);
   free(pp);
   free(mheads);
   free(mtails);

@@ -3,9 +3,11 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
 
   if (simulate == FALSE) 
     { 
-    if (is.null(mh_scale)) mh_scale <- 0
-    if (mh_scale > 1) scalefactor <- mh_scale / 1000 
-    else scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, simulate, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
+    if (is.null(mh_scale)) mh_scale <- 1
+    else if (mh_scale > 1) mh_scale <- mh_scale / 1000
+    mh_scale <- rep.int(mh_scale, 2)
+    if ((mh_scale[1] > 1) && (mh_scale[1] > 1)) scalefactor <- mh_scale
+    else scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
     }
 
   # Prepare
@@ -16,7 +18,7 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
   if (simulate == FALSE)
     {
     hergm_list$scalefactor <- scalefactor # Set scale factor
-    if (verbose >= 0) cat("\nFinal scale factor:", formatC(hergm_list$scalefactor, digits = 4, width = 6, format = "f", mode = "real"), "\n")
+    if (verbose >= 0) cat("\nFinal scale factors:", formatC(hergm_list$scalefactor, digits = 4, width = 6, format = "f", mode = "real"), "\n")
     }
   else if (hergm_list$hyper_prior == 1)
     {

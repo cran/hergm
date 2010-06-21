@@ -313,7 +313,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     sample_heads <- 0
     sample_tails <- 0
     }
-  mh_accept <- 0
+  mh_accept <- c(0,0)
   call_RNGstate <- 1
 
   # Build object hergm_list
