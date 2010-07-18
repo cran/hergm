@@ -17,7 +17,7 @@ hergm <- function(formula,
                  burnin = 1e+4, 
                  interval = 1e+2,
                  mh_scale = NULL,
-                 output = FALSE,
+                 output = TRUE,
                  verbose = -1, 
                  name = NULL,
                  ...) 

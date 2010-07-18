@@ -25,29 +25,29 @@ The package \code{hergm} implements simulation and Bayesian inference for the me
 
 \usage{
 
-hergm(formula, 
+hergm(formula,
       alpha = NULL,
-      alpha_shape = NULL, 
-      alpha_rate = NULL, 
+      alpha_shape = NULL,
+      alpha_rate = NULL,
       eta = NULL,
-      eta_mean = NULL, 
+      eta_mean = NULL,
       eta_sd = NULL,
       eta_mean_mean = NULL,
       eta_mean_sd = NULL,
       eta_precision_shape = NULL,
       eta_precision_rate = NULL,
       indicator = NULL,
-      parallel = 1, 
-      simulate = FALSE, 
-      seeds = NULL, 
-      samplesize = 1e+5, 
-      burnin = 1e+4, 
+      parallel = 1,
+      simulate = FALSE,
+      seeds = NULL,
+      samplesize = 1e+5,
+      burnin = 1e+4,
       interval = 1e+2,
       mh_scale = NULL,
-      output = FALSE,
-      verbose = -1, 
-      name = NULL,
-      \dots) 
+      output = TRUE,
+      verbose = -1,
+      name = NULL, 
+      \dots)
 
 }
 
@@ -58,9 +58,9 @@ hergm(formula,
           Possible terms can be found in \code{ergm.terms} and \code{hergm.terms}.
 }
 
-\item{alpha}{clustering parameter of truncated Dirichlet process / stick-breaking prior of natural parameters of exponential-family model.}
+\item{alpha}{scaling parameter of truncated Dirichlet process / stick-breaking prior of natural parameters of exponential-family model.}
 
-\item{alpha_shape, alpha_rate}{shape and rate (inverse scale) parameter of Gamma prior of clustering parameter.}
+\item{alpha_shape, alpha_rate}{shape and rate (inverse scale) parameter of Gamma prior of scaling parameter.}
 
 \item{eta}{natural parameters of exponential-family model.}
 
@@ -70,25 +70,25 @@ hergm(formula,
 
 \item{eta_precision_shape, eta_precision_rate}{shape and rate (inverse scale) parameter of Gamma prior of precision parameter of Gaussian baseline distribution of Dirichlet process / stick-breaking prior.}
 
-\item{indicator}{if simulate = TRUE and indicator (of block membership) is specified, condition on specified indicator (of block membership).}
+\item{indicator}{if \code{simulate == TRUE} and indicator of block membership is specified, condition on specified indicator (of block membership).}
 
-\item{parallel}{number of computing nodes; if more than one, computing is parallel.}
+\item{parallel}{number of processors; if more than one, computing is parallel.}
 
-\item{simulate}{if TRUE, simulation of networks, otherwise Bayesian inference.}
+\item{simulate}{if \code{TRUE}, simulation of networks, otherwise Bayesian inference.}
 
-\item{seeds}{seed of pseudo-random number generator; if computing is parallel, number of seeds must equal number of computing nodes.}
+\item{seeds}{seed of pseudo-random number generator; if computing is parallel, number of seeds must equal number of processors.}
 
-\item{samplesize}{if simulate = TRUE, number of networks to be sampled, otherwise number of draws from posterior; if computing is parallel, number of draws per computing node.}
+\item{samplesize}{if \code{simulate == TRUE}, number of networks to be sampled, otherwise number of draws from posterior; if computing is parallel, number of draws per processors.}
 
-\item{burnin}{if simulate = TRUE, number of burn-in iterations.}
+\item{burnin}{if \code{simulate == TRUE}, number of burn-in iterations.}
 
-\item{interval}{if simulate = TRUE, number of proposals between sampled networks.}
+\item{interval}{if \code{simulate == TRUE}, number of proposals between sampled networks.}
 
-\item{mh_scale}{if simulate = FALSE, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
+\item{mh_scale}{if \code{simulate == FALSE}, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
 
-\item{output}{if TRUE, full output, otherwise limited output.}
+\item{output}{if \code{TRUE}, full output, otherwise limited output.}
 
-\item{name}{name of project; if output = TRUE, name of project is used to name output files.}
+\item{name}{name of project; if \code{output == TRUE}, name of project is used to name output files.}
 
 \item{verbose}{console output: -1: no output; 0: short output; +1: long output.}
 
@@ -96,7 +96,10 @@ hergm(formula,
 
 }
 
-\value{If called with the option \code{simulate = TRUE}, the function \code{hergm} returns a sample of networks, otherwise a raw MCMC sample of parameters from the posterior in the form of a vector; to postprocess the raw MCMC sample,
+\value{If called with the option \code{simulate = TRUE}, 
+the function \code{hergm} returns a sample of networks, 
+otherwise a raw MCMC sample from the posterior.
+To postprocess the sample,
 call the function \code{hergm.postprocess}.}
 
 \seealso{network, ergm.terms, hergm.terms, hergm.postprocess}
@@ -121,15 +124,14 @@ Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for
 data(example)
 
 # p_1 model for undirected network with Dirichlet process prior
-hergm(d ~ edges_i, alpha_shape = 1, alpha_rate = 1, eta_mean = -1, eta_sd = 2)
+hergm(d ~ edges_i)
 
 # Stochastic block model for undirected network 
 # with natural parameterization and Dirichlet process prior
 hergm(d ~ edges_ij)
 
 # Hierarchical exponential-family model with stick-breaking prior
-hergm(d ~ edges + triangle_ijk, alpha_shape = 1, alpha_rate = 1, 
-eta_mean = c(-1, 0), eta_sd = c(2, 1))
+hergm(d ~ edges + triangle_ijk)
 }
 }
 

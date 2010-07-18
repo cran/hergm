@@ -179,7 +179,7 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
 {
   cat("\n\nRelabeling algorithm")
   cat("\n--------------------")
-  cat("\n\nMichael Schweinberger\n")
+  cat("\n\nMichael Schweinberger")
   permutations <- permutations(n_categories, n_categories, v = 1:n_categories, repeats.allowed = FALSE) # All possible permutations of the category labels
   n_permutations <- nrow(permutations)
   input <- as.matrix(read.table(filename)) # MCMC sample of category indicators

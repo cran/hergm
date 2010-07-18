@@ -365,7 +365,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample parameters:");
+    Rprintf("\nSample parameters (dyad-independence):");
     Rprintf("\n- log_ratio = %8.4f",log_ratio);  
     Rprintf("\n- decision = %i",accept);
     }
@@ -435,7 +435,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample block parameters:");
+    Rprintf("\nSample block parameters (dyad-independence):");
     Rprintf("\n- log_ratio = %8.4f",log_ratio);  
     Rprintf("\n- decision = %i",accept);
     }
@@ -523,7 +523,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample parameters:");
+    Rprintf("\nSample parameters (dyad-independence):");
     Rprintf("\n- log_ratio = %8.4f",log_ratio);  
     Rprintf("\n- decision = %i",accept);
     }
@@ -760,7 +760,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample_Parameters_Dependence:");
+    Rprintf("\nSample parameters (dyad-dependence):");
     Rprintf("\n- log_ratio = %8.4f",log_ratio);  
     Rprintf("\n- decision = %i",accept);
     }
@@ -1281,8 +1281,7 @@ output: simulated graph
       {
       if (print == 1) 
         {
-        if (*dyaddependence == 0) Rprintf(" (%i:%i)%i",i+1,degree[i],ls->indicator[i]+1);
-        else Rprintf(" (%i)%i",i+1,ls->indicator[i]+1);
+        Rprintf(" %i",ls->indicator[i]+1);
         }
       coordinate = coordinate + 1;
       mcmc[coordinate] = ls->indicator[i];
@@ -1672,8 +1671,7 @@ output: MCMC sample of unknowns from posterior
           {
           if (print == 1) 
             {
-            if (dyad_dependence == 0) Rprintf(" (%i:%i)%i",i+1,degree[i],ls->indicator[i]+1);
-            else Rprintf(" (%i)%i",i+1,ls->indicator[i]+1);
+            Rprintf(" %i",ls->indicator[i]+1);
             }
           coordinate = coordinate + 1;
           mcmc[coordinate] = ls->indicator[i];

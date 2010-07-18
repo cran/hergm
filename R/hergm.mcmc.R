@@ -109,6 +109,15 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
 
   cat("\n")
 
-  output
+  output_list <- list() 
+  output_list$n <- Clist$n
+  output_list$max_number <- hergm_list$max_number
+  output_list$d1 <- hergm_list$d1
+  output_list$d2 <- hergm_list$d2
+  output_list$parallel <- parallel
+  output_list$sample_size <- min(12000, samplesize)
+  output_list$sample <- output 
+
+  output_list
 }
 
