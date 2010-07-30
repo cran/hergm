@@ -1513,6 +1513,15 @@ output: MCMC sample of unknowns from posterior
     Rprintf("\n%i of %i possible values observed\n",i,ls->n);
     }
   Initial_State(parallel,alpha,indicator,prior_ls,prior,ls,ergm,theta,scale_factor);
+  if (ls->number == 1) 
+    {
+    hyper_prior = 0;
+    for (i = 0; i < ls->n; i++)
+      {
+      ls->indicator[i] = 0;
+      }
+    ls->size[0] = ls->n;
+    }
   local_mh_accept = (double*) calloc(2,sizeof(double));
   if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); exit(1); }
   local_mh = (double*) calloc(2,sizeof(double));
@@ -1591,19 +1600,22 @@ output: MCMC sample of unknowns from posterior
           local_mh_accept[0] = local_mh_accept[0] + accept;
           local_mh_accept[1] = local_mh_accept[1] + accept;
           }
-        Gibbs_Indicators_Independence(ls,ergm,heads,tails,inputs_h,dnedges,dn,directed,bipartite,nterms,funnames,sonames,q_i); 
+        if (ls->number > 1) Gibbs_Indicators_Independence(ls,ergm,heads,tails,inputs_h,dnedges,dn,directed,bipartite,nterms,funnames,sonames,q_i); 
         }
       else accept = Sample_Parameters_Dependence(ergm,ls,prior, /* Auxiliary-variable M-H */
                            heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                            sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                            verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                            maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,n_between,scale_factor,q_i);
-      Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
-      ls_p = Sample_P(ls); /* Category probability vector */ 
-      Set_D_D(ls->number,ls->p,ls_p);
-      free(ls_p);
-      ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
-      ls->alpha = ls_alpha;
+      if (ls->number > 1)
+        {
+        Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
+        ls_p = Sample_P(ls); /* Category probability vector */ 
+        Set_D_D(ls->number,ls->p,ls_p);
+        free(ls_p);
+        ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
+        ls->alpha = ls_alpha;
+        }
       if (store == 1) 
         {
         /* Posterior prediction when full output is desired */

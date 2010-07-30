@@ -14,7 +14,8 @@
   cat('\nhergm:', info[,"Title"], 
       '\nVersion', info[,"Version"], 'created on', info[,"Date"], '\n')   
   cat(paste("Copyright (c) 2009, Michael Schweinberger, Pennsylvania State University\n", sep = ""))
-  cat('Type help(package=\"hergm\") to start.\n')
+  cat('To start hergm: enter help(package=\"hergm\")\n')
+  cat('To cite hergm: enter citation(\"hergm\")\n')
   }
 
 .Last.lib <- function(libpath)

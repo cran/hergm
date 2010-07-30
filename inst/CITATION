@@ -1,0 +1,21 @@
+hergmauthor <- "Michael Schweinberger"
+hergmtitle <- "Hierarchical Exponential-Family Models for Networks"
+hergmdesc <- packageDescription("hergm")
+hergmversion <- hergmdesc$Version
+hergmdate <- hergmdesc$Date
+s <- regexpr("20[0-9][0-9]", hergmdate)
+hergmyear <- ifelse (s==-1, "2009", substr(hergmdate, s, s+3))
+      
+citHeader("To cite the package 'hergm', please use the citation below.\n\n",
+   'A BibTeX-format citation can be obtained by using toBibtex(citation("hergm")).', sep="")
+   
+citEntry(entry = "Manual",
+         author = hergmauthor,
+         title = hergmtitle,
+         year         = hergmyear,
+         note         = paste("Version ", hergmversion, sep = ""),
+         address      = "University Park, PA",
+         url = "http://CRAN.R-project.org/package=hergm",
+         textVersion = paste(paste(hergmauthor, collapse=", "), " (", hergmyear, "), ", hergmtitle, ". Version ", hergmversion, ". URL http://CRAN.R-project.org/package=hergm.", sep="")
+         )
+                   
