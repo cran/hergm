@@ -102,21 +102,29 @@ InitErgm.edges_i <- function(nw, m, arglist, ...) # Michael
   ergm.checkdirected("edges_i", is.directed(nw), requirement = FALSE)
   a <- ergm.checkargs("edges_i", 
     arglist,
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
-    required = c(FALSE)) 
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(nw$gal$n, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.edges_i")
   n <- nw$gal$n # Number of nodes
   #print(n)
-  indicator <- vector(mode = "numeric", length = n) # Category indicators  
-  for (i in 1:length(indicator)) indicator[i] <- 1
-  #print(indicator)
   number <- a$number # (Maximum) number of categories
   #print(number)
-  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 0.5
+  if (is.null(a$indicator)) 
+    {
+    indicator <- vector(mode = "numeric", length = n) # Category indicators  
+    for (i in 1:length(indicator)) indicator[i] <- 1
+    }
+  else indicator <- a$indicator
+  #print(indicator)
+  if (is.null(a$theta)) 
+    {
+    theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
+    for (i in 1:length(theta)) theta[i] <- 0.5
+    }
+  else theta <- a$theta
   #print(theta)
   m$terms[[termnumber]] <- list(name = "edges_i", 
                                 soname = "hergm",

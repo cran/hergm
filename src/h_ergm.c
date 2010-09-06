@@ -428,7 +428,9 @@ output: structural, non-structural parameters showing up in ergm pmf
     {
     if (ergm->d1 > 0) Set_D_D(ergm->d1,ergm->theta,ergm_theta); /* Michael: must be changed */
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
+    ls->theta[0][ls->number] = log_p_proposal; /* Store log likelihood to compute deviance */
     }
+  else ls->theta[0][ls->number] = log_p_present; /* Store log likelihood to compute deviance */
   if (print == 1)
     {
     Rprintf("\nSample parameters:");
@@ -933,7 +935,7 @@ output: simulated graph
 {
   int null = 0;
   int coordinate, dim, dim1, dim2, edges, element, h, i, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
-  double *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
+  double *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1016,15 +1018,15 @@ output: simulated graph
     Sample_CRP(ls);
     if (ergm->d1 > 0) 
       {
-      sample = Sample_MVN(ergm->d1,prior->mean1,prior->cf1);
-      Set_D_D(ergm->d1,ergm->theta,sample);
-      free(sample);
+      draw = Sample_MVN(ergm->d1,prior->mean1,prior->cf1);
+      Set_D_D(ergm->d1,ergm->theta,draw);
+      free(draw);
       }
     for (i = 0; i < ls->number; i++) 
       {
-      sample = Sample_MVN(ls->d,prior->mean2,prior->cf2); /* Random walk Metropolis-Hastings algorithm */
-      Set_Column(ls->d,ls->theta,i,sample); /* Set ls_theta[][i] to proposal */
-      free(sample);
+      draw = Sample_MVN(ls->d,prior->mean2,prior->cf2); /* Random walk Metropolis-Hastings algorithm */
+      Set_Column(ls->d,ls->theta,i,draw); /* Set ls_theta[][i] to proposal */
+      free(draw);
       }
     Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,inputs);
     Set_Parameter(ergm->d,ergm->structural,ergm->theta,theta); 
@@ -1172,7 +1174,6 @@ output: simulated graph
   free(newnetworkheads);
   free(newnetworktails);
   free(pp);
-  free(sample);
   free(shape1);
   free(shape2);
   Finalize_Ergm(ergm);
@@ -1227,7 +1228,7 @@ output: MCMC sample of unknowns from posterior
 {
   int null = 0;
   int batch, n_batches, batch_size, coordinate, console, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, n_input, iteration, max_iteration, n, n_between, number, print, store, threshold, terms, *verbose;
-  double ls_alpha, accept, local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, scale_factor, u;	
+  double ls_alpha, accept, local_mh_accept, deviance, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, scale_factor, u;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1344,11 +1345,19 @@ output: MCMC sample of unknowns from posterior
         } 
       if (dyad_dependence == 0) /* MCMC exploiting dyad-independence conditional on latent structure */
         {
+        ls->theta[0][ls->number] = 0.0;
         accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
                            heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,sonames, 
                            MHproposaltype,MHproposalpackage,samplesize,burnin,interval,
                            newnetworkheads,newnetworktails,verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,
                            attriblength,maxedges,mheads,mtails,mdnedges,inputs,inputs_h,print,n_between,scale_factor); 
+        deviance = ls->theta[0][ls->number]; /* log P(Y = y | indicator, parameters) */ 
+        for (k = 0; k < ls->number; k++) /* log P(Y = y | indicator, parameters) + log P(indicator | parameters) */
+          {
+          deviance = deviance + (ls->size[k] * ln(ls->p[k])); 
+          }        
+        deviance = -2.0 * deviance; /* -2 log likelihood */ 
+        ls->theta[0][ls->number] = 0.0;
         Gibbs_Indicators_Independence(ls,ergm,heads,tails,inputs_h,dnedges,dn,directed,bipartite,nterms,funnames,sonames,q_i); 
         }
       else accept = Sample_Parameters_Dependence(ergm,ls,prior, /* Auxiliary-variable M-H */
@@ -1422,7 +1431,7 @@ output: MCMC sample of unknowns from posterior
             }
           if ((print == 1) && (ls->theta[h][ls->number] != 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
           coordinate = coordinate + 1;	
-          mcmc[coordinate] = ls->theta[h][ls->number];
+          mcmc[coordinate] = deviance;
           if (print == 1) Rprintf("\n");
           }
         if (print == 1) Rprintf("block indicators:");
@@ -1466,6 +1475,7 @@ output: MCMC sample of unknowns from posterior
             } 
           Rprintf("\n");
           }
+        if (print == 1) Rprintf("deviance: %6.4f\n",deviance);
         }
       }
     }

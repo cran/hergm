@@ -9,12 +9,14 @@ returned_samplesize <- min(6e+3, samplesize) # If simulate = FALSE, number of re
 name <- "example"
 mcmc <- hergm( # See ?hergm
      d ~ edges_i(k), # Formula: network ~ terms: see ?network, ?hergm.terms, ?edges_i
-     alpha_shape = 1.0, # Shape parameter of Gamma prior of clustering parameter
-     alpha_rate = 1.0, # Rate (inverse scale) parameter of Gamma prior of clustering parameter 
-     eta_mean_mean = -2.0,  # Means of Gaussian prior of means of Gaussian baseline distribution of truncated Dirichlet process / stick-breaking prior
-     eta_mean_sd = 1e+1, # Standard deviations of the Gaussian baseline distribution of truncated Dirichlet process / stick-breaking prior
-     eta_precision_shape = 1.0, # Shape parameter of Gamma prior of precision parameter of baseline distribution of truncated Dirichlet process / stick-breaking prior 
-     eta_precision_rate = 1e-1, # Rate (inverse scale) parameter of Gamma prior of precision parameter of baseline distribution of truncated Dirichlet process / stick-breaking prior  
+     alpha_shape = 1.0, # Hyperprior: shape parameter of Gamma prior of scaling parameter
+     alpha_rate = 1.0, # Hyperprior: rate (inverse scale) parameter of Gamma prior of scaling parameter
+     eta_mean_mean = 0.0, # Hyperprior: mean of mean of Gaussian base distribution
+     eta_mean_sd = 10.0, # Hyperprior: standard deviation of mean of Gaussian base distribution
+     eta_precision_shape = 1.0, # Hyperprior: shape of Gamma prior of precision of Gaussian base distribution
+     eta_precision_rate = 0.1, # Hyperprior: rate (inverse scale) of Gamma prior of precision of Gaussian base distribution
+     eta_mean = c(0.0), # Prior: means of Gaussian base distribution and of Gaussian prior of covariate parameters
+     eta_sd = c(10.0), # Prior: standard deviation of Gaussian base distribution and of Gaussian prior of covariate parameters
      parallel = parallel, # Parallel computing: number of computing nodes; if more than one, computing is parallel
      simulate = simulate, # If TRUE, simulation of networks, otherwise Bayesian inference
      seeds = c(0.0842877348260602, # Seed of pseudo-random number generator; if computing is parallel, number of seeds must equal number of computing nodes
@@ -45,7 +47,7 @@ if (simulate == FALSE) processed_mcmc <- hergm.postprocess( # See ?hergm.postpro
      samplesize = returned_samplesize, # MCMC sample size, including number of burn-in iterations; if parallel > 1, MCMC sample size per computing node
      mcmc = mcmc, # MCMC sample in the form of vector
      relabel = TRUE, # Relabel MCMC sample
-     output = TRUE, # If TRUE, full output, including relabeled MCMC sample; otherwise limited output
+     output = TRUE, # If TRUE, full output
      name = name # If output = TRUE, name of project is used to name output files
      )
 

@@ -259,7 +259,10 @@ hergm.postprocess <- function(n = NULL,
 
     }
 
-    cat("\n")
+  mean_deviance <- mean(s$htheta[,k+1]) # MCMC sample average of deviance is stored in column corresponding to first hierarchical term, block k+1
+  # cat("\nMean deviance: ",mean_deviance,"\n")
+
+  cat("\n")
 
   s
 
