@@ -2,6 +2,7 @@ hergm.postprocess <- function(n = NULL,
                               k = NULL, 
                               d1 = 0, 
                               d2 = 0, 
+                              parallel = 1,
                               burnin = NULL, 
                               samplesize = NULL, 
                               mcmc = NULL, 
@@ -13,22 +14,44 @@ hergm.postprocess <- function(n = NULL,
 # MCMC sample
 # output: postprocessed MCMC sample
 {
+  
+  # Check arguments
   d <- d1 + d2
-  terms <- hergm.dimension(d1, d2, k, n)
-  mcmc <- matrix(mcmc, nrow = samplesize, ncol = terms, byrow = TRUE)
+  terms <- length_mcmc(d1, d2, k, n)  
+  if (burnin > 6000) cat("\nWarning: number of burn-in iterations specified as ", burnin, ", but function hergm cannot return MCMC samples of size > 6000.\n", sep = "")
+  if (samplesize > 6000) cat("\nWarning: MCMC sample size specified as ", samplesize, ", but function hergm cannot return MCMC samples of size > 6000.\n", sep = "")
+  if (length(mcmc) != (parallel * samplesize * terms))
+    {
+    cat("\n")
+    error_message <- paste("hergm.postprocess: arguments inconsistent: length(mcmc) is not as expected, indicating that either mcmc or other arguments are incorrect.")
+    stop(error_message, call. = FALSE)
+    }
+
+  # Preprocess MCMC sample: delete burn-in iterations and transform vector into matrix, where rows correspond to MCMC draws
+  mcmc_sample <- NULL
+  count <- 0
+  for (i in 1:parallel) 
+    {
+    first <- count + (burnin * terms) + 1
+    last <- count + (samplesize * terms)
+    mcmc_sample <- append(mcmc_sample, mcmc[first:last])
+    count <- count + (samplesize * terms)
+    }
+  mcmc_samplesize <- parallel * (samplesize - burnin)
+  mcmc_sample <- matrix(mcmc_sample, nrow = mcmc_samplesize, ncol = terms, byrow = TRUE)
 
   # Initialize arrays
   s <- list()
-  s$theta <- matrix(data = 0, nrow = samplesize, ncol = d1) 
-  s$htheta <- matrix(data = 0, nrow = samplesize, ncol = d2 * (k + 1))
-  s$indicator <- matrix(data = 0, nrow = samplesize, ncol = n)
-  s$size <- matrix(data = 0, nrow = samplesize, ncol = k)
-  s$p <- matrix(data = 0, nrow = samplesize, ncol = k)
-  s$alpha <- matrix(data = 0, nrow = samplesize, ncol = 1)
-  s$pp <- matrix(data = 0, nrow = samplesize, ncol = d)
+  s$theta <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d1) 
+  s$htheta <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d2 * (k + 1))
+  s$indicator <- matrix(data = 0, nrow = mcmc_samplesize, ncol = n)
+  s$size <- matrix(data = 0, nrow = mcmc_samplesize, ncol = k)
+  s$p <- matrix(data = 0, nrow = mcmc_samplesize, ncol = k)
+  s$alpha <- matrix(data = 0, nrow = mcmc_samplesize, ncol = 1)
+  s$pp <- matrix(data = 0, nrow = mcmc_samplesize, ncol = d)
 
   # Process MCMC sample
-  for (row in 1:samplesize)
+  for (row in 1:mcmc_samplesize)
     {
     column <- 0
     if (d1 > 0)
@@ -36,40 +59,41 @@ hergm.postprocess <- function(n = NULL,
       for (i in 1:d1) 
         {
         column <- column + 1
-        s$theta[row,i] <- mcmc[row,column]
+        s$theta[row,i] <- mcmc_sample[row,column]
         }
       }
     for (i in 1:(d2 * (k + 1))) 
       {
       column <- column + 1
-      s$htheta[row,i] <- mcmc[row,column]
+      s$htheta[row,i] <- mcmc_sample[row,column]
       }
     for (i in 1:n) 
       {
       column <- column + 1
-      s$indicator[row,i] <- mcmc[row,column]
+      s$indicator[row,i] <- mcmc_sample[row,column]
       }
     for (i in 1:k) 
       {
       column <- column + 1
-      s$size[row,i] <- mcmc[row,column]
+      s$size[row,i] <- mcmc_sample[row,column]
       }
     for (i in 1:k) 
       {
       column <- column + 1
-      s$p[row,i] <- mcmc[row,column]
+      s$p[row,i] <- mcmc_sample[row,column]
       }
     column <- column + 1
-    s$alpha[row,1] <- mcmc[row,column]
+    s$alpha[row,1] <- mcmc_sample[row,column]
     for (i in 1:d) 
       {
       column <- column + 1
-      s$pp[row,i] <- mcmc[row,column]
+      s$pp[row,i] <- mcmc_sample[row,column]
       }
     }
 
   if (output == TRUE)
     {
+
     # Write MCMC sample to files
     if (is.null(name)) name <- "hergm"
     if (d1 > 0) write(t(s$theta), paste(sep = "",name,"_parameter.out"), ncolumns = d1)
@@ -79,28 +103,7 @@ hergm.postprocess <- function(n = NULL,
     write(t(s$p), paste(sep = "",name,"_p.out"), ncolumns = k)
     write(t(s$alpha), paste(sep = "",name,"_alpha.out"), ncolumns = 1)
     write(t(s$pp), paste(sep = "", name, "_statistics.out"), ncolumns = d)
-    }
 
-  if (burnin > 0)
-    {
-    # Discard burnin iterations for label-independent entities
-    for (i in 1:burnin) 
-      { 
-      s$alpha <- s$alpha[-1]
-      if (d1 > 0)
-        {
-        if (d1 == 1) s$theta <- s$theta[-1]
-        else s$theta <- s$theta[-1,]
-        }
-      s$htheta <- s$htheta[-1,]
-      s$size <- s$size[-1,]
-      if (d == 1) s$pp <- s$pp[-1] 
-      else s$pp <- s$pp[-1,] 
-      }
-    }
- 
-  if (output == TRUE)
-    {
     # Scaling parameter
     filename <- paste(sep = "", name, "_alpha.pdf")
     pdf(filename)
@@ -110,7 +113,7 @@ hergm.postprocess <- function(n = NULL,
     # Relabel sample
     if (k <= 20) 
       {
-      minimizer <- hergm.min_loss(k, paste(sep = "", name, "_indicator.out"), burnin, 100) # Specify number of iterations of post-processing algorithm
+      minimizer <- hergm.min_loss(k, paste(sep = "", name, "_indicator.out"), 0, 100) # Specify number of iterations of post-processing algorithm
       s$q <- minimizer$p
       hergm.pie(name, n, minimizer$p)
       index <- 0
@@ -144,7 +147,7 @@ hergm.postprocess <- function(n = NULL,
         dev.off()
         }
       }
-    else cat("Sample not relabeld: number of permutations too large.")
+    else cat("Sample not relabeled: number of permutations too large.")
 
     # Parameters
     if (d1 > 0)
@@ -184,10 +187,12 @@ hergm.postprocess <- function(n = NULL,
       pairs(s$pp)
       }
     dev.off()
+
     }
 
     cat("\n")
 
   s
+
 }
 

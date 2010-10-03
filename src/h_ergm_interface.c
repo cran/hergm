@@ -445,7 +445,7 @@ void MCMC_wrapper_h (int *heads, int *tails, int *dnedges,
   nmax = (Edge)*maxedges; /* coerce double *maxedges to type Edge */
   bip = (Vertex)*bipartite; /* coerce double *bipartite to type Vertex */
   
-  GetRNGstate();  
+  /* GetRNGstate(); */  
   
   directed_flag = *dflag;
 
@@ -555,7 +555,7 @@ void MCMC_wrapper_h (int *heads, int *tails, int *dnedges,
   NetworkDestroy(nw);
   if (n_medges>0 || hammingterm > 0  || formationterm > 0)
     NetworkDestroy(&nw[1]);
-  PutRNGstate(); 
+  /* PutRNGstate(); */ 
 }
 
 void MCMC_wrapper_h_2 (int *heads, int *tails, int *dnedges,
@@ -588,7 +588,7 @@ void MCMC_wrapper_h_2 (int *heads, int *tails, int *dnedges,
   nmax = (Edge)*maxedges; /* coerce double *maxedges to type Edge */
   bip = (Vertex)*bipartite; /* coerce double *bipartite to type Vertex */
   
-  GetRNGstate();  
+  /* GetRNGstate(); */  
   
   directed_flag = *dflag;
 
@@ -698,7 +698,7 @@ void MCMC_wrapper_h_2 (int *heads, int *tails, int *dnedges,
   NetworkDestroy(nw);
   if (n_medges>0 || hammingterm > 0  || formationterm > 0)
     NetworkDestroy(&nw[1]);
-  PutRNGstate(); 
+  /* PutRNGstate(); */ 
 }
 
 void Sample_Graph(int number, int n, int ls_d, int terms, int *hierarchical, int ergm_d, double *statistic,

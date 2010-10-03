@@ -48,6 +48,7 @@ hergm.wrapper <- function(seed, hergm_list)
     mcmc = as.double(hergm_list$mcmc),
     sample_heads = as.integer(hergm_list$sample_heads),
     sample_tails = as.integer(hergm_list$sample_tails),
+    as.integer(hergm_list$call_RNGstate),
     PACKAGE="hergm")
     }
   else
@@ -99,6 +100,8 @@ hergm.wrapper <- function(seed, hergm_list)
     mcmc = as.double(hergm_list$mcmc),
     as.double(hergm_list$scalefactor),
     mh_accept = as.double(hergm_list$mh_accept),
+    as.integer(hergm_list$call_RNGstate),
+    as.integer(hergm_list$parallel),
     PACKAGE="hergm")
     }
   sample

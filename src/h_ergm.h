@@ -2,6 +2,12 @@
 #include "h_ergm_latent.h"
 #include "h_ergm_bayes.h"
 #include "h_ergm_interface.h"
+#include "h_ergm_initialize.c"
+
+#include <R.h>
+#include <Rinternals.h>
+#include <Rmath.h>
+
 
 void Sample_Alpha(priorstructure_ls *prior_ls, latentstructure *ls);
 /*
@@ -200,28 +206,6 @@ output: indicators
 note: function more efficient than sister function Gibbs_Indicators_Independence
 */
 
-int Sample_Parameters_1(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
-                        int *heads, int *tails, int *dnedges,
-                        int *maxpossibleedges,
-                        int *dn, int *dflag, int *bipartite, 
-                        int *nterms, char **funnames,
-                        char **sonames, 
-                        char **MHproposaltype, char **MHproposalpackage,
-                        int *samplesize, 
-                        int *burnin, int *interval,  
-                        int *newnetworkheads, 
-                        int *newnetworktails, 
-                        int *verbose, 
-                        int *attribs, int *maxout, int *maxin, int *minout,
-                        int *minin, int *condAllDegExact, int *attriblength, 
-                        int *maxedges,
-                        int *mheads, int *mtails, int *mdnedges,
-                        double *input_proposal, double *input_present, int print, double scale_factor);
-/*
-input: ergm structure, latent structure, prior
-output: structural, non-structural parameters showing up in ergm pmf
-*/
-
 void Sample_Parameters_2(ergmstructure *ergm, latentstructure *ls, priorstructure *prior);
 /*
 input: ergm structure, latent structure, prior
@@ -250,7 +234,7 @@ input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 
-int Sample_Parameters_Indicators(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+int Sample_Parameters_1(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges,
                         int *maxpossibleedges,
                         int *dn, int *dflag, int *bipartite, 
@@ -271,9 +255,15 @@ input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 
-void Initial_State(double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta);
+void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta);
 /* 
 input: clustering parameter, priors, latent structure, ergm structure, user-specified initial value of non-structural parameters
+*/
+
+int Sample_CRP(latentstructure *ls);
+/*
+input: latent structure ls
+output: partition of set of nodes drawn from Chinese restaurant process with scaling parameter ls->alpha
 */
 
 int Sample_Graph_Independence(latentstructure *ls, double *ln_p, int *heads, int *tails);
@@ -315,7 +305,7 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, int *sample_heads, int *sample_tails);
+             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate);
 /*
 input: R input
 output: simulated graph
@@ -355,7 +345,7 @@ void Inference(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, double *scalefactor, double *mh_accept);
+             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, double *scalefactor, double *mh_accept, int *call_RNGstate, int *parallel);
 /*
 input: R input
 output: MCMC sample of unknowns from posterior

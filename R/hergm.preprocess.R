@@ -1,4 +1,4 @@
-hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate, output, name, verbose) # Michael
+hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate, parallel, output, name, verbose) # Michael
 {
   terms <- Clist$nterms # Number of hergm terms	
   hierarchical <- vector(mode = "integer", length = terms) # Indicator: hierarchical hergm term
@@ -77,10 +77,28 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else hierarchical[i] <- 0 # Indicator: non-hierarchical hergm term
     }
+  if ((simulate == TRUE) && (max_number != Clist$n))
+    {
+    error_message <- paste("In case of simulations, the number of blocks should either be left unspecified or specified as the number of nodes (", Clist$n, ").", sep = "")
+    stop(error_message, call. = FALSE)
+    }
+  for (i in 1:terms) # For given hergm term... 
+    {
+    if (hierarchical[i] == 1)
+      {
+      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
+      if (max_number_i != max_number) 
+        {
+        cat("\n\n")
+        error_message <- paste("The number of blocks should either be left unspecified or the same number of blocks must be specified.")      
+        stop(error_message, call. = FALSE)
+        } 
+      }     
+    }
   if ((dependence == 0) && (nw$gal$directed == TRUE)) 
     {
     dependence <- 1
-    #print("Directed network: switching from M-H-3 to M-H-2...")
+    #print("Directed network: switching from M-H-2 to M-H-1...")
     }
   d <- Clist$nstats # Number of parameters
   structural <- vector(mode = "integer", length = d) # Indicator: structural parameters 
@@ -99,7 +117,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
         l <- l + 1
         structural[l] <- 0 # Non-structural parameter
         }
-      theta[i] <- eta[i]
+      if (is.null(eta)) theta[i] <- 0
+      else theta[i] <- eta[i]
       }     
     else 
       {
@@ -212,9 +231,9 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
 
   if (is.null(verbose)) verbose <- -1 
   max_iteration <- MCMCparams$samplesize
-  terms <- hergm.dimension(d1, d2, max_number, Clist$n)
+  terms <- length_mcmc(d1, d2, max_number, Clist$n)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
-  else dimension <- min(MCMCparams$samplesize, 1200)
+  else dimension <- min(MCMCparams$samplesize, 6000)
   mcmc <- vector(mode = "numeric", length = (dimension * terms))
 
   if (Clist$dir == FALSE) max_edges <- Clist$n * (Clist$n - 1) / 2 # Undirected
@@ -230,6 +249,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     sample_tails <- 0
     }
   mh_accept <- 0
+  call_RNGstate <- 1
 
   # Build object hergm_list
   hergm_list <- list()
@@ -269,6 +289,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$Clist <- Clist
   hergm_list$simulate <- simulate
   hergm_list$mh_accept <- mh_accept
+  hergm_list$call_RNGstate <- call_RNGstate
+  hergm_list$parallel <- parallel
 
   hergm_list
 }

@@ -55,7 +55,7 @@ void MCMC_wrapper (int *heads, int *tails, int *dnedges,
   nmax = (Edge)*maxedges; /* coerce double *maxedges to type Edge */
   bip = (Vertex)*bipartite; /* coerce double *bipartite to type Vertex */
   
-  GetRNGstate();  /* R function enabling uniform RNG */
+  /* GetRNGstate(); */  /* R function enabling uniform RNG */ /* 666 */
   
   directed_flag = *dflag;
 
@@ -160,7 +160,7 @@ void MCMC_wrapper (int *heads, int *tails, int *dnedges,
   NetworkDestroy(nw);
   if (n_medges>0 || hammingterm > 0  || formationterm > 0)
     NetworkDestroy(&nw[1]);
-  PutRNGstate();  /* Disable RNG before returning */
+  /* PutRNGstate(); */  /* Disable RNG before returning */ /* 666 */
 }
 
 
@@ -638,7 +638,7 @@ void MCMCPhase12 (int *heads, int *tails, int *dnedges,
   nmax = (Vertex)*maxedges; /* coerce double *maxedges to type Vertex */
   bip = (Vertex)*bipartite; /* coerce double *bipartite to type Vertex */
   
-  GetRNGstate();  /* R function enabling uniform RNG */
+  /* GetRNGstate(); */  /* R function enabling uniform RNG */ /* 666 */
   
   directed_flag = *dflag;
 
@@ -735,7 +735,7 @@ void MCMCPhase12 (int *heads, int *tails, int *dnedges,
   NetworkDestroy(nw);
   if (n_medges>0 || hammingterm > 0  || formationterm > 0)
     NetworkDestroy(&nw[1]);
-  PutRNGstate();  /* Disable RNG before returning */
+  /* PutRNGstate(); */  /* Disable RNG before returning */ /* 666 */
 }
 
 /*********************

@@ -8,7 +8,7 @@ output: value of discrete random variable with pmf p
 {
   int i;
   double sum, u;
-  GetRNGstate();
+  /* GetRNGstate(); */
   u = unif_rand(); /* Sample uniform[0,1] */
   i = 0;
   sum = p[0];
@@ -17,7 +17,7 @@ output: value of discrete random variable with pmf p
     i = i + 1;
     sum = sum + p[i];
     }
-  PutRNGstate();
+  /* PutRNGstate(); */
   return i;
 }
 
@@ -77,7 +77,7 @@ output: random vector x with multivariate normal(m,S) pdf
 {
   int i, j;
   double sum, *z;
-  GetRNGstate();
+  /* GetRNGstate(); */
   z = D(d);
   for (i = 0; i < d; i++)
     {
@@ -92,7 +92,7 @@ output: random vector x with multivariate normal(m,S) pdf
       }
     x[i] = m[i] + sum;
     }
-  PutRNGstate();
+  /* PutRNGstate(); */
 }
 
 double MVN_PDF(int d, double *x, double *m, double **P)
@@ -128,7 +128,7 @@ output: decision: accept proposal or not
 {
   int accept;
   double p, u;
-  GetRNGstate();
+  /* GetRNGstate(); */
   if (log_ratio < 0.0) 
     {
     u = unif_rand(); /* Sample uniform[0,1] */
@@ -137,7 +137,7 @@ output: decision: accept proposal or not
     else accept = 0; /* Reject proposal with probability 1 - p */
     }
   else accept = 1; /* Accept proposal with probability 1 */
-  PutRNGstate();
+  /* PutRNGstate(); */
   return accept;
 }
 

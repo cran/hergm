@@ -45,19 +45,33 @@ Additional terms, e.g. covariate-dependent terms, can be found in \code{ergm.ter
 
 \arguments{
 
-\item{edges_i (undirected, directed network)}{adding the term \code{edges_i} to the model adds node-dependent edge terms to the model.}
+\item{edges_i(k) (undirected, directed network)}{adding the term \code{edges_i} to the model adds node-dependent edge terms to the model;
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
 
-\item{edges_ij (undirected, directed network)}{adding the term \code{edges_ij} to the model adds block-dependent edge terms to the model.}
+\item{edges_ij(k) (undirected, directed network)}{adding the term \code{edges_ij} to the model adds block-dependent edge terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
 
-\item{mutual_ij (directed network)}{adding the term \code{mutual_ij} to the model adds block-dependent mutual edge terms to the model.}
+\item{mutual_ij(k) (directed network)}{adding the term \code{mutual_ij} to the model adds block-dependent mutual edge terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
 
-\item{twostar_ijk (undirected network)}{adding the term \code{twostar_ijk} to the model adds block-dependent two-star terms to the model.}
+\item{twostar_ijk(k) (undirected network)}{adding the term \code{twostar_ijk} to the model adds block-dependent two-star terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
 
-\item{triangle_ijk (undirected, directed network)}{adding the term \code{triangle_ijk} to the model adds block-dependent triangle terms to the model.}
+\item{triangle_ijk(k) (undirected, directed network)}{adding the term \code{triangle_ijk} to the model adds block-dependent triangle terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
 
-\item{ttriple_ijk (directed network)}{adding the term \code{ttriple_ijk} to the model adds block-dependent transitive triple terms to the model.}
+\item{ttriple_ijk(k) (directed network)}{adding the term \code{ttriple_ijk} to the model adds block-dependent transitive triple terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
  
-\item{ctriple_ijk (directed network)}{adding the term \code{ctriple_ijk} to the model adds block-dependent cyclic triple terms to the model.}
+\item{ctriple_ijk(k) (directed network)}{adding the term \code{ctriple_ijk} to the model adds block-dependent cyclic triple terms to the model.
+the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+}
 
 }
 

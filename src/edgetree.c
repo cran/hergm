@@ -37,7 +37,7 @@ Network NetworkInitialize(Vertex *heads, Vertex *tails, Edge nedges,
   nw.inedges = (TreeNode *) calloc(nw.maxedges,sizeof(TreeNode));
   nw.outedges = (TreeNode *) calloc(nw.maxedges,sizeof(TreeNode));
 
-  GetRNGstate();  /* R function enabling uniform RNG */
+  /* GetRNGstate(); */  /* R function enabling uniform RNG */ /* 666 */
 
   if(lasttoggle_flag){
     nw.duration_info.MCMCtimer=0;
@@ -60,6 +60,9 @@ Network NetworkInitialize(Vertex *heads, Vertex *tails, Edge nedges,
     else 
       AddEdgeToTrees(h,t,&nw);
   }  
+
+  /* PutRNGstate(); */  /* Disable uniform RNG */ /* 666 */
+
   return nw;
 }
 

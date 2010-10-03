@@ -15,6 +15,7 @@ hergm.postprocess(n = NULL,
                   k = NULL, 
                   d1 = 0, 
                   d2 = 0, 
+                  parallel = 1,
                   burnin = NULL, 
                   samplesize = NULL, 
                   mcmc = NULL, 
@@ -49,9 +50,11 @@ The required computations can be time-consuming when the number of blocks \code{
 
 \item{d2}{number of hergm terms.}
 
-\item{burnin}{number of burn-in iterations.}
+\item{parallel}{number of computing nodes used to generate MCMC sample.}
 
-\item{samplesize}{total sample size, including number of burn-in iterations and, if parallel > 1, summed across computing nodes.}
+\item{burnin}{number of burn-in iterations; if parallel > 1, number of burn-in iterations per computing node.}
+
+\item{samplesize}{MCMC sample size, including number of burn-in iterations; if parallel > 1, MCMC sample size per computing node.}
 
 \item{mcmc}{MCMC sample in the form of vector.}
 
@@ -73,18 +76,19 @@ data(example)
 # Number of blocks: truncation value of Dirichlet process prior
 k <- 10
 
-# Generate MCMC sample: total samplesize is 1 * 1,000 = 1,000
+# Generate MCMC sample of size 1,000
 mcmc <- hergm(d ~ edges_i, alpha_shape = 1, alpha_rate = 1, 
 eta_mean = -1, eta_sd = 2, seed = 2010, parallel = 1, samplesize = 1000)
 # Postprocess MCMC sample of size 1,000
 processed_mcmc <- hergm.postprocess(n = 15, k = k, d1 = 0, d2 = 1, 
-burnin = 0, samplesize = 1000, mcmc = mcmc)
+burnin = 200, samplesize = 1000, mcmc = mcmc)
 
-# Generate MCMC sample: total samplesize is 20 * 100 = 2,000
+# Generate MCMC sample of size 20 * 100 = 2,000
 mcmc <- hergm(d ~ edges + triangle_ijk, alpha_shape = 1, alpha_rate = 1, 
 eta_mean = c(-1, 0), eta_sd = c(2, 1), seed = 2010, parallel = 20, samplesize = 100)
-# Postprocess MCMC sample of size 2,000
+# Postprocess MCMC sample of size 20 * 100 = 2,000
 processed_mcmc <- hergm.postprocess(n = 15, k = k, d1 = 0, d2 = 1, 
-burnin = 0, samplesize = 2000, mcmc = mcmc)
+parallel = 20, burnin = 20, samplesize = 100, mcmc = mcmc)
 }
 }
+

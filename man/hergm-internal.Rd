@@ -5,7 +5,11 @@
 
 \title{Internal hergm function}
 
-\alias{hergm.dimension}
+\alias{length_mcmc}
+
+\alias{number_clusters}
+
+\alias{bernoulli_map_mean_to_natural}
 
 \alias{hergm.loss}
 
@@ -56,7 +60,6 @@
   Internal hergm function.
 
 }
-
 
 \details{
 

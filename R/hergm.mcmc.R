@@ -4,23 +4,32 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
 
   # Prepare
   Clist <- ergm.Cprepare(nw, model)
-  maxedges <- max(50000, Clist$nedges)
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate, output, name, verbose)
+  if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
+  else maxedges <- Clist$n * (Clist$n - 1) # Directed
+  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean, eta_sd, eta, simulate, parallel, output, name, verbose)
   sample <- list()
   sample$newnwheads = maxedges + 1
   sample$mcmc = length(hergm_list$mcmc)
   sample$sample_heads = length(hergm_list$sample_heads)
   sample$sample_tails = length(hergm_list$sample_tails)
-  if (simulate == FALSE)
+  if (simulate == TRUE) 
+    {
+    k <- number_clusters(hergm_list$alpha, hergm_list$Clist$n)
+    cat("\nDirichlet process:")
+    cat("\n- scaling parameter: ", hergm_list$alpha, sep = "")
+    cat("\n- mean of number of non-empty blocks: ", formatC(k$mean, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
+    cat("\n- variance of number of non-empty blocks: ", formatC(k$variance, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
+    cat("\n")   
+    }
+  else
     {
     hergm_list$scalefactor <- scalefactor # Set scale factor
     if (verbose >= 0) cat("\nFinal scale factor:", formatC(hergm_list$scalefactor, digits = 4, width = 6, format = "f", mode = "real"), "\n")
     }
-
   flush.console() # Windows
 
   # Run
-  if (simulate == TRUE) parallel <- 1 
+  if (simulate == TRUE) parallel <- 1
   if (parallel > 1) # Parallel computing
     {
     number <- parallel # Specify number of computer nodes on cluster
