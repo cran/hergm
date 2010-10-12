@@ -1140,24 +1140,21 @@ output: simulated graph
     shape1[i] = 1.0; /* First shape of Beta distribution */
     shape2[i] = ls->alpha; /* Second shape of Beta distribution */
     }
-  if (hyper_prior == 0) /* Posterior prediction */
+  k = -1;
+  for (i = 0; i < ergm->d1; i++)
     {
-    k = -1;
-    for (i = 0; i < ergm->d1; i++)
+    k = k + 1;
+    ergm->theta[i] = eta[k];
+    }
+  for (i = 0; i < ls->d; i++)
+    {
+    for (j = 0; j < ls->number; j++)
       {
       k = k + 1;
-      ergm->theta[i] = eta[k];
+      ls->theta[i][j] = eta[k];
       }
-    for (i = 0; i < ls->d; i++)
-      {
-      for (j = 0; j < ls->number; j++)
-        {
-        k = k + 1;
-        ls->theta[i][j] = eta[k];
-        }
-      }
-    Set_I_I(ls->n,ls->indicator,indicator);
     }
+  Set_I_I(ls->n,ls->indicator,indicator);
   coordinate = -1;
   element = -1;
   for (iteration = 0; iteration < max_iteration; iteration++)
@@ -1179,26 +1176,24 @@ output: simulated graph
     else /* Simulation */
       {
       ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */
-      if (ls->number < ls->n) /* Sample partition of set of nodes (truncated case) */
+      for (k = 0; k < ls->number; k++)
         {
-        for (k = 0; k < ls->number; k++)
-          {
-          ls->size[k] = 0;
-          }
-        for (i = 0; i < ls->n; i++)
-          {
-          k = Sample_Discrete(ls->p);
-          ls->indicator[i] = k;
-          ls->size[k] = ls->size[k] + 1;
-          }
+        ls->size[k] = 0;
         }
-      else Sample_CRP(ls); /* Sample partition of set of nodes (untruncated case) */
+      for (i = 0; i < ls->n; i++)
+        {
+        k = Sample_Discrete(ls->p);
+        ls->indicator[i] = k;
+        ls->size[k] = ls->size[k] + 1;
+        }
+      /*
       if (ergm->d1 > 0) 
         {
         draw = Sample_MVN(ergm->d1,prior->mean1,prior->cf1);
         Set_D_D(ergm->d1,ergm->theta,draw);
         free(draw);
         }
+      */
       for (i = 0; i < ls->number; i++) 
         {
         draw = Sample_MVN(ls->d,prior->mean2,prior->cf2); /* Random walk Metropolis-Hastings algorithm */
@@ -1572,7 +1567,7 @@ output: MCMC sample of unknowns from posterior
  			      INTEGER(NEWRANDOMSEED)[2],
  			      INTEGER(NEWRANDOMSEED)[3]);
       */
-      if (hyper_prior == 1) /* Hyper prior: mean and precisions of Gaussian baseline distribution have non-degenerate prior */
+      if ((ls->number > 1) && (hyper_prior == 1)) /* Hyper prior: mean and precisions of Gaussian baseline distribution have non-degenerate prior */
         {
         prior_mean2 = Gibbs_Parameters_Means(prior,ls); /* Sample means of parameters */
         Set_D_D(ls->d,prior->mean2,prior_mean2);
