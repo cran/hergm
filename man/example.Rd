@@ -3,6 +3,8 @@
 
 \alias{example}
 
+\alias{d}
+
 \title{Example data set}
 
 \usage{
