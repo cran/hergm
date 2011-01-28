@@ -39,6 +39,8 @@
 
 \alias{hergm.wrapper} 
 
+\alias{hergm.permutation.wrapper} 
+
 \alias{InitErgm.ctriple_ijk} 
 
 \alias{InitErgm.edges_i} 

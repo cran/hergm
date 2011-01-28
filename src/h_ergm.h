@@ -1,7 +1,24 @@
-#include "h_ergm_latent.h"
-#include "h_ergm_bayes.h"
-#include "h_ergm_interface.h"
-#include "h_ergm_initialize.c"
+/***************************************************************************/
+/* Copyright 2009 Michael Schweinberger                                    */
+/*                                                                         */
+/* This file is part of hergm.                                             */
+/*                                                                         */
+/*    hergm is free software: you can redistribute it and/or modify        */
+/*    it under the terms of the GNU General Public License as published by */
+/*    the Free Software Foundation, either version 3 of the License, or    */
+/*    (at your option) any later version.                                  */
+/*                                                                         */
+/*    hergm is distributed in the hope that it will be useful,             */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/*    GNU General Public License for more details.                         */
+/*                                                                         */
+/*    You should have received a copy of the GNU General Public License    */
+/*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
+/*                                                                         */ 
+/***************************************************************************/
+
+#include "h_ergm_mcmc.h"
 
 double Sample_Alpha(priorstructure_ls *prior_ls, latentstructure *ls);
 /*
@@ -21,41 +38,6 @@ input: latent structure
 output: category probability vector
 */
 
-void P_Edge_Independence(int *number_terms, int *number_parameters, double *input, double *theta,  int *n, int *directed, int *bipartite, char **funnames, char **sonames, double *p);
-/*
-input: directed graph; number of terms; number of parameters;  input vector; parameter vector; number of nodes; other variables
-output: probabilities of edges between nodes i and j on log scale, computed under the assumption of conditional edge-independence given latent structure,
-and ordered in accordance with i < j
-*/
-
-double Partition_Function_Edge_Independence(latentstructure *ls, ergmstructure *ergm, double *input, double *theta, 
-                                         int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames);
-/*
-input: input
-output: partition function on log scale, computed under the assumption of conditional edge-independence given latent structure
-*/
-
-double Partition_Function_Dyad_Independence(latentstructure *ls, ergmstructure *ergm, double *input, double *theta, 
-                                         int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames);
-/*
-input: input
-output: partition function on log scale, computed under the assumption of conditional dyad-independence given latent structure
-*/
-
-double PMF_Independence(latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input, double *theta, 
-                        int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames);
-/*
-input: input
-output: probability mass on log scale, computed under the assumption of dyad-dependence
-*/
-
-double PMF_i_k_Node(int i, int l, latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input_proposal, 
-                       int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames);
-/*
-input: node i, catogory l, latent structure, ergm structure
-output: conditional PMF of graph given latent structure 
-*/
-
 void Gibbs_Indicators_Independence(latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input_proposal, 
                        int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames, double *q_i);
 /*
@@ -67,7 +49,7 @@ note: function more efficient than sister function Gibbs_Indicators_Independence
 int Sample_Ergm_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input, int print, int n_between, double *scale_factor);
+                        double *input, int print, double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -75,7 +57,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 
 int Sample_Ls_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
-                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double *scale_factor);
+                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -84,13 +66,13 @@ output: structural, non-structural parameters showing up in ergm pmf
 int Sample_Parameters_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input_proposal, double *input_present, int print, int n_between, double *scale_factor);
+                        double *input_proposal, double *input_present, int print, double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 
-int Sample_Parameters_Dependence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+int Sample_Indicators_Dependence(int model, ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges,
                         int *maxpossibleedges,
                         int *dn, int *directed, int *bipartite, 
@@ -105,7 +87,60 @@ int Sample_Parameters_Dependence(ergmstructure *ergm, latentstructure *ls, prior
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, int n_between, double *scale_factor, double *q_i);
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node);
+/*
+input: ergm structure, latent structure, prior
+output: indicators
+*/
+
+int Sample_Ergm_Theta_Dependence(int model, ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges,
+                        int *maxpossibleedges,
+                        int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames,
+                        char **sonames, 
+                        char **MHproposaltype, char **MHproposalpackage,
+                        double *sample,
+                        int *burnin, int *interval,  
+                        int *verbose, 
+                        int *attribs, int *maxout, int *maxin, int *minout,
+                        int *minin, int *condAllDegExact, int *attriblength, 
+                        int *maxedges,
+                        int *mheads, int *mtails, int *mdnedges,
+                        double *input_present, int print,
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor);
+/*
+input: ergm structure, latent structure, prior
+output: structural, non-structural parameters showing up in ergm pmf
+*/
+
+int Sample_Ls_Theta_Dependence(int model, ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges,
+                        int *maxpossibleedges,
+                        int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames,
+                        char **sonames, 
+                        char **MHproposaltype, char **MHproposalpackage,
+                        double *sample,
+                        int *burnin, int *interval,  
+                        int *verbose, 
+                        int *attribs, int *maxout, int *maxin, int *minout,
+                        int *minin, int *condAllDegExact, int *attriblength, 
+                        int *maxedges,
+                        int *mheads, int *mtails, int *mdnedges,
+                        double *input_present, int print,
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_block);
+/*
+input: ergm structure, latent structure, prior
+output: structural, non-structural parameters showing up in ergm pmf
+*/
+
+int Sample_Ls_Theta_Between(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges,
+                        int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames, char **sonames, 
+                        double *input_present, int print,
+                        double *scale_factor);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -138,12 +173,6 @@ int Sample_CRP(latentstructure *ls);
 /*
 input: latent structure ls
 output: partition of set of nodes drawn from Chinese restaurant process with scaling parameter ls->alpha
-*/
-
-int Sample_Graph_Edge_Independence(int *directed, latentstructure *ls, double *ln_p, int *heads, int *tails);
-/*
-input: latent structure; probability of edge between nodes i and j on log scale
-output: graph sampled from PMF p and number of edges
 */
 
 void Simulation(int *dyaddependence,
@@ -183,13 +212,14 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior);
+             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior);
 /*
 input: R input
 output: simulated graph
 */
 
-void Inference(int *dyaddependence,
+void Inference(int *model_type,
+             int *dyaddependence,
              int *hierarchical,
              int *d, 
              int *d1, 
@@ -227,7 +257,7 @@ void Inference(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior);
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior);
 /*
 input: R input
 output: MCMC sample of unknowns from posterior

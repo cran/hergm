@@ -68,7 +68,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$MHproposal$bd$condAllDegExact), as.integer(length(hergm_list$MHproposal$bd$attribs)),
     as.integer(hergm_list$maxedges),
     as.integer(hergm_list$max_iteration),
-    as.integer(hergm_list$n_between),
+    as.integer(hergm_list$between),
     as.integer(hergm_list$output),
     mcmc = as.double(hergm_list$mcmc),
     sample_heads = as.integer(hergm_list$sample_heads),
@@ -80,6 +80,7 @@ hergm.wrapper <- function(seed, hergm_list)
   else
     {
     sample <- .C("Inference",
+    as.integer(hergm_list$model_type),
     as.integer(hergm_list$dependence),
     as.integer(hergm_list$hierarchical),
     as.integer(hergm_list$d),
@@ -125,7 +126,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$MHproposal$bd$condAllDegExact), as.integer(length(hergm_list$MHproposal$bd$attribs)),
     as.integer(hergm_list$maxedges),
     as.integer(hergm_list$max_iteration),
-    as.integer(hergm_list$n_between),
+    as.integer(hergm_list$between),
     as.integer(hergm_list$output),
     mcmc = as.double(hergm_list$mcmc),
     as.double(hergm_list$scalefactor),

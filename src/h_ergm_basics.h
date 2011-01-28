@@ -1,3 +1,23 @@
+/***************************************************************************/
+/* Copyright 2009 Michael Schweinberger                                    */
+/*                                                                         */
+/* This file is part of hergm.                                             */
+/*                                                                         */
+/*    hergm is free software: you can redistribute it and/or modify        */
+/*    it under the terms of the GNU General Public License as published by */
+/*    the Free Software Foundation, either version 3 of the License, or    */
+/*    (at your option) any later version.                                  */
+/*                                                                         */
+/*    hergm is distributed in the hope that it will be useful,             */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/*    GNU General Public License for more details.                         */
+/*                                                                         */
+/*    You should have received a copy of the GNU General Public License    */
+/*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
+/*                                                                         */ 
+/***************************************************************************/
+
 #include <stdio.h>
 #include <R.h>
 #include <math.h>
@@ -61,4 +81,16 @@ void Print_II(int d1, int d2, int **matrix);
 void Print_D(int d, double *vector);
 
 void Print_DD(int d1, int d2, double **matrix);
+
+void Get_Permutation(long int n, long int index, int *permutation);
+/*
+input: number of elements, index of permutation, permutation
+output: permutation which follows given permutation in lexigraphical order
+*/
+
+void Permutations(long int *n_elements, long int *n_permutations, int *permutation);
+/*
+input: number of elements, number of permutations of elements, elements in increasing order stored in first row of permutations
+output: all possible permutations of elements in lexigraphical order
+*/
 

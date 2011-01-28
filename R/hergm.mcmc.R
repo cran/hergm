@@ -21,32 +21,13 @@
 hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, output) 
 {
 
-  if (simulate == FALSE) 
-    { 
-    if (is.null(mh_scale)) mh_scale <- 1
-    if (mh_scale > 1) 
-      {
-      mh_scale <- mh_scale / 1000
-      mh_scale <- rep.int(mh_scale, 2)
-      scalefactor <- mh_scale
-      }
-    else 
-      {
-      mh_scale <- rep.int(mh_scale, 2) 
-      scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
-      }
-    }
- 
   # Prepare
+  if (simulate == FALSE) scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale) # The last argument is the initial value of the scale factor
   Clist <- ergm.Cprepare(nw, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else maxedges <- Clist$n * (Clist$n - 1) # Directed
   hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, simulate, parallel, output, name, verbose)
-  if (simulate == FALSE)
-    {
-    hergm_list$scalefactor <- scalefactor # Set scale factor
-    if (verbose >= 0) cat("\nFinal scale factors:", formatC(hergm_list$scalefactor, digits = 4, width = 6, format = "f", mode = "real"), "\n")
-    }
+  if (simulate == FALSE) hergm_list$scalefactor <- scalefactor # Set scale factor
   else if (hergm_list$hyper_prior == 1)
     {
     k <- number_clusters(hergm_list$alpha, hergm_list$Clist$n)

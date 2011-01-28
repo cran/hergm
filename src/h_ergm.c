@@ -108,252 +108,10 @@ output: category probability vector
   return p;
 }
 
-void P_Edge_Independence(int *number_terms, int *number_parameters, double *input, double *theta,  int *n, int *directed, int *bipartite, char **funnames, char **sonames, double *p)
-/*
-input: undirected graph; number of terms; number of parameters;  input vector; parameter vector; number of nodes; other variables
-output: probabilities of edges between nodes i and j on log scale, computed under the assumption of conditional edge-independence given latent structure,
-and ordered in accordance with i < j
-*/
-{
-  int one = 1;
-  int h, i, j, *number_edges, *heads, *tails;
-  double log_odds, *statistic;
-  number_edges = &one;
-  statistic = (double*) calloc(*number_parameters,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: P_Edge_Independence, statistic\n\n"); exit(1); }
-  /* 
-  Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
-  Note 2: i, j should be integers between 1 and n
-  */  
-  h = -1;
-  for (i = 1; i < *n + 1; i++) /* Row i */
-    {
-    heads = &i; 
-    for (j = i + 1; j < *n + 1; j++) /* Row i, column j > i (undirected, directed graph) */
-      {
-      h = h + 1;
-      tails = &j;
-      log_odds = Minus_Energy(*number_parameters,input,theta,heads,tails,number_edges,n,directed,bipartite,number_terms,funnames,sonames,statistic); /* Compute log-odds of probability of edge statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
-      p[h] = -ln(1.0 + e(-log_odds));
-      }
-    }
-  free(statistic);
-}
-
-double Partition_Function_Edge_Independence(latentstructure *ls, ergmstructure *ergm, double *input, double *theta, 
-                                         int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames)
-/*
-input: input
-output: partition function on log scale, computed under the assumption of conditional edge-independence given latent structure
-*/
-{
-  int one = 1;
-  int i, j, *number_edges, *heads, *tails;
-  double a, b, *statistic;
-  number_edges = &one;
-  statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Edge_Independence, statistic\n\n"); exit(1); }
-  /* 
-  Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
-  Note 2: i, j should be integers between 1 and n
-  */  
-  a = 0.0; /* Log partition function */
-  for (i = 1; i < ls->n + 1; i++) /* Important note: the C/C++ source files of the ergm package label nodes by integers 1..n rather than 0..n-1 */
-    {
-    heads = &i; /* If i < j, edge (i, j) should be stored as (i, j) rather than (j, i): see MCMC.c */
-      {
-      for (j = i + 1; j < ls->n + 1; j++) /* Important note: the C/C++ source files of the ergm package label nodes by integers 1..n rather than 0..n-1 */
-        {
-        tails = &j;
-        b = Minus_Energy(ergm->d,input,theta,heads,tails,number_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
-        a = a + ln(1.0 + e(b));
-        }
-      }
-    }
-  free(statistic);
-  return a;
-}
-
-double Partition_Function_Dyad_Independence(latentstructure *ls, ergmstructure *ergm, double *input, double *theta, 
-                                         int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames)
-/*
-input: input
-output: partition function on log scale, computed under the assumption of conditional dyad-independence given latent structure
-*/
-{
-  int one = 1;
-  int two = 2;
-  int i, j, *number_edges, *heads, *tails;
-  double a, b, *statistic, sum;
-  statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, statistic\n\n"); exit(1); }
-  /* 
-  Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
-  Note 2: i, j should be integers between 1 and n
-  */  
-  a = 0.0; /* Log partition function */
-  for (i = 1; i < ls->n + 1; i++) /* Important note: the C/C++ source files of the ergm package label nodes by integers 1..n rather than 0..n-1 */
-    {
-    for (j = i + 1; j < ls->n + 1; j++) /* Important note: the C/C++ source files of the ergm package label nodes by integers 1..n rather than 0..n-1 */
-      {
-      /* No edge present */
-      sum = 1.0; 
-      /* One edge present */
-      number_edges = &one;
-      heads = (int*) calloc(*number_edges,sizeof(int)); 
-      if (heads == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, heads 1\n\n"); exit(1); }
-      tails = (int*) calloc(*number_edges,sizeof(int)); 
-      if (tails == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, tails 1\n\n"); exit(1); }
-      heads[0] = i; /* Edge (i, j) */
-      tails[0] = j;
-      b = Minus_Energy(ergm->d,input,theta,heads,tails,number_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
-      sum = sum + e(b);
-      heads[0] = j; /* Edge (j, i) */
-      tails[0] = i;
-      b = Minus_Energy(ergm->d,input,theta,heads,tails,number_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
-      sum = sum + e(b);
-      free(heads);
-      free(tails);
-      /* Two edges present */
-      number_edges = &two;
-      heads = (int*) calloc(*number_edges,sizeof(int)); 
-      if (heads == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, heads 2\n\n"); exit(1); }
-      tails = (int*) calloc(*number_edges,sizeof(int)); 
-      if (tails == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, tails 2\n\n"); exit(1); }
-      heads[0] = i; /* Edge (i, j) */
-      tails[0] = j;
-      heads[1] = j; /* Edge (j, i) */
-      tails[1] = i;
-      b = Minus_Energy(ergm->d,input,theta,heads,tails,number_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
-      sum = sum + e(b);
-      free(heads);
-      free(tails);
-      /* Take log */
-      a = a + ln(sum);
-      }
-    }
-  free(statistic);
-  return a;
-}
-
-double PMF_Independence(latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input, double *theta, 
-                        int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames)
-/*
-input: input
-output: probability mass on log scale, computed under the assumption of dyad-dependence
-*/
-{
-  double a, log_p, *statistic, u;
-  statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence, statistic\n\n"); exit(1); }
-  u = Minus_Energy(ergm->d,input,theta,heads,tails,n_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> on log scale */
-  /*
-  Rprintf("\nPMF_Independence: minus potential energy function = %f",- u);
-  */
-  if (*directed == 0) a = Partition_Function_Edge_Independence(ls,ergm,input,theta,n,directed,bipartite,nterms,funnames,sonames); /* Log partition function: undirected case */
-  else a = Partition_Function_Dyad_Independence(ls,ergm,input,theta,n,directed,bipartite,nterms,funnames,sonames); /* Log partition function: directed case */
-  /*
-  Rprintf("\nPMF_Independence: log partition function = %f",a);
-  */
-  log_p = u - a; /* Probability mass */
-  free(statistic);
-  return log_p;
-}
-
-double PMF_i_k_Node(int i, int l, latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input_proposal, 
-                    int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames)
-/*
-input: node i, catogory l, latent structure, ergm structure
-output: conditional PMF of graph given latent structure 
-*/
-{
-  int k;
-  double log_p_i_k, *theta;
-  k = ls->indicator[i]; /* Store indicator */
-  ls->indicator[i] = l; /* Set indicator */
-  /*
-  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_proposal); /* Set input given indicator
-  */
-  Set_Input_Indicator(ergm->terms,ergm->hierarchical,ls->number,ls->n,i,l,input_proposal); /* Set input given indicator; reset in Gibbs_Indicators_Independence */
-  theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter */
-  if (*directed == 0) log_p_i_k = PMF_Edge_Independence_Node(i,ergm->d,input_proposal,theta,n,directed,bipartite,nterms,funnames,sonames,n_edges,heads,tails); /* Probability mass under given indicator */
-  else log_p_i_k = PMF_Dyad_Independence_Node(i,ergm->d,input_proposal,theta,n,directed,bipartite,nterms,funnames,sonames,n_edges,heads,tails); /* Probability mass under given indicator */
-  ls->indicator[i] = k; /* Reset indicator */
-  /*
-  Rprintf("\nPMF_i_k: %f",log_p_i_k);
-  */
-  free(theta);
-  return log_p_i_k;
-}
-
-void Gibbs_Indicators_Independence(latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input_proposal, 
-                       int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames, double *q_i)
-/*
-input: latent structure, ergm structure
-output: indicators
-*/
-{
-  int i, k, *sample, sample_size;
-  double center, log_p_i_k, p_i_k, *p_i, sum, u;
-  p_i = (double*) calloc(ls->number,sizeof(double));
-  if (p_i == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, p_i\n\n"); exit(1); }
-  sample = (int*) calloc(ls->n,sizeof(int));
-  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, sample\n\n"); exit(1); }
-  for (k = 0; k < ls->number; k++) /* Reset size */
-    {
-    ls->size[k] = 0;
-    }
-  sample_size = trunc(ls->n / 10.0); 
-  if (sample_size < 10) sample_size = 10;
-  for (k = 0; k < sample_size; k++)
-    {
-    i = Sample_Discrete(q_i);
-    sample[i] = 1;
-    }
-  for (i = 0; i < ls->n; i++) /* Node i */
-    {
-    if (sample[i] == 1) /* Indicator of node i updated: y/n */ /* 333 */
-      {
-      /*
-      Rprintf("\nnode %-3i",i);
-      */
-      sum = 0.0;
-      for (k = 0; k < ls->number; k++) /* Category k */
-        {
-        log_p_i_k = PMF_i_k_Node(i,k,ls,ergm,heads,tails,input_proposal,n_edges,n,directed,bipartite,nterms,funnames,sonames);
-        if (k == 0)
-          {
-          center = log_p_i_k;
-          log_p_i_k = 0;
-          }
-        else log_p_i_k = log_p_i_k - center;
-        p_i_k = e(log_p_i_k);
-        if ((ls->p[k] * p_i_k) < epsilon) p_i[k] = epsilon; /* Mass */
-        else p_i[k] = ls->p[k] * p_i_k;
-        sum = sum + p_i[k];
-        }   
-      for (k = 0; k < ls->number; k++) /* Probability mass */
-        {
-        p_i[k] = p_i[k] / sum; /* Underflow impossible since sum is at least ls->number * epsilon: see above */
-        /*
-        Rprintf(" %f (%f)",p_i[k], ls->theta[0][k]);
-        */
-        }
-      k = Sample_Discrete(p_i); /* Sample full conditional of category indicators */
-      ls->indicator[i] = k; /* Update indicator */ 
-      Set_Input_Indicator(ergm->terms,ergm->hierarchical,ls->number,ls->n,i,k,input_proposal); /* Since the full conditionals of the category indicators of nodes i+1..n may depend on the category indicator of node i, input_proposal must be updated */
-      }
-    else k = ls->indicator[i];
-    ls->size[k] = ls->size[k] + 1; /* Update size */
-    }   
-  free(p_i);
-  free(sample);
-}
-
 int Sample_Ergm_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input, int print, int n_between, double *scale_factor)
+                        double *input, int print, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -369,7 +127,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   log_present = MVN_PDF(ergm->d1,ergm->theta,prior->mean1,prior->precision1); /* Prior pdf: present */
   log_ratio = log_ratio + (log_proposal - log_present);
   /*
-  Rprintf("\n- log_ratio (parameters) = %8.4f",log_ratio);  
+  Rprintf("\n- log ratio (parameters) = %8.4f",log_ratio);  
   */
   /* Decide: */
   Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input); /* Set input given ls->theta */
@@ -385,9 +143,9 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample parameters (dyad-independence):");
-    Rprintf("\n- log_ratio = %8.4f",log_ratio);  
-    Rprintf("\n- decision = %i",accept);
+    Rprintf("\nSample parameters:");
+    Rprintf("\n- log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- decision: %i",accept);
     }
   free(ergm_theta);
   free(theta_present);
@@ -402,7 +160,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 
 int Sample_Ls_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
-                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, int n_between, double *scale_factor)
+                        int *nterms, char **funnames, char **sonames, double *input_proposal, double *input_present, int print, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -411,7 +169,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   int accept, i;
   double **cf, *present, log_present, log_proposal, log_ratio, **ls_theta, *proposal, *theta;
   /* Proposal:
-  note 1: all ls->theta such that ls->size >= ls->threshold and all ergm->theta are updated by random walk Metropolis-Hastings algorithm
+  note 1: all ls->theta such that ls->size >= ls->minimum_size and all ergm->theta are updated by random walk Metropolis-Hastings algorithm
   note 2: ratio of proposal pdfs cancels under random walk Metropolis-Hastings algorithm */
   log_ratio = 0.0;
   /* Propose ls->theta: */
@@ -428,7 +186,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   for (i = 0; i < ls->number; i++) 
     {
     Get_Column(ls->d,present,ls->theta,i); /* Set mean to ls->theta[][i] */
-    if (ls->size[i] < ls->threshold) Set_Column(ls->d,ls_theta,i,present); /* Set proposal = present */ 
+    if (ls->size[i] < ls->minimum_size) Set_Column(ls->d,ls_theta,i,present); /* Set proposal = present */ 
     else 
       {
       /* Generate candidate: */
@@ -440,6 +198,10 @@ output: structural, non-structural parameters showing up in ergm pmf
       log_ratio = log_ratio + (log_proposal - log_present);
       free(proposal);
       }
+    }
+  for (i = 0; i < ls->d; i++) /* Set between-block parameters */
+    {
+    ls_theta[i][ls->number] = ls->theta[i][ls->number];
     }
   /* Decide: */
   Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls_theta,input_proposal); /* Set input given ls_theta */
@@ -455,9 +217,9 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample block parameters (dyad-independence):");
-    Rprintf("\n- log_ratio = %8.4f",log_ratio);  
-    Rprintf("\n- decision = %i",accept);
+    Rprintf("\nSample block parameters:");
+    Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- decision: %i",accept);
     }
   free(theta);
   free(present);
@@ -474,7 +236,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 int Sample_Parameters_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges, int *dn, int *directed, int *bipartite, 
                         int *nterms, char **funnames, char **sonames, 
-                        double *input_proposal, double *input_present, int print, int n_between, double *scale_factor)
+                        double *input_proposal, double *input_present, int print, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -483,7 +245,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   int accept, i;
   double **cf, *present, *ergm_theta, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal;
   /* Proposal:
-  note 1: all ls->theta such that ls->size >= ls->threshold and all ergm->theta are updated by random walk Metropolis-Hastings algorithm
+  note 1: all ls->theta such that ls->size >= ls->minimum_size and all ergm->theta are updated by random walk Metropolis-Hastings algorithm
   note 2: ratio of proposal pdfs cancels under random walk Metropolis-Hastings algorithm */
   log_ratio = 0.0;
   /* Propose ergm->theta: */
@@ -514,7 +276,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   for (i = 0; i < ls->number; i++) 
     {
     Get_Column(ls->d,present,ls->theta,i); /* Set mean to ls->theta[][i] */
-    if (ls->size[i] < ls->threshold) Set_Column(ls->d,ls_theta,i,present); /* Set proposal = present */ 
+    if (ls->size[i] < ls->minimum_size) Set_Column(ls->d,ls_theta,i,present); /* Set proposal = present */ 
     else 
       {
       /* Generate candidate: */
@@ -526,6 +288,10 @@ output: structural, non-structural parameters showing up in ergm pmf
       log_ratio = log_ratio + (log_proposal - log_present);
       free(proposal);
       }
+    }
+  for (i = 0; i < ls->d; i++) /* Set between-block parameters */
+    {
+    ls_theta[i][ls->number] = ls->theta[i][ls->number];
     }
   /* Decide: */
   Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls_theta,input_proposal); /* Set input given ls_theta */
@@ -543,9 +309,9 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   if (print == 1)
     {
-    Rprintf("\nSample parameters (dyad-independence):");
-    Rprintf("\n- log_ratio = %8.4f",log_ratio);  
-    Rprintf("\n- decision = %i",accept);
+    Rprintf("\nSample parameters:");
+    Rprintf("\n- log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- decision: %i",accept);
     }
   if (ergm->d1 > 0) free(ergm_theta);
   free(theta_present);
@@ -561,7 +327,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   return accept;
 }
 
-int Sample_Parameters_Dependence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+int Sample_Indicators_Dependence(int model, ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
                         int *heads, int *tails, int *dnedges,
                         int *maxpossibleedges,
                         int *dn, int *directed, int *bipartite, 
@@ -576,141 +342,337 @@ int Sample_Parameters_Dependence(ergmstructure *ergm, latentstructure *ls, prior
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, int n_between, double *scale_factor, double *q_i)
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node)
+/*
+input: ergm structure, latent structure, prior
+output: indicators
+*/
+{
+  int accept, computation, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, *sample_i, sample_size;
+  double a_i, entropy, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *p, *q_i, present_a, proposal_a, present_energy, proposal_energy, sum, t, *theta, *statistic;
+  n_input = Number_Input(ergm->terms,input_present);
+  input_proposal = (double*) calloc(n_input,sizeof(double));
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, input_proposal\n\n"); exit(1); }
+  ls_indicator = (int*) calloc(ls->n,sizeof(int));
+  if (ls_indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, ls_indicator\n\n"); exit(1); }
+  ls_size = (int*) calloc(ls->number,sizeof(int));
+  if (ls_size == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, ls_size\n\n"); exit(1); }
+  for (i = 0; i < ls->n; i++) 
+    {
+    ls_indicator[i] = ls->indicator[i];
+    }
+  for (k = 0; k < ls->number; k++)
+    {
+    ls_size[k] = ls->size[k];
+    }
+  /* Construct proposal distribution:
+  - in general, proposal distribution is given by ls->p
+  - in special cases, proposal distribution is approximated by full conditional distribution by using mean-field methods:
+  there are two mean-field methods, one fast and one slow; both give rise to exact results when ls->size[k] == 2 and work well as long as ls->size[k] is not too large, but when ls->size[k] > 5, the slow method is much more accurate than the slow method */
+  if (model == 0) proposal_distribution = 0;
+  else proposal_distribution = 1;
+  if (proposal_distribution == 0) q_i = &ls->p[0]; /* General case: proposal distribution: ls->p */
+  else q_i = Candidate_Generating_Distribution_Indicators_Dependence(update_node,model,ls,ergm,heads,tails,input_present,dnedges,dn,directed,bipartite,nterms,funnames,sonames); /* Special case:  proposal distribution: exact or approximate full conditional distribution */
+  entropy = S(ls->number,q_i); /* Entropy of ls->p as indicator of how much the nodes are spread out across blocks */
+  entropy = entropy / ln(ls->number);
+  /*
+  Rprintf("\nEntropy of ls->p: %8.4f",entropy);
+  */
+  /* Temperature: note that the entropy of the full conditional distribution may be strongly peaked, and high temperatures are required to unfreeze the algorithm */
+  if (entropy < 0.05) t = 1000.0;
+  else if (entropy < 0.10) t = 100.0;
+  else if (entropy < 0.20) t = 10.0;
+  else if (entropy < 0.8) t = 2.0;
+  else t = 0.5;
+  if (t != 1.0) /* Melt down the full conditional distribution, since he dependence of the indicators implies that the full conditional distribution may have low entropy */
+    {
+    p = (double*) calloc(ls->number,sizeof(double));
+    if (p == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, p\n\n"); exit(1); }
+    sum = 0.0;
+    for (k = 0; k < ls->number; k++)
+      {
+      p[k] = q_i[k]; /* Store q_i[k], since it may be needed to compute the log acceptance ratio */
+      q_i[k] = ln(q_i[k]) / t;
+      sum = sum + e(q_i[k]);  
+      }
+    a_i = ln(sum);
+    for (k = 0; k < ls->number; k++)
+      {
+      q_i[k] = e(q_i[k] - a_i);
+      }
+    }
+  /* Generate proposal: */
+  present_block = ls->indicator[update_node];
+  proposal_block = Sample_Discrete(q_i); 
+  ls_indicator[update_node] = proposal_block;
+  ls_size[present_block] = ls_size[present_block] - 1;
+  ls_size[proposal_block] = ls_size[proposal_block] + 1;
+  /* Compute log acceptance ratio : */    
+  log_ratio = 0.0;
+  if ((ls_size[present_block] < ls->threshold) && (ls_size[proposal_block] < ls->threshold) && (ls->size[present_block] < ls->threshold) && (ls->size[proposal_block] < ls->threshold)) large = 0;
+  else large = 1;
+  if (proposal_block == present_block) /* Special case: proposed == present block: log acceptance ratio vanishes */
+    {
+    computation = 0; 
+    log_ratio = 0.0;
+    }
+  else if (large == 0) /* Special case: proposed != present block and the two blocks are small before as well as after the proposed move: log acceptance ratio can be computed exactly */
+    {
+    /* General remarks:
+
+    Log likelihood ratio + log prior ratio
+    --------------------------------------
+    ln(p[proposal_block]) - ln(p[present_block]),
+    where 
+    - p[k] = ls->p[k] * e(energy_k - a_k),  
+    - e(energy_k - a_k) is the PMF of the observed graph given that the node is member of block k,
+    - energy_k is the energy of the observed graph,
+    - a_k is the log partition function of the PMF of the observed graph and is given by a_k = sum_block a_within_block + a_between;
+    if the proposed and present block are small before as well as after the proposed move, 
+    a_within_proposed_block and a_within_present_block before and after the proposed move can be computed by complete enumeration,
+    and because all other within-block partition functions cancel in the log likelihood ratio,
+    the log acceptance ratio can computed exactly;
+    note that the between-block partition functions can be computed as well
+
+    Log likelihood ratio + log prior ratio + log proposal ratio
+    -----------------------------------------------------------
+    ln(p[proposal_block]) - ln(p[present_block]) + ln(q_i[present_block]) - ln(q_i[proposal_ratio])
+    where 
+    - p[k] is defined as above and q_i[k] is the propobability that block k is proposed,
+    - q_i[k] may be given by
+      * q_i[k] = p[k]: the log acceptance ratio vanishes;
+      * q_i[k] = function(p[k], temperature t): the log acceptance ratio does not vanish, but can readily and exactly be computed, since p[k] has already been computed
+      * q_i[k] = ls->p[k]: the log acceptance ratio does not vanish, but can exactly be computed
+
+    */
+    computation = 0;
+    if (proposal_distribution == 1) /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by full conditional distribution, computed either exactly by complete enumeration or approximately by mean-field methods */
+      {
+      if (t == 1.0) log_ratio = 0.0; /* Proposal distribution: full conditional distribution */
+      else /* Proposal distribution: full conditional distribution at temperature t */
+        {
+        log_ratio = 0.0;
+        log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
+        /*
+        Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
+        */
+        log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
+        /*
+        Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
+        */
+        log_ratio = log_ratio + ln(p[proposal_block]) - ln(p[present_block]); /* Log likelihood ratio */
+        /*
+        Rprintf("\n- log ratio (log likelihood ratio) = %8.4f",log_ratio);  
+        */
+        }
+      }
+    else /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by ls->p */
+      {
+      log_ratio = 0.0;
+      log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
+      /*
+      Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
+      */
+      log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
+      /*
+      Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
+      */
+      for (i = 0; i < n_input; i++) 
+        { 
+        input_proposal[i] = input_present[i];
+        }
+      Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
+      Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
+      theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
+      statistic = (double*) calloc(ergm->d,sizeof(double));
+      if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); exit(1); }
+      ls->indicator[update_node] = proposal_block; /* Set ls->indicator to proposed block */
+      ls->size[present_block] = ls->size[present_block] - 1;
+      ls->size[proposal_block] = ls->size[proposal_block] + 1;
+      proposal_energy = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+      proposal_a = 0.0;
+      proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+      proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+      proposal_a = proposal_a + Between_Block_Partition_Function(ls,ergm,input_proposal,theta,dn,directed,bipartite,nterms,funnames,sonames);
+      log_proposal = proposal_energy - proposal_a;
+      ls->indicator[update_node] = present_block; /* Reset ls->indicator to present block */
+      ls->size[proposal_block] = ls->size[proposal_block] - 1;
+      ls->size[present_block] = ls->size[present_block] + 1;
+      present_energy = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+      present_a = 0.0;
+      present_a = present_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+      present_a = present_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+      present_a = present_a + Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
+      log_present = present_energy - present_a;
+      log_ratio = log_ratio + (log_proposal - log_present);
+      /*
+      Rprintf("\n- node %i: block %i > %i (block size %i > %i): log_ratio: %8.4f",update_node+1,ls->indicator[update_node]+1,ls_indicator[update_node]+1,ls->size[present_block],ls_size[proposal_block],log_ratio);
+      */
+      }
+    }
+  else /* General case: log acceptance ratio does not vanish and cannot be computed exactly: introduce auxiliary variables */
+    {
+    computation = 1; /* Log acceptance ratio computed exactly */
+    log_ratio = 0.0;
+    log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
+    /*
+    Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
+    */
+    log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
+    /*
+    Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
+    */
+    for (i = 0; i < n_input; i++) 
+      { 
+      input_proposal[i] = input_present[i];
+      }
+    Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
+    Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
+    theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
+    statistic = (double*) calloc(ergm->d,sizeof(double));
+    if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); exit(1); }
+    sample_size = 1; /* One sample point is all that is required */
+    MCMC_wrapper(heads,tails,dnedges,  /* Sample one graph from posterior predictive distribution given input and theta */
+                    maxpossibleedges,
+                    dn,directed,bipartite, 
+                    nterms,funnames,
+                    sonames, 
+                    MHproposaltype,MHproposalpackage,
+                    input_proposal,theta,&sample_size,
+                    sample,burnin,interval,  
+                    newnetworkheads, 
+                    newnetworktails, 
+                    verbose, 
+                    attribs,maxout,maxin,minout,
+                    minin,condAllDegExact,attriblength, 
+                    maxedges,
+                    mheads,mtails,mdnedges);
+    proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
+    proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_heads\n\n"); exit(1); }
+    proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_tails\n\n"); exit(1); }
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
+      proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
+      }
+    /* Ratio of proposal pmfs of auxiliary graph under proposal / present */
+    log_numerator = Minus_Energy(ergm->d,input_present,theta,
+    proposal_heads,proposal_tails,&proposal_n_edges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 1: log numerator = %8.4f",log_numerator);  
+    */
+    log_denominator = Minus_Energy(ergm->d,input_proposal,theta,
+    proposal_heads,proposal_tails,&proposal_n_edges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 2: log denominator = %8.4f",log_denominator);  
+    */
+    log_ratio = log_ratio + (log_numerator - log_denominator);
+    /*
+    Rprintf("\n- log ratio (auxiliary graph) = %8.4f",log_ratio);  
+    */
+    /* Ratio of mass of observed graph under proposal / present */
+    log_present = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 3: log present = %8.4f",log_present);  
+    */
+    log_proposal = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 4: log proposal = %8.4f",log_proposal);  
+    */
+    log_ratio = log_ratio + (log_proposal - log_present);
+    /*
+    Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
+    */
+    /*
+    Rprintf("\n- log preference of present indicator wrt data: %8.4f",log_numerator-log_present);  
+    Rprintf("\n- log preference of propposed indicator wrt data: %8.4f",log_denominator-log_proposal);  
+    Rprintf("\n- log exchange ratio: %8.4f",log_numerator-log_denominator+log_proposal-log_present);  
+    */
+    }
+  accept = MH_Decision(log_ratio);
+  /* Update ls->indicator and ls-size */
+  if (accept == 1) /* Proposal accepted */
+    {
+    ls->indicator[update_node] = proposal_block;
+    ls->size[present_block] = ls->size[present_block] - 1;
+    ls->size[proposal_block] = ls->size[proposal_block] + 1;
+    }
+  /* Console output: */
+  if (print == 1)
+    {
+    Rprintf("\nSample indicator of node %i:",update_node+1);
+    entropy = S(ls->number,q_i);
+    entropy = entropy / (ln(ls->number));
+    Rprintf("\n- entropy of proposal distribution: %2.2f%%",entropy*100);
+    Rprintf("\n- proposal distribution:");
+    for (k = 0; k < ls->number; k++)
+      {
+      Rprintf("%7.4f",q_i[k]);
+      }
+    Rprintf("\n- proposal: %i > %i",present_block+1,proposal_block+1);      
+    if (computation == 0) Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
+    else Rprintf("\n- auxiliary-variable log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- decision: %i",accept);
+    }
+  /* Free memory: */
+  free(ls_indicator);
+  free(ls_size);
+  if (proposal_distribution > 0) free(q_i);
+  if (t != 1.0) free(p);
+  if (computation > 0)
+    {
+    free(proposal_heads);
+    free(proposal_tails);
+    free(statistic);
+    free(theta);
+    }
+  return accept;
+}
+
+int Sample_Ergm_Theta_Dependence(int model, ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges,
+                        int *maxpossibleedges,
+                        int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames,
+                        char **sonames, 
+                        char **MHproposaltype, char **MHproposalpackage,
+                        double *sample,
+                        int *burnin, int *interval,  
+                        int *verbose, 
+                        int *attribs, int *maxout, int *maxin, int *minout,
+                        int *minin, int *condAllDegExact, int *attriblength, 
+                        int *maxedges,
+                        int *mheads, int *mtails, int *mdnedges,
+                        double *input_present, int print,
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int accept, i, k, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, *ls_indicator, *ls_size, *sample_i, sample_size;
-  double **cf, *present, *ergm_theta, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal, *statistic, sum, u;
+  int accept, i, j, k, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
+  double **cf, *ergm_theta, *present, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *mean, *proposal, *theta_present, *theta_proposal, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
-  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, input_proposal\n\n"); exit(1); }
-  ls_indicator = (int*) calloc(ls->n,sizeof(int));
-  if (ls_indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, ls_indicator\n\n"); exit(1); }
-  ls_size = (int*) calloc(ls->number,sizeof(int));
-  if (ls_size == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, ls_size\n\n"); exit(1); }
-  ls_theta = (double**) calloc(ls->d,sizeof(double*));
-  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, ls_theta\n\n"); exit(1); }
-  for (i = 0; i < ls->d; i++)
-    {
-    ls_theta[i] = (double*) calloc(ls->number+1,sizeof(double));
-    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, ls_theta[%i]\n\n",i); exit(1); }
-    }
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, input_proposal\n\n"); exit(1); }
   log_ratio = 0.0;
-  u = unif_rand(); /* Decide whether indicators or parameters are to be updated */
-  if (u < 0.5) /* Update indicators */
-    {
-    /* Propose indicators:
-    - node i sampled with probability q_i[i]
-    - for given node i with ls->indicator[i] = l, category k sampled with probability ls->p[k]
-    - acceptance probability: proposal ratio x prior ratio x likelihood ratio, where
-      * proposal ratio = (q_i[i] x ls->p[l]) / (q_i[i] * ls->p[k]) = ls->p[l] / ls->p[k]
-      * prior ratio = ls->p[k] / ls->p[l]
-      * proposal ratio x prior ratio = (ls->p[l] / ls->p[k]) x (ls->p[k] / ls->p[l]) = 1 and its logarithm 0
-      * likelihood ratio to be computed below
-    */
-    sample_i = (int*) calloc(ls->n,sizeof(int));
-    if (sample_i == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, sample_i\n\n"); exit(1); }
-    sample_size = trunc(ls->n / 10.0);
-    if (sample_size < 1) sample_size = ls->n;
-    for (k = 0; k < sample_size; k++)
-      {
-      i = Sample_Discrete(q_i);
-      sample_i[i] = 1;
-      }
-    for (i = 0; i < ls->n; i++) /* Given node, sample category */
-      {
-      if (sample_i[i] == 1) k = Sample_Discrete(ls->p); /* Given node, sample category */ 
-      else k = ls->indicator[i];
-      ls_indicator[i] = k;
-      ls_size[k] = ls_size[k] + 1;
-      }
-    free(sample_i);
-    }
-  else /* Update parameters */
-    {
-    /* Propose ergm->theta: */
-    if (ergm->d1 > 0)
-      {
-      cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
-      ergm_theta = Sample_MVN(ergm->d1,ergm->theta,cf); /* Random walk Metropolis-Hastings */
-      log_proposal = MVN_PDF(ergm->d1,ergm_theta,prior->mean1,prior->precision1); /* Prior pdf: proposal */
-      log_present = MVN_PDF(ergm->d1,ergm->theta,prior->mean1,prior->precision1); /* Prior pdf: present */
-      log_ratio = log_ratio + (log_proposal - log_present);
-      /*
-      Rprintf("\n- log_ratio (parameters) = %8.4f",log_ratio);  
-      */
-      for (i = 0; i < ergm->d1; i++)
-        { 
-        free(cf[i]);
-        }
-      free(cf);
-      }
-    /* Propose ls->theta: */
-    present = (double*) calloc(ls->d,sizeof(double));  
-    if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, present\n\n"); exit(1); }
-    cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
-    for (i = 0; i < ls->number; i++) 
-      {
-      Get_Column(ls->d,present,ls->theta,i); /* Set mean to ls->theta[][i] */
-      if (ls->size[i] < ls->threshold) Set_Column(ls->d,ls_theta,i,present); /* Set proposal = present */ 
-      else 
-        {
-        /* Generate candidate: */
-        proposal = Sample_MVN(ls->d,present,cf); /* Random walk Metropolis-Hastings algorithm */
-        Set_Column(ls->d,ls_theta,i,proposal); /* Set ls_theta[][i] to proposal */
-        /* Add ratio of prior pdf: */
-        log_proposal = MVN_PDF(ls->d,proposal,prior->mean2,prior->precision2); /* Prior pdf of proposal */
-        log_present = MVN_PDF(ls->d,present,prior->mean2,prior->precision2); /* Prior pdf of present */
-        log_ratio = log_ratio + (log_proposal - log_present);
-        free(proposal);
-        }
-      /*
-      Rprintf("\n- log_ratio (block parameters) = %8.4f",log_ratio);  
-      */
-      }
-    free(present);
-    for (i = 0; i < ls->d; i++)
-      {
-      free(cf[i]);
-      }
-    free(cf);
-    }
-  if (u < 0.5) /* Updated indicators but not parameters */
-    {
-    ergm_theta = (double*) calloc(ergm->d1,sizeof(double));
-    if (ergm_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, ergm_theta\n\n"); exit(1); }
-    for (i = 0; i < ergm->d1; i++)
-      {
-      ergm_theta[i] = ergm->theta[i];
-      }
-    for (i = 0; i < ls->d; i++)
-      { 
-      for (k = 0; k < ls->number; k++)
-        {
-        ls_theta[i][k] = ls->theta[i][k];
-        }
-      }
-    }
-  else /* Updated parameters but not indicators */
-    {
-    for (i = 0; i < ls->n; i++) 
-      {
-      ls_indicator[i] = ls->indicator[i];
-      }
-    for (k = 0; k < ls->number; k++)
-      {
-      ls_size[k] = ls->size[k];
-      } 
-    }
+  /* Propose ergm->theta: */
+  cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
+  ergm_theta = Sample_MVN(ergm->d1,ergm->theta,cf); /* Random walk Metropolis-Hastings */
+  log_proposal = MVN_PDF(ergm->d1,ergm_theta,prior->mean1,prior->precision1); /* Prior pdf: proposal */
+  log_present = MVN_PDF(ergm->d1,ergm->theta,prior->mean1,prior->precision1); /* Prior pdf: present */
+  log_ratio = log_ratio + (log_proposal - log_present);
+  /*
+  Rprintf("\n- log ratio (parameters) = %8.4f",log_ratio);  
+  */
   /* Propose auxiliary variable: */
   for (i = 0; i < n_input; i++) 
-    {
+    { 
     input_proposal[i] = input_present[i];
     }
-  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls_theta,input_proposal); /* Set input given ls_theta */
+  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_proposal); /* Set input given ls->theta */
   Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->theta */
   theta_proposal = Get_Parameter(ergm->d,ergm->structural,ergm_theta); /* Set parameter; note: if ergm_d1 == 0, ergm_theta is not used */
   theta_present = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm_theta is not used */
@@ -732,17 +694,17 @@ output: structural, non-structural parameters showing up in ergm pmf
                   mheads,mtails,mdnedges);
   proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
   proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
-  if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, proposal_heads\n\n"); exit(1); }
+  if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_heads\n\n"); exit(1); }
   proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
-  if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, proposal_tails\n\n"); exit(1); }
+  if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_tails\n\n"); exit(1); }
   for (i = 0; i < proposal_n_edges; i++)  
     {
-    proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
-    proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
+    proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
+    proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
     }
   /* Ratio of proposal pmfs of auxiliary graph under proposal / present */
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Dependence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, statistic\n\n"); exit(1); }
   log_numerator = Minus_Energy(ergm->d,input_present,theta_present,
   proposal_heads,proposal_tails,&proposal_n_edges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
   /*
@@ -755,7 +717,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   */
   log_ratio = log_ratio + (log_numerator - log_denominator);
   /*
-  Rprintf("\n- log_ratio (auxiliary graph) = %8.4f",log_ratio);  
+  Rprintf("\n- log ratio (auxiliary graph) = %8.4f",log_ratio);  
   */
   /* Ratio of mass of observed graph under proposal / present */
   log_present = Minus_Energy(ergm->d,input_present,theta_present,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
@@ -765,38 +727,471 @@ output: structural, non-structural parameters showing up in ergm pmf
   log_proposal = Minus_Energy(ergm->d,input_proposal,theta_proposal,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
   /*
   Rprintf("\n- function 4: log proposal = %8.4f",log_proposal);  
-  */ 
+  */
   log_ratio = log_ratio + (log_proposal - log_present);
   /*
-  Rprintf("\n- log_ratio (observed graph) = %8.4f",log_ratio);  
+  Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
   */
   accept = MH_Decision(log_ratio);
   if (accept == 1) /* Proposal accepted */
     {
-    Set_I_I(ls->n,ls->indicator,ls_indicator);
-    Set_I_I(ls->number,ls->size,ls_size);
     if (ergm->d1 > 0) Set_D_D(ergm->d1,ergm->theta,ergm_theta);
-    Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
+    Set_DD_DD(ls->d,ls->number+1,ls->theta,ls->theta);
     }
   if (print == 1)
     {
-    Rprintf("\nSample parameters (dyad-dependence):");
-    Rprintf("\n- log_ratio = %8.4f",log_ratio);  
-    Rprintf("\n- decision = %i",accept);
+    Rprintf("\nSample parameters:");
+    Rprintf("\n- auxiliary-variable log ratio: %8.4f",log_ratio); 
+    Rprintf("\n- decision: %i",accept);
     }
-  if (ergm->d1 > 0) free(ergm_theta);
-  free(ls_indicator);
-  free(ls_size);
+  for (i = 0; i < ergm->d1; i++)
+    { 
+    free(cf[i]);
+    }
+  free(cf);
+  free(ergm_theta);
   free(proposal_heads);
   free(proposal_tails);
   free(statistic);
   free(theta_present);
   free(theta_proposal);
+  return accept;
+}
+
+int Sample_Ls_Theta_Dependence(int model, ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges,
+                        int *maxpossibleedges,
+                        int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames,
+                        char **sonames, 
+                        char **MHproposaltype, char **MHproposalpackage,
+                        double *sample,
+                        int *burnin, int *interval,  
+                        int *verbose, 
+                        int *attribs, int *maxout, int *maxin, int *minout,
+                        int *minin, int *condAllDegExact, int *attriblength, 
+                        int *maxedges,
+                        int *mheads, int *mtails, int *mdnedges,
+                        double *input_present, int print,
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_block)
+/*
+input: ergm structure, latent structure, prior
+output: structural, non-structural parameters showing up in ergm pmf
+*/
+{
+  int accept, computation, count, h, i, j, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, *permutation, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, t, update_size;
+  double **cf, *present, *input_proposal, *input_present_block, *input_proposal_block, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal, *statistic, present_a, proposal_a, present_energy, proposal_energy;
+  n_input = Number_Input(ergm->terms,input_present);
+  input_proposal = (double*) calloc(n_input,sizeof(double));
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, input_proposal\n\n"); exit(1); }
+  ls_theta = (double**) calloc(ls->d,sizeof(double*));
+  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, ls_theta\n\n"); exit(1); }
+  for (i = 0; i < ls->d; i++)
+    {
+    ls_theta[i] = (double*) calloc(ls->number+1,sizeof(double));
+    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, ls_theta[%i]\n\n",i); exit(1); }
+    }
+  for (i = 0; i < ls->d; i++)
+    { 
+    for (k = 0; k < ls->number + 1; k++)
+      {
+      ls_theta[i][k] = ls->theta[i][k];
+      }
+    }
+  /* Propose ls->theta: */
+  present = (double*) calloc(ls->d,sizeof(double));  
+  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, present\n\n"); exit(1); }
+  statistic = (double*) calloc(ergm->d,sizeof(double));
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, statistic\n\n"); exit(1); }
+  update_size = ls->size[update_block];
+  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[update_size-2]); /* Rescale Cholesky factor of Gaussian prior */ 
+  Get_Column(ls->d,present,ls->theta,update_block); /* Set mean to ls->theta[][i] */
+  /* Generate candidate: */
+  proposal = Sample_MVN(ls->d,present,cf); /* Random walk Metropolis-Hastings algorithm */
+  Set_Column(ls->d,ls_theta,update_block,proposal); /* Set ls_theta[][i] to proposal */
+  /* Log acceptance ratio: */
+  log_ratio = 0.0;
+  log_proposal = MVN_PDF(ls->d,proposal,prior->mean2,prior->precision2); 
+  log_present = MVN_PDF(ls->d,present,prior->mean2,prior->precision2); 
+  log_ratio = log_ratio + (log_proposal - log_present); /* Log prior ratio */
+  /*
+  Rprintf("\n- log ratio: %8.4f",log_ratio);  
+  */
+  for (i = 0; i < n_input; i++) 
+    { 
+    input_proposal[i] = input_present[i];
+    }
+  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls_theta,input_proposal); /* Set input given ls_theta */
+  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->theta */
+  theta_proposal = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm_d1 == 0, ergm_theta is not used */
+  theta_present = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm_theta is not used */
+  if (ls->size[update_block] < ls->threshold) /* Computation of PMF by complete enumeration feasible */
+    {
+    computation = 0;
+    proposal_energy = Minus_Energy(ergm->d,input_proposal,theta_proposal,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+    Set_Column(ls->d,ls->theta,update_block,proposal); /* Set ls->theta to proposal */
+    proposal_a = Within_Block_Partition_Function(model,ls,update_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+    Set_Column(ls->d,ls->theta,update_block,present); /* Reset ls->theta to present */
+    log_proposal = proposal_energy - proposal_a;
+    present_energy = Minus_Energy(ergm->d,input_present,theta_present,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+    present_a = Within_Block_Partition_Function(model,ls,update_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+    log_present = present_energy - present_a;
+    log_ratio = log_ratio + (log_proposal - log_present);
+    /* 
+    Rprintf("\nlog_proposal %8.4f log_present %8.4f log_ratio %8.4f",log_proposal,log_present,log_ratio);
+    */
+    }
+  else if (model > 0) /* Computation of PMF by complete enumeration infeasible: without covariates, generate local within-block sample */
+    {
+    computation = 1;
+    sample_size = 1; /* One sample point is all that is required */
+    if (*directed == 0) maxpossibleedges_block = ls->size[update_block] * (ls->size[update_block] - 1) / 2;
+    else maxpossibleedges_block = ls->size[update_block] * (ls->size[update_block] - 1);
+    /* Extract subgraph corresponding to nodes which are members of the block from observed graph: */
+    heads_block = NULL;
+    tails_block = NULL;
+    permutation = (int*) calloc(ls->n,sizeof(int));
+    count = 0;
+    for (i = 0; i < ls->n; i++)
+      {
+      if (ls->indicator[i] == update_block)
+        {
+        count = count + 1;
+        permutation[i] = count; /* Permute labels of nodes so that the nodes belonging to the block have labels 1..ls->size[update_block] */
+        }
+      }
+    number_edges_block = 0;
+    for (k = 0; k < *dnedges; k++)
+      {
+      h = heads[k];
+      t = tails[k];
+      if ((ls->indicator[h-1] == update_block) && (ls->indicator[t-1] == update_block))
+        {
+        number_edges_block = number_edges_block + 1;
+        heads_block = realloc(heads_block,number_edges_block*sizeof(int));
+        tails_block = realloc(tails_block,number_edges_block*sizeof(int));
+        heads_block[number_edges_block-1] = permutation[h-1];
+        tails_block[number_edges_block-1] = permutation[t-1];
+        }
+      }
+    input_present_block = Set_Input_Block(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->size[update_block],present,input_present);
+    /*
+    Rprintf("\n\n- block %i of size %i with %i edges",update_block,ls->size[update_block],number_edges_block);
+    Rprintf("\n- permutation of nodes :");
+    Print_I(ls->n,permutation);
+    Rprintf("\n- heads and tails of block:");
+    Print_I(number_edges_block,heads_block);
+    Print_I(number_edges_block,tails_block);
+    */
+    input_proposal_block = Set_Input_Block(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->size[update_block],proposal,input_present);
+    /*
+    Rprintf("\n");
+    Rprintf("\n- present and proposed ergm->theta:");
+    Print_D(ergm->d,theta_present);
+    Print_D(ergm->d,theta_proposal);
+    Rprintf("\n- present and proposed ls->theta:");
+    Print_D(ls->d,present);
+    Print_D(ls->d,proposal);
+    Rprintf("\n- present and proposed input:");
+    n_input = Number_Input(ergm->terms,input_present_block);
+    Print_D(n_input,input_present_block);
+    Print_D(n_input,input_proposal_block);
+    */
+    mdnedges_block = 0;
+    mheads_block = NULL;
+    mtails_block = NULL;
+    MCMC_wrapper(heads_block,tails_block,&number_edges_block,  /* Sample one graph from posterior predictive distribution given input and theta */
+                    &maxpossibleedges_block,
+                    &ls->size[update_block],directed,bipartite, 
+                    nterms,funnames,
+                    sonames, 
+                    MHproposaltype,MHproposalpackage,
+                    input_proposal_block,theta_proposal,&sample_size,
+                    sample,burnin,interval,  
+                    newnetworkheads, 
+                    newnetworktails, 
+                    verbose, 
+                    attribs,maxout,maxin,minout,
+                    minin,condAllDegExact,attriblength, 
+                    maxedges,
+                    mheads,mtails,mdnedges);
+    /*
+    Rprintf("\n- maximum number of edges: %i",maxpossibleedges_block);
+    Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
+    Rprintf("\n- number of edges of auxiliary graph: %i",newnetworkheads[0]);
+    */
+    proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
+    proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); exit(1); }
+    proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_tails\n\n"); exit(1); }
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
+      proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
+      }
+    /*
+    Rprintf("\n- heads and tails of auxiliary graph:\n");
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      Rprintf(" %i",proposal_heads[i]); 
+      }
+    Rprintf("\n");
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      Rprintf(" %i",proposal_tails[i]); 
+      }
+    Rprintf("\n");
+    */
+    /* Ratio of proposal pmfs of auxiliary graph under proposal / present */
+    log_numerator = Minus_Energy(ergm->d,input_present_block,theta_present,
+                    proposal_heads,proposal_tails,&proposal_n_edges,&ls->size[update_block],directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n");
+    Rprintf("\n- function 1: log numerator = %8.4f",log_numerator);  
+    Rprintf("\n- statistic of auxiliary graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_denominator = Minus_Energy(ergm->d,input_proposal_block,theta_proposal,
+                      proposal_heads,proposal_tails,&proposal_n_edges,&ls->size[update_block],directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 2: log denominator = %8.4f",log_denominator);  
+    Rprintf("\n- statistic of auxiliary graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_ratio = log_ratio + (log_numerator - log_denominator);
+    /*
+    Rprintf("\n- log ratio (auxiliary graph) = %8.4f",log_ratio);  
+    */
+    /* Ratio of mass of observed graph under proposal / present */
+    log_present = Minus_Energy(ergm->d,input_present_block,theta_present,heads_block,tails_block,&number_edges_block,&ls->size[update_block],directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n");
+    Rprintf("\n- function 3: log present = %8.4f",log_present);  
+    Rprintf("\n- statistic of observed graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_proposal = Minus_Energy(ergm->d,input_proposal_block,theta_proposal,heads_block,tails_block,&number_edges_block,
+                   &ls->size[update_block],directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 4: log proposal = %8.4f",log_proposal);  
+    Rprintf("\n- statistic of observed graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_ratio = log_ratio + (log_proposal - log_present);
+    /*
+    Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
+    */
+    free(heads_block);
+    free(tails_block);
+    free(input_present_block);
+    free(input_proposal_block);
+    free(permutation);
+    free(proposal_heads);
+    free(proposal_tails);
+    }
+  else /* Computation of PMF by complete enumeration infeasible: with covariates, generate global sample */
+    {
+    computation = 1;
+    sample_size = 1; /* One sample point is all that is required */
+    MCMC_wrapper(heads,tails,dnedges,  /* Sample one graph from posterior predictive distribution given input and theta */
+                    maxpossibleedges,
+                    dn,directed,bipartite, 
+                    nterms,funnames,
+                    sonames, 
+                    MHproposaltype,MHproposalpackage,
+                    input_proposal,theta_proposal,&sample_size,
+                    sample,burnin,interval,  
+                    newnetworkheads, 
+                    newnetworktails, 
+                    verbose, 
+                    attribs,maxout,maxin,minout,
+                    minin,condAllDegExact,attriblength, 
+                    maxedges,
+                    mheads,mtails,mdnedges);
+    proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
+    proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); exit(1); }
+    proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_tails\n\n"); exit(1); }
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
+      proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
+      }
+    /* Ratio of proposal pmfs of auxiliary graph under proposal / present */
+    log_numerator = Minus_Energy(ergm->d,input_present,theta_present,
+    proposal_heads,proposal_tails,&proposal_n_edges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 1: log numerator = %8.4f",log_numerator);  
+    */
+    log_denominator = Minus_Energy(ergm->d,input_proposal,theta_proposal,
+    proposal_heads,proposal_tails,&proposal_n_edges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 2: log denominator = %8.4f",log_denominator);  
+    */
+    log_ratio = log_ratio + (log_numerator - log_denominator);
+    /*
+    Rprintf("\n- log ratio (auxiliary graph) = %8.4f",log_ratio);  
+    */
+    /* Ratio of mass of observed graph under proposal / present */
+    log_present = Minus_Energy(ergm->d,input_present,theta_present,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 3: log present = %8.4f",log_present);  
+    */
+    log_proposal = Minus_Energy(ergm->d,input_proposal,theta_proposal,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 4: log proposal = %8.4f",log_proposal);  
+    */
+    log_ratio = log_ratio + (log_proposal - log_present);
+    /*
+    Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
+    */
+    free(proposal_heads);
+    free(proposal_tails);
+    }
+  accept = MH_Decision(log_ratio);
+  if (accept == 1) /* Proposal accepted */
+    {
+    Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
+    }
+  if (print == 1)
+    {
+    Rprintf("\nSample parameters of block %i of size %i:",update_block+1,ls->size[update_block]);
+    if (computation == 0) Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
+    else Rprintf("\n- auxiliary-variable log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- decision: %i",accept);
+    }
+  free(present);
+  for (i = 0; i < ls->d; i++)
+    {
+    free(cf[i]);
+    }
+  free(cf);
   for (i = 0; i < ls->d; i++)
     {
     free(ls_theta[i]);
     }
   free(ls_theta);
+  free(proposal);
+  free(statistic);
+  free(theta_present);
+  free(theta_proposal);
+  return accept;
+}
+
+int Sample_Ls_Theta_Between(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
+                        int *heads, int *tails, int *dnedges,
+                        int *dn, int *directed, int *bipartite, 
+                        int *nterms, char **funnames, char **sonames, 
+                        double *input_present, int print,
+                        double *scale_factor)
+/*
+input: ergm structure, latent structure, prior
+output: structural, non-structural parameters showing up in ergm pmf
+*/
+{
+  int accept, i, k, number_input;
+  double **cf, *input_proposal, log_present, log_proposal, log_ratio, present_energy, present_a, proposal_energy, proposal_a, *present, *proposal, *theta, *statistic;
+  number_input = Number_Input(ergm->terms,input_present);
+  input_proposal = (double*) calloc(number_input,sizeof(double));
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, input_proposal\n\n"); exit(1); }
+  for (i = 0; i < number_input; i++) 
+    { 
+    input_proposal[i] = input_present[i];
+    }
+  present = (double*) calloc(ls->d,sizeof(double));  
+  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, present\n\n"); exit(1); }
+  statistic = (double*) calloc(ergm->d,sizeof(double));
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, statistic\n\n"); exit(1); }
+  /* Generate candidate: */
+  for (i = 0; i < ls->d; i++)
+    {
+    present[i] = ls->theta[i][ls->number];
+    } 
+  cf = (double**) calloc(ls->d,sizeof(double*));
+  if (cf == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, cf\n\n"); exit(1); }
+  for (i = 0; i < ls->d; i++)
+    {
+    cf[i] = (double*) calloc(ls->d,sizeof(double));
+    }
+  for (i = 0; i < ls->number_between; i++)
+    {
+    k = ls->between[i];
+    cf[k][k] = scale_factor[0] * prior->cf2[k][k];
+    }
+  proposal = Sample_MVN(ls->d,present,cf); /* Random walk Metropolis-Hastings algorithm */
+  /* Log acceptance ratio: */
+  log_ratio = 0.0;
+  log_proposal = MVN_PDF(ls->d,proposal,prior->mean2,prior->precision2); 
+  log_present = MVN_PDF(ls->d,present,prior->mean2,prior->precision2); 
+  log_ratio = log_ratio + (log_proposal - log_present); /* Log prior ratio */
+  /*
+  Rprintf("\n- log ratio: %8.4f",log_ratio);  
+  */
+  /* Log likelihood ratio: */
+  theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter */
+  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given present */
+  present_energy = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+  /*
+  Rprintf("\n- present_energy = %8.4f",present_energy);  
+  */
+  present_a = Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
+  /*
+  Rprintf("\n- present_a = %8.4f",present_a);  
+  */
+  log_present = present_energy - present_a;
+  /*
+  Rprintf("\n- log present = %8.4f",log_present);  
+  */
+  for (i = 0; i < ls->d; i++)
+    {
+    ls->theta[i][ls->number] = proposal[i];
+    } 
+  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_proposal); /* Set input given proposal */
+  proposal_energy = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
+  /*
+  Rprintf("\n- proposal_energy = %8.4f",proposal_energy);  
+  */
+  proposal_a = Between_Block_Partition_Function(ls,ergm,input_proposal,theta,dn,directed,bipartite,nterms,funnames,sonames);
+  /*
+  Rprintf("\n- proposal_a = %8.4f",proposal_a);  
+  */
+  for (i = 0; i < ls->d; i++)
+    {
+    ls->theta[i][ls->number] = present[i];
+    } 
+  log_proposal = proposal_energy - proposal_a;
+  /*
+  Rprintf("\n- log proposal = %8.4f",log_proposal);  
+  */
+  log_ratio = log_ratio + (log_proposal - log_present);
+  /*
+  Rprintf("\n- log ratio = %8.4f",log_ratio);  
+  */
+  accept = MH_Decision(log_ratio);
+  if (accept == 1) /* Proposal accepted */
+    {
+    for (i = 0; i < ls->d; i++)
+      {
+      ls->theta[i][ls->number] = proposal[i];
+      } 
+    }
+  if (print == 1)
+    {
+    Rprintf("\nSample between-block parameters:");
+    Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- decision: %i",accept);
+    }
+  for (i = 0; i < ls->d; i++)
+    {
+    free(cf[i]);
+    }
+  free(cf);
+  free(present);
+  free(proposal);
+  free(statistic);
+  free(theta);
   return accept;
 }
 
@@ -810,7 +1205,7 @@ output: non-structural parameters not showing up in the ergm pmf
   double *theta;
   for (i = 0; i < ls->number; i++)
     {
-    if (ls->size[i] < ls->threshold) /* Structural parameter not showing up in ergm pmf */
+    if (ls->size[i] < ls->minimum_size) /* Structural parameter not showing up in ergm pmf */
       {
       theta = Sample_MVN(ls->d,prior->mean2,prior->cf2); /* Sample structural parameter from full conditional (conditional Gaussian prior given non-structural parameters) */
       Set_Column(ls->d,ls->theta,i,theta); /* Set ls_theta[][i] to theta */
@@ -893,7 +1288,7 @@ input: clustering parameter, priors, latent structure, ergm structure, user-spec
 */
 {  
   int i, k;
-  double **cf, *sample, *shape1, *shape2, sum;
+  double *sample, *shape1, *shape2, sum;
   if (*parallel == 1) ls->alpha = *alpha; /* Clustering parameter */
   else ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
   shape1 = (double*) calloc(ls->number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
@@ -918,28 +1313,16 @@ input: clustering parameter, priors, latent structure, ergm structure, user-spec
     }
   if (ergm->d1 > 0)
     {
-    cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
-    sample = Sample_MVN(ergm->d1,prior->mean1,cf);
+    sample = Sample_MVN(ergm->d1,prior->mean1,prior->cf1);
     Set_D_D(ergm->d1,ergm->theta,sample);
     free(sample);
-    for (i = 0; i < ergm->d1; i++)
-      { 
-      free(cf[i]);
-      }
-    free(cf);
     }
-  cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
   for (i = 0; i < ls->number; i++) 
     {
-    sample = Sample_MVN(ls->d,prior->mean2,cf); /* Random walk Metropolis-Hastings algorithm */
+    sample = Sample_MVN(ls->d,prior->mean2,prior->cf2); /* Random walk Metropolis-Hastings algorithm */
     Set_Column(ls->d,ls->theta,i,sample); /* Set ls_theta[][i] to proposal */
     free(sample);
     }
-  for (i = 0; i < ls->d; i++)
-    {
-    free(cf[i]);
-    }
-  free(cf);
 }
 
 int Sample_CRP(latentstructure *ls)
@@ -1050,14 +1433,14 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior)
+             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior)
 /*
 input: R input
 output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, hyper_prior, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
+  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, hyper_prior, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
   double *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
@@ -1075,27 +1458,28 @@ output: simulated graph
     Rprintf("\nMachine precision:");
     Rprintf("\n- epsilon = %e",epsilon);
     Rprintf("\n- maximum = %e",maximum);
-    /*
-    Rprintf("\n- ln(epsilon) = %e",ln(epsilon));
-    Rprintf("\n- ln(maximum) = %e",ln(maximum));
-    Rprintf("\n- exp(-maximum) = %e",e(-maximum));
-    Rprintf("\n- exp(-epsilon)= %e",e(-epsilon));
-    Rprintf("\n- exp(+epsilon) = %e",e(+epsilon));
-    Rprintf("\n- exp(+maximum) = %e",e(+maximum));
-    */
     Rprintf("\n");
     }
   terms = (int)*nterms; /* Number of ergm terms */
   dim = (int)*d;
   dim1 = (int)*d1;
   dim2 = (int)*d2;
-  threshold = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   n = (int)*dn; /* Number of nodes */
   number = (int)*max_number; /* Number of categories */
-  max_iteration = *max_iterations; /* Number of draws from posterior */
+  max_iteration = (int)*max_iterations; /* Number of draws from posterior */
+  dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
+  minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   ergm = Initialize_Ergm(terms,hierarchical,dim,dim1,dim2,structural); /* Ergm structure and non-structural parameters */
   prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,b,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
-  ls = Initialize_Latentstructure(number,n,threshold,ergm->d2); /* Latent structure and structural parameters */
+  dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
+  minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
+  if (dyad_dependence == 0) threshold = n + 1; /* Minimum size of category so that structural parameters show up in ergm pmf */
+  else 
+    {
+    if (*directed == 0) threshold = 8;
+    else threshold = 6;
+    }
+  ls = Initialize_Latentstructure(number,n,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
   prior_ls = Initialize_Prior_ls(*alpha_shape,*alpha_rate); /* Prior: clustering parameter */
   mdnedges = &null;
   mheads = NULL;
@@ -1122,14 +1506,6 @@ output: simulated graph
   newnetworktails = (int*) calloc(*maxpossibleedges,sizeof(int));
   if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); exit(1); }
   hyper_prior = (int)*hyperprior; /* Means and precisions of Gaussian baseline distribution have non-degenerate prior */
-  dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
-  if (print >= 1)
-    {
-    if (hyper_prior == 0) Rprintf("\nPosterior prediction.");
-    else Rprintf("\nSimulation.");
-    if (dyad_dependence == 0) Rprintf("\nConditional dyad-independence model.\n");
-    else Rprintf("\nDyad-dependence model.\n");
-    }
   /****************/
   /* Sample graph */
   /****************/
@@ -1277,7 +1653,11 @@ output: simulated graph
       coordinate = coordinate + 1;	
       mcmc[coordinate] = prior->precision2[i][i];
       }
-    if (print == 1) Rprintf("\nblock parameters:\n");
+    if (print == 1) 
+      {
+      Rprintf("\nblock parameters:");
+      if (ergm->d2 > 1) Rprintf("\n");
+      }
     for (h = 0; h < ls->d; h++) /* Structural parameters */
       {
       for (i = 0; i < ls->number; i++) 
@@ -1286,7 +1666,7 @@ output: simulated graph
         coordinate = coordinate + 1;	
         mcmc[coordinate] = ls->theta[h][i];
         }
-     if ((print == 1) && (ls->theta[h][ls->number] != 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
+      if ((print == 1) && (ls->number_between > 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
       coordinate = coordinate + 1;	
       mcmc[coordinate] = ls->theta[h][ls->number];
       if (print == 1) Rprintf("\n");
@@ -1383,7 +1763,8 @@ output: simulated graph
   Finalize_Priorstructure(prior,dim1,dim2);
 }
 
-void Inference(int *dyaddependence,
+void Inference(int *model_type,
+             int *dyaddependence,
              int *hierarchical,
              int *d, 
              int *d1, 
@@ -1421,15 +1802,16 @@ void Inference(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *n_between_block_parameters, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior)
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior)
 /*
 input: R input
 output: MCMC sample of unknowns from posterior
 */
 {
   int null = 0;
-  int batch, n_batches, batch_size, coordinate, console, *degree, *degree_freq, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, n_input, iteration, max_iteration, n, n_between, number, print, store, threshold, terms, *verbose;
-  double ls_alpha, accept, *block_degree_freq, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, *scale_factor, u;	
+  int *available, model, batch, n_batches, batch_size, coordinate, console, *degree, *degree_freq, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, n_input, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, update_block, update_indicator, update_node, update_size;
+  long int n_indicator_permutations;
+  double ls_alpha, accept, *block_degree_freq, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, *scale_factor, sample_size_indicators, u;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1437,11 +1819,6 @@ output: MCMC sample of unknowns from posterior
   /**************/
   /* Initialize */
   /**************/
-  /*
-  SEXP NEWRANDOMSEED;
-  SEXP rs;
-  PROTECT(rs = install(".Random.seed"));
-  */
   console = *v; /* Console: -1: no print; 0: short print; 1: long print */
   verbose = &null;
   epsilon = DBL_EPSILON;
@@ -1451,21 +1828,13 @@ output: MCMC sample of unknowns from posterior
     Rprintf("\nMachine precision:");
     Rprintf("\n- epsilon = %e",epsilon);
     Rprintf("\n- maximum = %e",maximum);
-    /*
-    Rprintf("\n- ln(epsilon) = %e",ln(epsilon));
-    Rprintf("\n- ln(maximum) = %e",ln(maximum));
-    Rprintf("\n- exp(-maximum) = %e",e(-maximum));
-    Rprintf("\n- exp(-epsilon)= %e",e(-epsilon));
-    Rprintf("\n- exp(+epsilon) = %e",e(+epsilon));
-    Rprintf("\n- exp(+maximum) = %e",e(+maximum));
-    */
     Rprintf("\n");
     }
+  model = (int)*model_type;
   terms = (int)*nterms; /* Number of ergm terms */
   dim = (int)*d;
   dim1 = (int)*d1;
   dim2 = (int)*d2;
-  threshold = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   number = (int)*max_number; /* Number of categories */
   n = (int)*dn; /* Number of nodes */
   max_iteration = *max_iterations; /* Number of draws from posterior */
@@ -1473,28 +1842,26 @@ output: MCMC sample of unknowns from posterior
   else n_batches = 12000;
   if (max_iteration == n_batches) batch_size = 1; 
   else batch_size = trunc(max_iteration / n_batches);
-  n_between = (int)*n_between_block_parameters; /* Number of between-category parameters */
   mdnedges = &null;
-  scale_factor = (double*) calloc(2,sizeof(double));   
-  if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); exit(1); }
-  Set_D_D(2,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
   ergm = Initialize_Ergm(terms,hierarchical,dim,dim1,dim2,structural); /* Ergm structure and non-structural parameters */
   prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,b,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
-  ls = Initialize_Latentstructure(number,n,threshold,ergm->d2); /* Latent structure and structural parameters */
+  dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
+  minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
+  if (dyad_dependence == 0) threshold = n + 1; /* Minimum size of category so that structural parameters show up in ergm pmf */
+  else 
+    {
+    if (*directed == 0) threshold = 6;
+    else threshold = 5;
+    }
+  ls = Initialize_Latentstructure(number,n,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
   prior_ls = Initialize_Prior_ls(*alpha_shape,*alpha_rate); /* Prior: clustering parameter */
   hyper_prior = (int)*hyperprior; /* Means and precisions of Gaussian baseline distribution have non-degenerate prior */
-  dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
-  if (console >= 1)
-    {
-    if (hyper_prior == 0) Rprintf("\nDirichlet process prior without hyper prior.");
-    else Rprintf("\nDirichlet process prior: Gaussian baseline distribution with hyper prior.");
-    if (dyad_dependence == 0) Rprintf("\nConditional dyad-independence model.\n");
-    else Rprintf("\nDyad-dependence model.\n");
-    }
   mheads = NULL;
   mtails = NULL;
   pp = (double*) calloc(ergm->d,sizeof(double));
   if (pp == NULL) { Rprintf("\n\ncalloc failed: Inference, pp\n\n"); exit(1); }
+  scale_factor = (double*) calloc(2+ls->n-ls->minimum_size,sizeof(double));   
+  if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); exit(1); }
   /*************************/
   /* MCMC sample posterior */
   /*************************/
@@ -1537,10 +1904,15 @@ output: MCMC sample of unknowns from posterior
       }
     ls->size[0] = ls->n;
     }
-  local_mh_accept = (double*) calloc(2,sizeof(double));
-  if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); exit(1); }
-  local_mh = (double*) calloc(2,sizeof(double));
+  number_local_mh = 2 + (ls->n - ls->minimum_size);
+  local_mh = (double*) calloc(number_local_mh,sizeof(double));
   if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); exit(1); }
+  local_mh_accept = (double*) calloc(number_local_mh,sizeof(double));
+  if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); exit(1); }
+  Set_D_D(number_local_mh,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
+  if (ls->n < 20) sample_size_indicators = ls->n / 2;
+  else if (ls->n < 50) sample_size_indicators = ls->n / 5;
+  else sample_size_indicators = ls->n / 10;
   coordinate = -1;
   for (batch = 0; batch < n_batches; batch++) /* Batch */
     {
@@ -1560,14 +1932,78 @@ output: MCMC sample of unknowns from posterior
         print = -1;
         }
       /* Generate MCMC sample: */
-      /*
-      NEWRANDOMSEED = findVar(rs, R_GlobalEnv); 
-      Rprintf("%d %d %d %d\n",INTEGER(NEWRANDOMSEED)[0],
-                              INTEGER(NEWRANDOMSEED)[1],
- 			      INTEGER(NEWRANDOMSEED)[2],
- 			      INTEGER(NEWRANDOMSEED)[3]);
-      */
-      if ((ls->number > 1) && (hyper_prior == 1)) /* Hyper prior: mean and precisions of Gaussian baseline distribution have non-degenerate prior */
+      if (dyad_dependence == 0) /* MCMC exploiting dyad-independence conditional on latent structure */
+        {
+        Gibbs_Indicators_Independence(ls,ergm,heads,tails,inputs_h,dnedges,dn,directed,bipartite,nterms,funnames,sonames,q_i); 
+        if (ergm->d1 > 0)
+          {
+          local_mh[0] = local_mh[0] + 1;
+          local_mh_accept[0] = local_mh_accept[0] + Sample_Ergm_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite, 
+                                   nterms,funnames,sonames,inputs,print,scale_factor);
+          }
+        accept = Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,
+                                   funnames,sonames,inputs,inputs_h,print,scale_factor); /* M-H exploiting dyad-independence conditional on latent structure */
+        for (i = 1; i < number_local_mh; i++)
+          {
+          local_mh[i] = local_mh[i] + 1; 
+          local_mh_accept[i] = local_mh_accept[i] + accept;
+          }
+        }
+      else /* Dyad-dependence conditional on latent structure */
+        {
+        available = (int*) calloc(ls->n,sizeof(int));
+        if (available == NULL) { Rprintf("\n\ncalloc failed: Inference, available\n\n"); exit(1); }
+        for (i = 0; i < sample_size_indicators; i++)
+          {
+          do update_node = trunc(unif_rand() * ls->n); /* Sample indicator of node to be updated */
+          while (available[update_node] == 1);
+          available[update_node] = 1;
+          Sample_Indicators_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
+                         heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
+                         sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
+                         verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node);
+          }
+        free(available);
+        if (ergm->d1 > 0)
+          {
+          local_mh[0] = local_mh[0] + 1; 
+          local_mh_accept[0] = local_mh_accept[0] + Sample_Ergm_Theta_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
+                         heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
+                         sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
+                         verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor);
+          }
+        for (i = 0; i < ls->number; i++)
+          {
+          if (ls->size[i] >= ls->minimum_size) 
+            { 
+            update_block = i; /* Parameter vector of block to be updated */
+            update_size = ls->size[update_block];
+            local_mh[update_size-ls->minimum_size+1] = local_mh[update_size-ls->minimum_size+1] + 1; 
+            local_mh_accept[update_size-ls->minimum_size+1] = local_mh_accept[update_size-ls->minimum_size+1] + Sample_Ls_Theta_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
+                         heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
+                         sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
+                         verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_block);
+            }
+          }
+        }
+       if (ls->number_between > 0) 
+         {
+         local_mh[0] = local_mh[0] + 1;
+         local_mh_accept[0] = local_mh_accept[0] + Sample_Ls_Theta_Between(ergm,ls,prior,
+                              heads,tails,dnedges,dn,directed,bipartite, 
+                              nterms,funnames,sonames,inputs,print,scale_factor);
+         }
+      Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
+
+      ls_p = Sample_P(ls); /* Category probability vector */ 
+      Set_D_D(ls->number,ls->p,ls_p);
+      free(ls_p);
+      ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
+      ls->alpha = ls_alpha;
+      if (hyper_prior == 1) /* Hyper prior: mean and precisions of Gaussian baseline distribution have non-degenerate prior */
         {
         prior_mean2 = Gibbs_Parameters_Means(prior,ls); /* Sample means of parameters */
         Set_D_D(ls->d,prior->mean2,prior_mean2);
@@ -1579,58 +2015,7 @@ output: MCMC sample of unknowns from posterior
         free(prior_mean2);
         free(prior_precision2); 
         } 
-      if (dyad_dependence == 0) /* MCMC exploiting dyad-independence conditional on latent structure */
-        {
-        if (ergm->d1 > 0)
-          {
-          u = unif_rand();
-          if (u < 0.5) 
-            {
-            local_mh[0] = local_mh[0] + 1;
-            local_mh_accept[0] = local_mh_accept[0] + Sample_Ergm_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite, 
-                                   nterms,funnames,sonames,inputs,print,n_between,scale_factor);
-            }
-          else if (u < 1) 
-            {
-            local_mh[1] = local_mh[1] + 1; 
-            local_mh_accept[1] = local_mh_accept[1] + Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,
-                                   funnames,sonames,inputs,inputs_h,print,n_between,scale_factor);
-             }
-          else 
-            {
-            local_mh[0] = local_mh[0] + 1; 
-            local_mh[1] = local_mh[1] + 1; 
-            accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
-                                   heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,inputs,inputs_h,print,n_between,scale_factor);
-            local_mh_accept[0] = local_mh_accept[0] + accept;
-            local_mh_accept[1] = local_mh_accept[1] + accept;
-            }
-          }
-        else 
-          {
-          local_mh[0] = local_mh[0] + 1; 
-          local_mh[1] = local_mh[1] + 1; 
-          accept = Sample_Parameters_Independence(ergm,ls,prior, /* M-H exploiting dyad-independence conditional on latent structure */
-                                   heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,inputs,inputs_h,print,n_between,scale_factor);
-          local_mh_accept[0] = local_mh_accept[0] + accept;
-          local_mh_accept[1] = local_mh_accept[1] + accept;
-          }
-        if (ls->number > 1) Gibbs_Indicators_Independence(ls,ergm,heads,tails,inputs_h,dnedges,dn,directed,bipartite,nterms,funnames,sonames,q_i); 
-        }
-      else accept = Sample_Parameters_Dependence(ergm,ls,prior, /* Auxiliary-variable M-H */
-                           heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
-                           sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
-                           verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                           maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,n_between,scale_factor,q_i);
-      if (ls->number > 1)
-        {
-        Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
-        ls_p = Sample_P(ls); /* Category probability vector */ 
-        Set_D_D(ls->number,ls->p,ls_p);
-        free(ls_p);
-        ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
-        ls->alpha = ls_alpha;
-        }
+      /* Internal storage and console output: */
       if (store == 1) 
         {
         /* Posterior prediction when full output is desired */
@@ -1679,7 +2064,11 @@ output: MCMC sample of unknowns from posterior
           coordinate = coordinate + 1;	
           mcmc[coordinate] = prior->precision2[i][i];
           }
-        if (print == 1) Rprintf("\nblock parameters:\n");
+        if (print == 1) 
+          {
+          Rprintf("\nblock parameters:");
+          if (ergm->d2 > 1) Rprintf("\n");
+          }
         for (h = 0; h < ls->d; h++) /* Structural parameters */
           {
           for (i = 0; i < ls->number; i++) 
@@ -1688,7 +2077,7 @@ output: MCMC sample of unknowns from posterior
             coordinate = coordinate + 1;	
             mcmc[coordinate] = ls->theta[h][i];
             }
-          if ((print == 1) && (ls->theta[h][ls->number] != 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
+          if ((print == 1) && (ls->number_between > 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
           coordinate = coordinate + 1;	
           mcmc[coordinate] = 0.0;
           if (print == 1) Rprintf("\n");
@@ -1754,16 +2143,17 @@ output: MCMC sample of unknowns from posterior
   /************/
   /* Finalize */
   /************/
-  if (local_mh[0] > 0) local_mh_accept[0] = local_mh_accept[0] / local_mh[0];
-  if (local_mh[1] > 0) local_mh_accept[1] = local_mh_accept[1] / local_mh[1];
-  Set_D_D(2,mh_accept,local_mh_accept);
+  for (i = 0; i < number_local_mh; i++)
+    {
+    if (local_mh[i] == 0) local_mh_accept[i] = 1.0;
+    else local_mh_accept[i] = local_mh_accept[i] / local_mh[i];
+    }
+  Set_D_D(number_local_mh,mh_accept,local_mh_accept);
   if (console >= 1)
     {
     Rprintf("\n");
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
     Rprintf("\nThinning: every %i-th draw recorded",batch_size);
-    Rprintf("\nAcceptance rate of Metropolis-Hastings algorithm (ergm terms): %6.4f",local_mh_accept[0]);
-    Rprintf("\nAcceptance rate of Metropolis-Hastings algorithm (hergm terms): %6.4f",local_mh_accept[1]);
     }
   free(local_mh_accept);
   free(local_mh);
@@ -1779,8 +2169,5 @@ output: MCMC sample of unknowns from posterior
   Finalize_Latentstructure(ls,dim2);
   Finalize_Prior_ls(prior_ls);
   Finalize_Priorstructure(prior,dim1,dim2);
-  /*
-  UNPROTECT(1);
-  */
 }
 

@@ -18,18 +18,6 @@
 #                                                                         # 
 ###########################################################################
 
-###################################################################################################################
-# Relabeling algorithm
-# 
-# License: GPL-2 license: free; open source; please cite author
-# 
-# Author: Michael Schweinberger
-# 
-# Description: goal: undo label-switching in Bayesian MCMC output in models with unobserved categorical variables, 
-#              where likelihood function is invariant to labeling of categories
-#              means: minimize expected posterior loss, where loss function is given by Stephens (2000, discussion)
-###################################################################################################################
-
 hergm.loss <- function(n_nodes, z, p)
 # Loss function (Stephens, 2000, discussion): minus log joint classification probability
 # input: number of nodes, categories of nodes, classification probabilities
@@ -199,9 +187,8 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
 {
   cat("\n\nRelabeling algorithm")
   cat("\n--------------------")
-  cat("\n\nMichael Schweinberger")
-  permutations <- permutations(n_categories, n_categories, v = 1:n_categories, repeats.allowed = FALSE) # All possible permutations of the category labels
-  n_permutations <- nrow(permutations)
+  n_permutations <- factorial(n_categories)
+  permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels
   input <- as.matrix(read.table(filename)) # MCMC sample of category indicators
   if (n_burnin >= 1)
     {
@@ -251,10 +238,7 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
     else change <- -Inf
     cat("\nChange",change)
     last_loss <- present_loss
-    if (n_categories <= 5)
-      {
-      if (abs(change) <= 0.01) stop_criterion <- i
-      }
+    if (abs(change) <= 0.01) stop_criterion <- i
     }
   cat("\n\nMinimum loss:",min_min_loss)
   min_permutations <- min_min_permutations

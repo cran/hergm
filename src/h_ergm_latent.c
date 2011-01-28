@@ -20,13 +20,13 @@
 
 #include "h_ergm_latent.h"
 
-latentstructure* Initialize_Latentstructure(int number, int n, int threshold, int d)
+latentstructure* Initialize_Latentstructure(int number, int n, int minimum_size, int threshold, int d, int *between)
 /*
-input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters
+input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters, indicators of wether between-category parameters are restricted to 0
 ouput: latent structure
 */
 {
-  int i;
+  int i, k;
   latentstructure *ls;
   ls = (latentstructure*) calloc(1,sizeof(latentstructure));
   if (ls == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls\n\n"); exit(1); }
@@ -42,8 +42,28 @@ ouput: latent structure
   ls->indicator = (int*) calloc(n,sizeof(int)); /* Node-bound variable: category to which node belongs */
   if (ls->indicator == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->indicator\n\n"); exit(1); }
   /* Law generating data: */
-  ls->threshold = threshold; /* Minimum number of nodes so that structural parameters show up in ergm pmf */
-  ls->d = d;
+  ls->minimum_size = minimum_size; /* Minimum number of nodes so that structural parameters show up in PMF */
+  ls->threshold = threshold; /* Category-bound PMF tractable as long as number of nodes in category is smaller than threshold */
+  ls->d = d; /* Number of category-bound parameters */
+  ls->number_between = 0; /* Number of between-category parameters */
+  for (i = 0; i < d; i++) 
+    {
+    ls->number_between = ls->number_between + between[i];
+    }
+  if (ls->number_between > 0)
+    {
+    ls->between = (int*) calloc(ls->number_between,sizeof(int)); /* Indicators of whether between-category parameters are restricted to 0 */
+    if (ls->between == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->between\n\n"); exit(1); }
+    k = -1;
+    for (i = 0; i < d; i++)
+      {
+      if (between[i] == 1) 
+        {
+        k = k + 1;
+        ls->between[k] = i;
+        } 
+      }
+    }
   ls->theta = (double**) calloc(d,sizeof(double*));
   if (ls->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta\n\n"); exit(1); }
   for (i = 0; i < d; i++)
@@ -88,6 +108,7 @@ ouput: latent structure
   free(ls->p);
   free(ls->size);
   free(ls->indicator);
+  if (ls->number_between > 0) free(ls->between);
   for (i = 0; i < d; i++)
     {
     free(ls->theta[i]);

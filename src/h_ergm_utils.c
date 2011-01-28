@@ -38,6 +38,22 @@ double e(double x)
   return y;
 }
 
+double S(int d, double *p)
+/* 
+input: given discrete sample space, number of possible outcomes and probabilities of possible outcomes
+output: Shannon entropy of discrete distribution on natural logarithmic scale
+*/
+{
+  int i;
+  double entropy;
+  entropy = 0.0;
+  for (i = 0; i < d; i++)
+    {
+    entropy = entropy - (p[i] * ln(p[i]));
+    }
+  return entropy;
+}
+
 int Sample_Discrete(double *p)
 /*
 input: probability vector p

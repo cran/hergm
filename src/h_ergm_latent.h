@@ -1,3 +1,23 @@
+/***************************************************************************/
+/* Copyright 2009 Michael Schweinberger                                    */
+/*                                                                         */
+/* This file is part of hergm.                                             */
+/*                                                                         */
+/*    hergm is free software: you can redistribute it and/or modify        */
+/*    it under the terms of the GNU General Public License as published by */
+/*    the Free Software Foundation, either version 3 of the License, or    */
+/*    (at your option) any later version.                                  */
+/*                                                                         */
+/*    hergm is distributed in the hope that it will be useful,             */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/*    GNU General Public License for more details.                         */
+/*                                                                         */
+/*    You should have received a copy of the GNU General Public License    */
+/*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
+/*                                                                         */ 
+/***************************************************************************/
+
 #include "h_ergm_basics.h"
 
 typedef struct 
@@ -17,8 +37,11 @@ Structure and structural parameters:
   int *size; /* Category-bound variable: number of nodes belonging to category */
   int *indicator; /* Node-bound variable: category to which node belongs */
   /* Law generating data: */
-  int threshold; /* Minimum number of nodes so that structural parameters show up in ergm pmf */
+  int minimum_size; /* Minimum number of nodes so that structural parameters show up in PMF */
+  int threshold; /* Category-bound within-block PMF tractable as long as numbers of nodes smaller than threshold */
   int d; /* Number of category-bound parameters */
+  int number_between; /* Number of unrestricted between-category parameters */
+  int *between; /* Indicators of whether between-category parameters are unrestricted */
   double **theta; /* Category-bound parameters */
 } 
   latentstructure; 
@@ -38,9 +61,9 @@ Non-structural parameters of law generating data
 }
   ergmstructure;
 
-latentstructure* Initialize_Latentstructure(int number, int n, int threshold, int d);
+latentstructure* Initialize_Latentstructure(int number, int n, int minimum_size, int threshold, int d, int *between);
 /*
-input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters
+input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters, indicators of wether between-category parameters are restricted to 0
 ouput: latent structure
 */
 

@@ -193,4 +193,72 @@ void Print_DD(int d1, int d2, double **matrix)
     }
 }
 
+int Minimizer(int n, int *vector)
+/*
+input: vector of integers
+output: minimum of vector of integers
+*/
+{
+  int i, minimum, minimizer;
+  minimizer = INT_MAX;
+  minimum = INT_MAX;
+  for (i = 0; i < n; i++)
+    {
+    if (vector[i] < minimum) 
+      {
+      minimizer = i;
+      minimum = vector[i];
+      }
+    }
+  return minimizer;
+}
+ 
+void Get_Permutation(long int n, long int index, int *permutation)
+/*
+input: number of elements, index of permutation, permutation
+output: permutation which follows given permutation in lexigraphical order
+*/
+{
+  int i, j, permutation_i, permutation_j;
+  for (i = 0; i < n; i++) 
+    {
+    permutation[index+i] = permutation[index-n+i];
+    }
+  i = n - 1;
+  while (permutation[index+i-1] > permutation[index+i]) i = i - 1; 
+  j = n;
+  while (permutation[index+j-1] < permutation[index+i-1]) j = j - 1; 
+  /* Swap values at positions i-1 and j-1 */
+  permutation_i = permutation[index+i-1];
+  permutation_j = permutation[index+j-1];
+  permutation[index+i-1] = permutation_j;
+  permutation[index+j-1] = permutation_i;
+  i++; 
+  j = n;
+  while (i < j)
+    {
+    permutation_i = permutation[index+i-1];
+    permutation_j = permutation[index+j-1];
+    permutation[index+i-1] = permutation_j;
+    permutation[index+j-1] = permutation_i;
+    i++;
+    j--;
+    }
+}
+
+void Permutations(long int *n_elements, long int *n_permutations, int *permutation)
+/*
+input: number of elements, number of permutations of elements, elements in increasing order stored in first row of permutations
+output: all possible permutations of elements in lexigraphical order
+*/
+{
+  long int i, index, n;
+  n = (int)*n_elements;
+  index = 0;
+  for (i = 1; i < *n_permutations; i++)
+    {
+    index = index + n;
+    Get_Permutation(n,index,permutation);
+    }
+}
 

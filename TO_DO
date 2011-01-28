@@ -1,4 +1,5 @@
-- segmentation fault: wtc, edges_i + two node-mixes + triangle_ijk with 5 blocks
+- sample within-block subgraph rather than graph
+- sample between-block parameters by exploiting global dyad-independence
+- edges_i: posterior predictions of the number of edges must be divided by 2
 - directed graphs: sample
-- between-block parameters
-- approaches to deal with future segfaults: PROTECT, C stand alone program based on hergm.c
+

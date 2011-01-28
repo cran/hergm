@@ -18,53 +18,93 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, scalefactor)
+hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale)
 {
 
   # Prepare I
-  if (verbose >= 0) cat("\nMetropolis-Hastings algorithm: scale factor and acceptance rate:")
   cp_samplesize <- MCMCparams$samplesize # Store
   MCMCparams$samplesize <- round(parallel * cp_samplesize / 100)
   if (MCMCparams$samplesize < 100) MCMCparams$samplesize <- 100
-  else if (MCMCparams$samplesize > 10000) MCMCparams$samplesize <- 10000
+  else if (MCMCparams$samplesize > 1000) MCMCparams$samplesize <- 1000
 
   # Prepare II
   Clist <- ergm.Cprepare(nw, model)
   maxedges <- max(50000, Clist$nedges)
   hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, output = FALSE, name = "", verbose = -1)
-
+  if (hergm_list$model > 0) cat("\nMCMC: mean-field methods generate candidates of block memberships.\n")
   # Metropolis-Hastings: finding scale factor
-  min_accept <- 0.30
+  if (verbose >= 0) 
+    {
+    cat("\nMetropolis-Hastings algorithm:")
+    cat("\n   ", formatC("ergm", digits = 0, width = 16, format = "f", mode = "character"), sep = "")
+    }
+  if (hergm_list$dependence == 0) 
+    {
+    number <- 2
+    if (verbose >= 0) cat(formatC("hergm", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
+    }
+  else 
+    {
+    number <- 2 + (Clist$n - hergm_list$min_size)
+    if (verbose >= 0)
+      {
+      for (i in hergm_list$min_size:Clist$n)
+        {
+        cat(formatC(i, digits = 0, width = 8, format = "f", mode = "integer"), sep = "")
+        }   
+      }
+    }
+  if (is.null(mh_scale) || (mh_scale < 0)) scalefactor <- rep.int(1, number)
+  else scalefactor <- rep.int(mh_scale, number)
   hergm_list$scalefactor <- scalefactor
-  s <- hergm.wrapper(seeds[1], hergm_list)
+  min_accept <- 0.25
   iteration <- 1
-  if (verbose >= 0) cat("\n(", iteration, ")", " ", 
-                      formatC(scalefactor[1], digits = 4, width = 6, format = "f", mode = "real"), 
-                      " ",
-                      formatC(scalefactor[2], digits = 4, width = 6, format = "f", mode = "real"), 
-                      " ",
-                      formatC(s$mh_accept[1], digits = 4, width = 6, format = "f", mode = "real"), 
-                      " ",
-                      formatC(s$mh_accept[2], digits = 4, width = 6, format = "f", mode = "real"), 
-                      sep = "")
-  while ((min(s$mh_accept) < min_accept) && (iteration <= 10))
-    {  
+  s <- hergm.wrapper(seeds[1], hergm_list)
+  if (verbose >= 0) 
+    {
+    cat("\n", "(", formatC(iteration, digits = 0, width = 1, mode = "character"), ")", sep = "")
+    cat(formatC("scale:", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
+    for (i in 1:number) 
+      {
+      cat(formatC(scalefactor[i], digits = 4, width = 8, format = "f", mode = "real"), sep = "")
+      }
+    cat("\n   ", formatC("rate:", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
+    for (i in 1:number) 
+      {
+      cat(formatC(s$mh_accept[i], digits = 4, width = 8, format = "f", mode = "real"), sep = "")
+      }
+    }
+  while ((s$mh_accept[1] < min_accept) && (min(s$mh_accept[2:number]) < (min_accept / 2)) && (iteration <= 20))
+    { 
     iteration <- iteration + 1
     hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, output = FALSE, name = "", verbose = -1)
-    if (s$mh_accept[1] < min_accept) scalefactor[1] <- scalefactor[1] / 2
-    if (s$mh_accept[2] < min_accept) scalefactor[2] <- scalefactor[2] / 2
+    for (i in 1:number) 
+      {
+      if (s$mh_accept[i] < min_accept) scalefactor[i] <- scalefactor[i] / 2
+      if (i > 2) 
+        {
+        if (scalefactor[i] > scalefactor[i-1]) scalefactor[i] <- scalefactor[i-1]
+        }
+      }
     hergm_list$scalefactor <- scalefactor
     s <- hergm.wrapper(seeds[1], hergm_list)
-    if (verbose >= 0) cat("\n(", iteration, ")", " ", 
-                          formatC(scalefactor[1], digits = 4, width = 6, format = "f", mode = "real"), 
-                          " ",
-                          formatC(scalefactor[2], digits = 4, width = 6, format = "f", mode = "real"), 
-                          " ",
-                          formatC(s$mh_accept[1], digits = 4, width = 6, format = "f", mode = "real"), 
-                          " ",
-                          formatC(s$mh_accept[2], digits = 4, width = 6, format = "f", mode = "real"), 
-                          sep = "")
+    if (verbose >= 0) 
+      {
+      cat("\n", "(", formatC(iteration, digits = 0, width = 1, mode = "character"), ")", sep = "")
+      cat(formatC("scale:", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
+      for (i in 1:number) 
+        {
+        cat(formatC(scalefactor[i], digits = 4, width = 8, format = "f", mode = "real"), sep = "")
+        }
+      cat("\n   ", formatC("rate:", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
+      for (i in 1:number) 
+        {
+        cat(formatC(s$mh_accept[i], digits = 4, width = 8, format = "f", mode = "real"), sep = "")
+        }
+      }
     }
+
+  cat("\n")
 
   MCMCparams$samplesize <- cp_samplesize # Reset
 
