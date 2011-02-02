@@ -1,5 +1,3 @@
-- sample within-block subgraph rather than graph
-- sample between-block parameters by exploiting global dyad-independence
 - edges_i: posterior predictions of the number of edges must be divided by 2
 - directed graphs: sample
 

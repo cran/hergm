@@ -37,14 +37,16 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   covariates <- 0
   for (i in 1:terms) # For given hergm term... 
     {
-    if (model$terms[[i]]$name != "edges")
+    if (model$terms[[i]]$name == "edges")
       {
+      hierarchical[i] <- 0
       model_type <- 0
       edges <- 1
       }
-    if (model$terms[[i]]$name != "mutual")
+    if (model$terms[[i]]$name == "mutual")
       {
       model_type <- 0
+      hierarchical[i] <- 0
       if (is.null(model$terms[[i]]$dependence)) dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
       else if (model$terms[[i]]$dependence == TRUE) dependence <- 1 # Dyad-dependence
       }
@@ -228,6 +230,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
         stop(error_message, call. = FALSE)
         } 
       if (model$terms[[i]]$name == "edges_ij") between[i] = 1
+      else if (model$terms[[i]]$name == "mutual_ij") between[i] = 1
       }     
     }
   # Prior
@@ -419,6 +422,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$q_i <- q_i
   hergm_list$call_RNGstate <- call_RNGstate
   hergm_list$parallel <- parallel
+
+print(model$terms)
 
   hergm_list
 }

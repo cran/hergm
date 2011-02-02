@@ -220,12 +220,12 @@ InitErgm.arcs_j <- function(nw, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.edges_ij <- function(nw, m, arglist, ...) # Michael 
 {
-  a <- ergm.checkargs("edges_ij", 
+  a <- ergm.checkargs("edges_ij",
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
     defaultvalues = list(nw$gal$n),
-    required = c(FALSE)) 
+    required = c(FALSE))
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.edges_ij")
   n <- nw$gal$n # Number of nodes
@@ -235,13 +235,13 @@ InitErgm.edges_ij <- function(nw, m, arglist, ...) # Michael
   #print(indicator)
   number <- a$number # (Maximum) number of categories
   #print(number)
-  theta <- vector(mode = "numeric", length = number * number) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
+  for (i in 1:length(theta)) theta[i] <- 1
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "edges_ij", 
+  m$terms[[termnumber]] <- list(name = "edges_ij",
                                 soname = "hergm",
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
-                                dependence = FALSE) 
+                                dependence = FALSE)
   #print(m$terms[[termnumber]])
   m$coef.names <- c(m$coef.names, "edges_ij")
   m

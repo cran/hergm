@@ -234,16 +234,13 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
       min_min_permutations <- min_permutations
       }
     cat("\nLoss:",present_loss)
-    if (is.finite(present_loss - last_loss)) change <- present_loss - last_loss
-    else change <- -Inf
+    change <- present_loss - last_loss
     cat("\nChange",change)
     last_loss <- present_loss
-    if (abs(change) <= 0.01) stop_criterion <- i
+    if (abs(change) <= 0.01) i <- stop_criterion
     }
-  cat("\n\nMinimum loss:",min_min_loss)
   min_permutations <- min_min_permutations
   indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)
-  cat("\n\nNumber of iterations:",i)
   cat("\n\nMCMC sample relabeled\n")
   name <- sub(pattern = "_indicator.out", replacement = "", filename)
   x <- c("Local minimum of loss function:", min_min_loss)
