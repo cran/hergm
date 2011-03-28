@@ -189,15 +189,13 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
   cat("\n--------------------")
   n_permutations <- factorial(n_categories)
   permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels
-  input <- as.matrix(read.table(filename)) # MCMC sample of category indicators
   if (n_burnin >= 1)
     {
     for (i in 1:n_burnin) # Category indicators: discard burn-in iterations
       { 
-      input <- input[-1,] 
+      indicator <- indicator[-1,] 
       }
     }
-  indicator <- input
   if (min(indicator) == 0) # Category indicators: if category labels are 0..n_categories-1, then translate by 1 to obtain category labels 1..n_categories
     {
     indicator <- indicator + 1 

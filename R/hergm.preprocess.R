@@ -240,18 +240,25 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     }
   # Prior
-  if (simulate == TRUE) 
-    {
-    if ((is.null(alpha)) || (is.null(eta)) || (is.null(indicator))) hyper_prior <- TRUE # Posterior predictive check
-    else hyper_prior <- FALSE # Simulation
-    }
-  else hyper_prior <- TRUE # Dirichlet process prior with hyper prior
-  if (is.null(eta)) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
-  if (is.null(alpha_shape)) alpha_shape <- 1
-  if (is.null(alpha_rate)) alpha_rate <- 1
-  if (is.null(eta_mean_mean)) eta_mean_mean <- vector(mode = "numeric", length = d2)
+  null <- list()
+  null$alpha_shape <- is.null(alpha_shape)
+  null$alpha_rate <- is.null(alpha_rate)
+  null$alpha <- is.null(alpha)
+  null$eta_mean_mean <- is.null(eta_mean_mean)
+  null$eta_mean_precision <- is.null(eta_mean_sd)
+  null$eta_precision_shape <- is.null(eta_precision_shape)
+  null$eta_precision_rate <- is.null(eta_precision_rate)
+  null$eta_mean <- is.null(eta_mean)
+  null$eta_precision <- is.null(eta_sd)
+  null$eta <- is.null(eta)
+  null$indicator <- is.null(indicator)
+  hyper_prior = (null$alpha_shape && null$alpha_rate && null$eta_mean_mean && null$eta_mean_precision && null$eta_precision_shape && null$eta_precision_rate);
+  if (null$eta) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
+  if (null$alpha_shape) alpha_shape <- 1
+  if (null$alpha_rate) alpha_rate <- 1
+  if (null$eta_mean_mean) eta_mean_mean <- vector(mode = "numeric", length = d2)
   eta_mean_precision <- vector(mode = "numeric", length = d2)
-  if (is.null(eta_mean_sd)) 
+  if (null$eta_mean_precision) 
     {
     for (i in 1:d2) eta_mean_precision[i] <- 1 
     }
@@ -259,13 +266,13 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     {
     for (i in 1:d2) eta_mean_precision[i] <- 1 / (eta_mean_sd[i] * eta_mean_sd[i])
     }
-  if (is.null(eta_precision_shape)) eta_precision_shape <- 10
-  if (is.null(eta_precision_rate)) eta_precision_rate <- 10
-  if (is.null(eta_mean)) eta_mean <- vector(mode = "numeric", length = d)
+  if (null$eta_precision_shape) eta_precision_shape <- 10
+  if (null$eta_precision_rate) eta_precision_rate <- 10
+  if (null$eta_mean) eta_mean <- vector(mode = "numeric", length = d)
   eta_sigma <- matrix(data = 0, nrow = d, ncol = d)
   for (i in 1:d) 
     {
-    if (is.null(eta_sd)) eta_sigma[i,i] <- 1 
+    if (null$eta_precision) eta_sigma[i,i] <- 1 
     else eta_sigma[i,i] <- eta_sd[i] * eta_sd[i]
     }
   # Marginal Gaussian priors:
@@ -349,10 +356,10 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     }
   #print(cf2 %*% t(cf2))
   #print(p2 %*% eta_sigma2)
-  if (is.null(eta)) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
-  if (is.null(alpha)) alpha <- 1
-  if (is.null(eta)) eta <- vector(mode = "numeric", length = d)
-  if (is.null(indicator)) indicator <- vector(mode = "numeric", length = Clist$n)
+  if (null$eta) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
+  if (null$alpha) alpha <- 1
+  if (null$eta) eta <- vector(mode = "numeric", length = d)
+  if (null$indicator) indicator <- vector(mode = "numeric", length = Clist$n)
 
   max_iteration <- MCMCparams$samplesize
   terms <- length_mcmc(d1, d2, max_number, Clist$n)
@@ -393,6 +400,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$structural <- structural  
   hergm_list$min_size <- min_size
   hergm_list$max_number <- max_number
+  hergm_list$null <- null
   hergm_list$alpha_shape <- alpha_shape
   hergm_list$alpha_rate <- alpha_rate
   hergm_list$alpha <- alpha

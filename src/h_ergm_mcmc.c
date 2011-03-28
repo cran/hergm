@@ -28,7 +28,7 @@ and ordered in accordance with i < j
 */
 {
   int one = 1;
-  int h, i, j, *number_edges, *heads, *tails;
+  int index, i, j, *number_edges, *heads, *tails;
   double log_odds, *statistic;
   number_edges = &one;
   statistic = (double*) calloc(*number_parameters,sizeof(double));
@@ -37,16 +37,16 @@ and ordered in accordance with i < j
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
   */  
-  h = -1;
-  for (i = 1; i < *n + 1; i++) /* Row i */
+  index = 0;
+  for (i = 1; i < *n; i++) /* Row i */
     {
     heads = &i; 
     for (j = i + 1; j < *n + 1; j++) /* Row i, column j > i (undirected, directed graph) */
       {
-      h = h + 1;
       tails = &j;
       log_odds = Minus_Energy(*number_parameters,input,theta,heads,tails,number_edges,n,directed,bipartite,number_terms,funnames,sonames,statistic); /* Compute log-odds of probability of edge statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
-      p[h] = -ln(1.0 + e(-log_odds));
+      p[index] = -ln(1.0 + e(-log_odds));
+      index = index + 1;
       }
     }
   free(statistic);

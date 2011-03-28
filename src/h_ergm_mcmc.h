@@ -72,12 +72,6 @@ input: input
 output: minus energy of node i on log scale, computed under the assumption of conditional dyad-independence given latent structure
 */
 
-int Sample_Graph_Edge_Independence(int *directed, latentstructure *ls, double *ln_p, int *heads, int *tails);
-/*
-input: latent structure; probability of edge between nodes i and j on log scale
-output: graph sampled from PMF p and number of edges
-*/
-
 int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails);
 /*
 input: number of nodes, indicator of directed network, number of edges, heads and tails of edge list

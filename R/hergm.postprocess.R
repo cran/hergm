@@ -66,8 +66,8 @@ hergm.postprocess <- function(sample = NULL,
   if (d1 > 0) output$ergm_theta <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d1) 
   if (d2 > 0)
     {
-    output$base_mean <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d2)
-    output$base_precision <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d2)
+    output$eta_mean <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d2)
+    output$eta_precision <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d2)
     output$hergm_theta <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d2 * (max_number + 1))
     output$indicator <- matrix(data = 0, nrow = mcmc_sample_size, ncol = n)
     output$size <- matrix(data = 0, nrow = mcmc_sample_size, ncol = max_number)
@@ -93,12 +93,12 @@ hergm.postprocess <- function(sample = NULL,
       for (i in 1:d2) 
         {
         column <- column + 1
-        output$base_mean[row,i] <- mcmc_sample[row,column]
+        output$eta_mean[row,i] <- mcmc_sample[row,column]
         }
       for (i in 1:d2) 
         {
         column <- column + 1
-        output$base_precision[row,i] <- mcmc_sample[row,column]
+        output$eta_precision[row,i] <- mcmc_sample[row,column]
         }
       for (i in 1:(d2 * (max_number + 1))) 
         {
@@ -130,26 +130,10 @@ hergm.postprocess <- function(sample = NULL,
       }
     }
 
-  # Write MCMC sample to files
-  if (is.null(name)) name <- ""
-  else name <- paste(name, "_", sep = "")
-  if (d1 > 0) write(t(output$ergm_theta), paste(sep = "",name,"parameter.out"), ncolumns = d1)
-  if (d2 > 0)
-    {
-    write(t(output$base_mean), paste(sep = "",name,"mean_block_parameter.out"), ncolumns = d2)
-    write(t(output$base_precision), paste(sep = "",name,"precision_block_parameter.out"), ncolumns = d2)
-    write(t(output$hergm_theta), paste(sep = "",name,"block_parameter.out"), ncolumns = d2 * (max_number + 1))
-    write(t(output$indicator), paste(sep = "",name,"indicator.out"), ncolumns = n)
-    write(t(output$size), paste(sep = "",name,"size.out"), ncolumns = max_number)
-    write(t(output$p_k), paste(sep = "",name,"p.out"), ncolumns = max_number)
-    write(t(output$alpha), paste(sep = "",name,"alpha.out"), ncolumns = 1)
-    write(t(output$prediction), paste(sep = "", name, "statistics.out"), ncolumns = d)
-    }
-
   # Relabel sample
   if (relabel == TRUE)
     {
-    minimizer <- hergm.min_loss(max_number, paste(sep = "", name, "indicator.out"), 0, 100) # Specify number of iterations of post-processing algorithm
+    minimizer <- hergm.min_loss(max_number, paste(name, "indicator.out", sep = ""), 0, 100) # Specify number of iterations of post-processing algorithm
     output$p_i_k <- minimizer$p
     index <- 0
     for (h_term in 1:d2)
@@ -161,9 +145,8 @@ hergm.postprocess <- function(sample = NULL,
         index <- index + 1
         theta <- cbind(theta, output$hergm_theta[,index])
         }
-      write(t(theta), paste(sep = "", name, "block_parameter_", h_term, ".out"), ncolumns = max_number)
-      min_theta <- hergm.permute_mcmc(theta, max_number, minimizer$min_permutations) 
-      write(t(min_theta), paste(sep = "", name, "block_parameter_min_", h_term, ".out"), ncolumns = max_number)
+      write(t(theta), paste(name, "hergm_theta_", h_term, ".out"), ncolumns = max_number, sep = "")
+      output$hergm_theta_min <- hergm.permute_mcmc(theta, max_number, minimizer$min_permutations) 
       }
     }
 

@@ -53,9 +53,9 @@ The required computations can be time-consuming when the number of blocks \code{
 
 \item{alpha}{scaling parameter of truncated Dirichlet process / stick-breaking prior of parameters of \code{hergm-terms}.} 
 
-\item{base_mean}{mean parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
+\item{eta_mean}{mean parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
 
-\item{base_precision}{precision parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
+\item{eta_precision}{precision parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
 
 \item{hergm_theta}{parameters of \code{hergm-terms}.}
 

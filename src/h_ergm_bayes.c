@@ -77,7 +77,7 @@ output: prior
   return prior;
 }
 
-priorstructure* Initialize_Prior(int d1, int d2, double *mean2_mean, double *mean2_precision, double precision2_shape, double precision2_rate, double *mean1, double *mean2, double *b, double *cf1, double *cf2, double *precision1, double *precision2)
+priorstructure* Initialize_Prior(int d1, int d2, double *mean2_mean, double *mean2_precision, double precision2_shape, double precision2_rate, double *mean1, double *mean2, double *cf1, double *cf2, double *precision1, double *precision2)
 /* 
 input: number of non-hierarchical, hierarchical ergm terms, R input in the form of vectors and (by vec operator) vectorized matrices
 output: prior of non-structural, structural parameters

@@ -379,9 +379,9 @@ output: indicators
   Rprintf("\nEntropy of ls->p: %8.4f",entropy);
   */
   /* Temperature: note that the entropy of the full conditional distribution may be strongly peaked, and high temperatures are required to unfreeze the algorithm */
-  if (entropy < 0.05) t = 1000.0;
-  else if (entropy < 0.10) t = 100.0;
-  else if (entropy < 0.20) t = 10.0;
+  if (entropy < 0.05) t = 100.0;
+  else if (entropy < 0.10) t = 10.0;
+  else if (entropy < 0.20) t = 5.0;
   else if (entropy < 0.8) t = 2.0;
   else if (entropy < 0.9) t = 0.5;
   else t = 0.25;
@@ -1364,32 +1364,32 @@ output: partition of set of nodes drawn from Chinese restaurant process with sca
   return number;
 }
 
-int Sample_Graph_Edge_Independence(int *directed, latentstructure *ls, double *ln_p, int *heads, int *tails)
+int Sample_Graph_Edge_Independence(latentstructure *ls, double *ln_p, int *heads, int *tails)
 /*
 input: latent structure; probability of edge between nodes i and j on log scale
 output: graph sampled from PMF p and number of edges
 */
 {
-  int h, i, j, number_edges;
+  int index, i, j, number_edges;
   double u;
   /* 
   Note 1: if i < j, edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
   */  
   number_edges = 0;
-  h = -1;
-  for (i = 1; i < ls->n + 1; i++)
+  index = 0;
+  for (i = 1; i < ls->n; i++)
     {
     for (j = i + 1; j < ls->n + 1; j++)
       {
       u = unif_rand(); /* Sample uniform[0,1] */
-      h = h + 1;
-      if (ln(u) < ln_p[h]) 
+      if (ln(u) < ln_p[index]) 
         {
         number_edges = number_edges + 1;
         heads[number_edges] = i; /* number_edges is between 1..degrees of freedom; heads[0] is supposed to contain the number of edges */
         tails[number_edges] = j; /* number_edges is between 1..degrees of freedom; tails[0] is supposed to contain the number of edges */
         }
+      index = index + 1;
       }
     }    
   heads[0] = number_edges; /* heads[0] is supposed to contain the number of edges */
@@ -1405,12 +1405,22 @@ void Simulation(int *dyaddependence,
              int *structural,
              int *min_size,
              int *max_number,
+             int *null_alpha_shape,
+             int *null_alpha_rate,
+             int *null_alpha,
+             int *null_eta_mean_mean,
+             int *null_eta_mean_precision,
+             int *null_eta_precision_shape,
+             int *null_eta_precision_rate,
+             int *null_eta_mean,
+             int *null_eta_precision,
+             int *null_eta,
+             int *null_indicator,
              double *alpha,
              double *alpha_shape,
              double *alpha_rate,
              double *m1,
              double *m2,
-             double *b,
              double *cf1,
              double *cf2,
              double *p1,
@@ -1471,7 +1481,7 @@ output: simulated graph
   dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
   minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   ergm = Initialize_Ergm(terms,hierarchical,dim,dim1,dim2,structural); /* Ergm structure and non-structural parameters */
-  prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,b,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
+  prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
   dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
   minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   if (dyad_dependence == 0) threshold = n + 1; /* Minimum size of category so that structural parameters show up in ergm pmf */
@@ -1538,42 +1548,31 @@ output: simulated graph
     {
     progress = (iteration * 100.0) / max_iteration;
     if (print == 1) Rprintf("\nProgress: %5.2f%%",progress);
-    if (hyper_prior == 0) /* Posterior prediction */
+    ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */
+    for (k = 0; k < ls->number; k++)
       {
-      for (k = 0; k < ls->number; k++)
-        {
-        ls->size[k] = 0;
-        }
-      for (i = 0; i < ls->n; i++)
-        {
-        k = ls->indicator[i];
-        ls->size[k] = ls->size[k] + 1;
-        }
+      ls->size[k] = 0;
       }
-    else /* Simulation */
+    if (*null_indicator == 0) 
       {
-      ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */
-      for (k = 0; k < ls->number; k++)
-        {
-        ls->size[k] = 0;
-        }
       for (i = 0; i < ls->n; i++)
         {
         k = Sample_Discrete(ls->p);
         ls->indicator[i] = k;
         ls->size[k] = ls->size[k] + 1;
         }
-      /*
+      }
+    if (*null_eta == 0)
+      {
       if (ergm->d1 > 0) 
         {
         draw = Sample_MVN(ergm->d1,prior->mean1,prior->cf1);
         Set_D_D(ergm->d1,ergm->theta,draw);
         free(draw);
         }
-      */
       for (i = 0; i < ls->number; i++) 
         {
-        draw = Sample_MVN(ls->d,prior->mean2,prior->cf2); /* Random walk Metropolis-Hastings algorithm */
+        draw = Sample_MVN(ls->d,prior->mean2,prior->cf2);
         Set_Column(ls->d,ls->theta,i,draw); /* Set ls_theta[][i] to proposal */
         free(draw);
         }
@@ -1592,7 +1591,7 @@ output: simulated graph
     if ((*dyaddependence == 0) && (*directed == 0)) /* Undirected dyad-independence ERGM */ 
       { 
       P_Edge_Independence(nterms,d,inputs,theta,dn,directed,bipartite,funnames,sonames,p);
-      Sample_Graph_Edge_Independence(directed,ls,p,newnetworkheads,newnetworktails);
+      Sample_Graph_Edge_Independence(ls,p,newnetworkheads,newnetworktails);
       for (i = 0; i < ls->n; i++) /* Identical indicators */
         {
         pseudo_indicator[i] = 1;
@@ -1640,17 +1639,17 @@ output: simulated graph
         mcmc[coordinate] = ergm->theta[i];
         }  
       }
-    if ((hyper_prior == 1) && (print == 1)) Rprintf("\nmeans of block parameters:");
+    if (print == 1) Rprintf("\nmeans of block parameters:");
     for (i = 0; i < ls->d; i++) /* Structural parameters */
       {
-      if ((hyper_prior == 1) && (print == 1)) Rprintf(" %8.4f",prior->mean2[i]);
+      if (print == 1) Rprintf(" %8.4f",prior->mean2[i]);
       coordinate = coordinate + 1;	
       mcmc[coordinate] = prior->mean2[i];
       }
-    if ((hyper_prior == 1) && (print == 1)) Rprintf("\nprecisions of block parameters:");
+    if (print == 1) Rprintf("\nprecisions of block parameters:");
     for (i = 0; i < ls->d; i++) /* Structural parameters */
       {
-      if ((hyper_prior == 1) && (print == 1)) Rprintf(" %8.4f",prior->precision2[i][i]);
+      if (print == 1) Rprintf(" %8.4f",prior->precision2[i][i]);
       coordinate = coordinate + 1;	
       mcmc[coordinate] = prior->precision2[i][i];
       }
@@ -1689,10 +1688,10 @@ output: simulated graph
       coordinate = coordinate + 1;
       mcmc[coordinate] = ls->size[i];
       } 
-    if ((hyper_prior == 1) && (print == 1)) Rprintf("\nblock probabilities:");
+    if (print == 1) Rprintf("\nblock probabilities:");
     for (i = 0; i < ls->number; i++) /* Category probability vector */
       {
-      if ((hyper_prior == 1) && (print == 1)) Rprintf(" %6.4f",ls->p[i]);
+      if (print == 1) Rprintf(" %6.4f",ls->p[i]);
       coordinate = coordinate + 1;
       mcmc[coordinate] = ls->p[i];
       }
@@ -1702,19 +1701,22 @@ output: simulated graph
     if ((*dyaddependence == 0) && (*directed == 0) && (print == 1)) 
       {
       Rprintf("\ndegree distribution:\n");
-      i = 0;
-      for (k = 0; k < (ls->n - 1); k++)
+      for (k = 0; k < ls->n; k++)
         {
         if (degree_freq[k] > 0) 
           {
-          i = i + 1;
           Rprintf("%4i",k);
           }
         } 
       Rprintf("\n");
-      for (k = 0; k < (ls->n - 1); k++)
+      i = 0;
+      for (k = 0; k < ls->n; k++)
         {
-        if (degree_freq[k] > 0) Rprintf("%4i",degree_freq[k]);
+        if (degree_freq[k] > 0) 
+          {
+          i = i + 1;
+          Rprintf("%4i",degree_freq[k]);
+          }
         } 
       Rprintf("\n%i of %i possible values",i,ls->n);
       free(degree);
@@ -1778,7 +1780,6 @@ void Inference(int *model_type,
              double *alpha_rate,
              double *m1,
              double *m2,
-             double *b,
              double *cf1,
              double *cf2,
              double *p1,
@@ -1845,7 +1846,7 @@ output: MCMC sample of unknowns from posterior
   else batch_size = trunc(max_iteration / n_batches);
   mdnedges = &null;
   ergm = Initialize_Ergm(terms,hierarchical,dim,dim1,dim2,structural); /* Ergm structure and non-structural parameters */
-  prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,b,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
+  prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
   dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
   minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   if (dyad_dependence == 0) threshold = n + 1; /* Minimum size of category so that structural parameters show up in ergm pmf */

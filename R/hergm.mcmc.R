@@ -54,70 +54,23 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
       for (i in 3:number) sample <- append(sample, s[[i]]$mcmc)
       }
     }
-  else 
-    {
-    sample <- hergm.wrapper(seeds[1], hergm_list) # Non-parallel computing
-    if (simulate == FALSE) sample <- sample$mcmc
-    }
+  else sample <- hergm.wrapper(seeds[1], hergm_list) # Non-parallel computing
 
   # Postprocess
-  samplesize <- hergm_list$MCMCparams$samplesize
-  if (hergm_list$simulate == TRUE) # Simulation
-    {
-    if (hergm_list$output == TRUE) # Full output
-      {
-      file_heads <- paste(sep = "", name, "_heads.out")
-      file_tails <- paste(sep = "", name, "_tails.out")
-      file.create(file_heads)
-      file.create(file_tails)  
-      h <- 0
-      for (i in 1:samplesize)
-        { 
-        h <- h + 1
-        number_edges <- sample$sample_heads[h]  # First element of sample$newnwheads and sample$newnwtails is number of edges 
-        first <- h # First element corresponds to number of edges
-        last <- h + number_edges
-        write(sample$sample_heads[first:last], file_heads, ncolumns = number_edges + 1, append = TRUE)
-        write(sample$sample_tails[first:last], file_tails, ncolumns = number_edges + 1, append = TRUE)
-        h <- last
-        }
-      output <- sample$mcmc
-      }
-    else # Limited output
-      {
-      sample <- matrix(data = 0, nrow = samplesize, ncol = hergm_list$d)
-      for (i in 1:samplesize)
-        {
-        for (j in 1:hergm_list$d)
-          {
-          index <- ((i - 1) * samplesize * hergm_list$terms) + (hergm_list$terms - hergm_list$d) + j
-          sample[i,j] <- hergm_list$mcmc[index]
-          }
-        }
-      output <- sample
-      }    
-    }
-  else # Bayesian inference
-    {
-    if (hergm_list$output == TRUE)
-      {
-      if (is.null(name)) name <- "hergm"
-      filename <- paste(sep = "", name, "_mcmc.out")
-      write(sample, filename, ncolumns = hergm_list$terms)
-      }
-    output <- sample
-    }
-
-  cat("\n")
-
   output_list <- list() 
-  output_list$n <- Clist$n
+  output_list$n <- hergm_list$n
   output_list$max_number <- hergm_list$max_number
   output_list$d1 <- hergm_list$d1
   output_list$d2 <- hergm_list$d2
-  output_list$parallel <- parallel
-  output_list$sample_size <- min(12000, samplesize)
-  output_list$sample <- output 
+  output_list$parallel <- hergm_list$parallel
+  output_list$sample_size <- min(12000, hergm_list$MCMCparams$samplesize)
+  if (simulate == TRUE) 
+    {
+    output_list$sample <- sample$sample
+    output_list$heads <- sample$sample_heads
+    output_list$tails <- sample$sample_tails
+    }
+  output_list$sample <- sample$mcmc 
 
   output_list
 }

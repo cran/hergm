@@ -175,6 +175,12 @@ input: latent structure ls
 output: partition of set of nodes drawn from Chinese restaurant process with scaling parameter ls->alpha
 */
 
+int Sample_Graph_Edge_Independence(latentstructure *ls, double *ln_p, int *heads, int *tails);
+/*
+input: latent structure; probability of edge between nodes i and j on log scale
+output: graph sampled from PMF p and number of edges
+*/
+
 void Simulation(int *dyaddependence,
              int *hierarchical,
              int *d, 
@@ -183,12 +189,22 @@ void Simulation(int *dyaddependence,
              int *structural,
              int *min_size,
              int *max_number,
+             int *null_alpha_shape,
+             int *null_alpha_rate,
+             int *null_alpha,
+             int *null_eta_mean_mean,
+             int *null_eta_mean_precision,
+             int *null_eta_precision_shape,
+             int *null_eta_precision_rate,
+             int *null_eta_mean,
+             int *null_eta_precision,
+             int *null_eta,
+             int *null_indicator,
              double *alpha,
              double *alpha_shape,
              double *alpha_rate,
              double *m1,
              double *m2,
-             double *b,
              double *cf1,
              double *cf2,
              double *p1,
@@ -232,7 +248,6 @@ void Inference(int *model_type,
              double *alpha_rate,
              double *m1,
              double *m2,
-             double *b,
              double *cf1,
              double *cf2,
              double *p1,
