@@ -47,8 +47,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       {
       model_type <- 0
       hierarchical[i] <- 0
-      if (is.null(model$terms[[i]]$dependence)) dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
-      else if (model$terms[[i]]$dependence == TRUE) dependence <- 1 # Dyad-dependence
+      dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
       }
     if (model$terms[[i]]$name == "edges_i") # hergm term
       {
@@ -116,6 +115,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       {
       model_type <- 0
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 2
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -125,6 +125,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       {
       model_type <- 0
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 2
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -134,6 +135,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       {
       model_type <- 0
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -144,6 +146,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       if (model_type > 0) model_type <- 0 # Drop
       else model_type <- 1
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -154,6 +157,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       if (model_type > 0) model_type <- 0 # Drop
       else model_type <- 2
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -164,6 +168,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       if (model_type > 0) model_type <- 0 # Drop
       else model_type <- 2
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -173,6 +178,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       {
       model_type <- 0
       hierarchical[i] <- 1 
+      dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
@@ -247,14 +253,14 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   eta_mean_precision <- vector(mode = "numeric", length = d2)
   if (is.null(eta_mean_sd)) 
     {
-    for (i in 1:d2) eta_mean_precision[i] <- 0.01
+    for (i in 1:d2) eta_mean_precision[i] <- 1 
     }
   else
     {
     for (i in 1:d2) eta_mean_precision[i] <- 1 / (eta_mean_sd[i] * eta_mean_sd[i])
     }
-  if (is.null(eta_precision_shape)) eta_precision_shape <- 5
-  if (is.null(eta_precision_rate)) eta_precision_rate <- 5
+  if (is.null(eta_precision_shape)) eta_precision_shape <- 10
+  if (is.null(eta_precision_rate)) eta_precision_rate <- 10
   if (is.null(eta_mean)) eta_mean <- vector(mode = "numeric", length = d)
   eta_sigma <- matrix(data = 0, nrow = d, ncol = d)
   for (i in 1:d) 
@@ -422,8 +428,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$q_i <- q_i
   hergm_list$call_RNGstate <- call_RNGstate
   hergm_list$parallel <- parallel
-
-print(model$terms)
 
   hergm_list
 }

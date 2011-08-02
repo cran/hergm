@@ -383,8 +383,9 @@ output: indicators
   else if (entropy < 0.10) t = 100.0;
   else if (entropy < 0.20) t = 10.0;
   else if (entropy < 0.8) t = 2.0;
-  else t = 0.5;
-  if (t != 1.0) /* Melt down the full conditional distribution, since he dependence of the indicators implies that the full conditional distribution may have low entropy */
+  else if (entropy < 0.9) t = 0.5;
+  else t = 0.25;
+  if (t != 1.0) /* Melt down the full conditional distribution, since the dependence of the indicators implies that the full conditional distribution may have low entropy */
     {
     p = (double*) calloc(ls->number,sizeof(double));
     if (p == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, p\n\n"); exit(1); }
