@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate, parallel, output, name, verbose) # Michael
+hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, simulate, parallel, output, name, verbose) # Michael
 {
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms	
@@ -275,6 +275,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     if (null$eta_precision) eta_sigma[i,i] <- 1 
     else eta_sigma[i,i] <- eta_sd[i] * eta_sd[i]
     }
+  if (null$indicator) indicator <- rep.int(0, Clist$n)
   # Marginal Gaussian priors:
   eta_mean1 <- vector(mode = "numeric", length = d1)
   eta_mean2 <- vector(mode = "numeric", length = d2) 
@@ -362,10 +363,10 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   if (null$indicator) indicator <- vector(mode = "numeric", length = Clist$n)
 
   max_iteration <- MCMCparams$samplesize
-  terms <- length_mcmc(d1, d2, max_number, Clist$n)
+  number_terms <- length_mcmc(d1, d2, max_number, Clist$n)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
   else dimension <- min(MCMCparams$samplesize, 12000)
-  mcmc <- vector(mode = "numeric", length = (dimension * terms))
+  mcmc <- vector(mode = "numeric", length = (dimension * number_terms))
 
   if (Clist$dir == FALSE) max_edges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else max_edges <- Clist$n * (Clist$n - 1) # Directed

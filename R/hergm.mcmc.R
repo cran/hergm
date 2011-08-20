@@ -58,7 +58,7 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
 
   # Postprocess
   output_list <- list() 
-  output_list$n <- hergm_list$n
+  output_list$n <- Clist$n
   output_list$max_number <- hergm_list$max_number
   output_list$d1 <- hergm_list$d1
   output_list$d2 <- hergm_list$d2
@@ -67,8 +67,11 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
   if (simulate == TRUE) 
     {
     output_list$sample <- sample$sample
-    output_list$heads <- sample$sample_heads
-    output_list$tails <- sample$sample_tails
+    number_edges <- sample$sample_heads[1]
+    sample$sample_heads <- sample$sample_heads[-1]
+    sample$sample_tails <- sample$sample_tails[-1]
+    output_list$heads <- sample$sample_heads[1:number_edges]
+    output_list$tails <- sample$sample_tails[1:number_edges]
     }
   output_list$sample <- sample$mcmc 
 

@@ -1360,8 +1360,10 @@ output: within-block partition function on log scale, evaluated either by comple
         else if (ls->size[k] == 3) lower_bound_k = Within_Block_Partition_Function_3_Graph(ls,block_members,ergm,input,theta,n,directed,bipartite,number_terms,funnames,sonames);
         else if (ls->size[k] == 4) lower_bound_k = Within_Block_Partition_Function_4_Graph(ls,block_members,ergm,input,theta,n,directed,bipartite,number_terms,funnames,sonames);
         else if (ls->size[k] == 5) lower_bound_k = Within_Block_Partition_Function_5_Graph(ls,block_members,ergm,input,theta,n,directed,bipartite,number_terms,funnames,sonames);
+        /*
         else if (ls->size[k] == 6) lower_bound_k = Within_Block_Partition_Function_6_Graph(ls,block_members,ergm,input,theta,n,directed,bipartite,number_terms,funnames,sonames);
         else if (ls->size[k] == 7) lower_bound_k = Within_Block_Partition_Function_7_Graph(ls,block_members,ergm,input,theta,n,directed,bipartite,number_terms,funnames,sonames);
+        */
         }
       else 
         {

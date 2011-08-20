@@ -379,12 +379,7 @@ output: indicators
   Rprintf("\nEntropy of ls->p: %8.4f",entropy);
   */
   /* Temperature: note that the entropy of the full conditional distribution may be strongly peaked, and high temperatures are required to unfreeze the algorithm */
-  if (entropy < 0.05) t = 100.0;
-  else if (entropy < 0.10) t = 10.0;
-  else if (entropy < 0.20) t = 5.0;
-  else if (entropy < 0.8) t = 2.0;
-  else if (entropy < 0.9) t = 0.5;
-  else t = 0.25;
+  t = 1.0 / entropy;
   if (t != 1.0) /* Melt down the full conditional distribution, since the dependence of the indicators implies that the full conditional distribution may have low entropy */
     {
     p = (double*) calloc(ls->number,sizeof(double));
@@ -1405,15 +1400,7 @@ void Simulation(int *dyaddependence,
              int *structural,
              int *min_size,
              int *max_number,
-             int *null_alpha_shape,
-             int *null_alpha_rate,
              int *null_alpha,
-             int *null_eta_mean_mean,
-             int *null_eta_mean_precision,
-             int *null_eta_precision_shape,
-             int *null_eta_precision_rate,
-             int *null_eta_mean,
-             int *null_eta_precision,
              int *null_eta,
              int *null_indicator,
              double *alpha,
@@ -1451,7 +1438,7 @@ output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, hyper_prior, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
+  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
   double *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
@@ -1512,15 +1499,14 @@ output: simulated graph
   if (pseudo_indicator == NULL) { Rprintf("\n\ncalloc failed: Simulation, pseudo_indicator\n\n"); exit(1); }
   pp = (double*) calloc(ergm->d,sizeof(double));
   if (pp == NULL) { Rprintf("\n\ncalloc failed: Simulation, pp\n\n"); exit(1); }
-  newnetworkheads = (int*) calloc(*maxpossibleedges,sizeof(int));
+  newnetworkheads = (int*) calloc(*maxpossibleedges+1,sizeof(int));
   if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); exit(1); }
-  newnetworktails = (int*) calloc(*maxpossibleedges,sizeof(int));
+  newnetworktails = (int*) calloc(*maxpossibleedges+1,sizeof(int));
   if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); exit(1); }
-  hyper_prior = (int)*hyperprior; /* Means and precisions of Gaussian baseline distribution have non-degenerate prior */
   /****************/
   /* Sample graph */
   /****************/
-  if (*call_RNGstate == 1) GetRNGstate();
+  GetRNGstate();
   ls->alpha = *alpha; /* Clustering parameter */
   for (i = 0; i < (ls->number - 1); i++)
     {
@@ -1548,21 +1534,26 @@ output: simulated graph
     {
     progress = (iteration * 100.0) / max_iteration;
     if (print == 1) Rprintf("\nProgress: %5.2f%%",progress);
+    if (*null_alpha == 1) ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
     ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */
     for (k = 0; k < ls->number; k++)
       {
       ls->size[k] = 0;
       }
-    if (*null_indicator == 0) 
+    if (*null_indicator == 1) 
       {
       for (i = 0; i < ls->n; i++)
         {
         k = Sample_Discrete(ls->p);
         ls->indicator[i] = k;
-        ls->size[k] = ls->size[k] + 1;
         }
       }
-    if (*null_eta == 0)
+    for (i = 0; i < ls->n; i++)
+      {
+      k = ls->indicator[i];
+      ls->size[k] = ls->size[k] + 1;
+      }
+    if (*null_eta == 1)
       {
       if (ergm->d1 > 0) 
         {
@@ -1744,7 +1735,7 @@ output: simulated graph
       }
     if (print == 1) Rprintf("\n");
     }
-  if (*call_RNGstate == 1) PutRNGstate();
+  PutRNGstate();
   /************/
   /* Finalize */
   /************/

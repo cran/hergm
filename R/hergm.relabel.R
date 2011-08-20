@@ -180,7 +180,7 @@ hergm.step_2 <- function(n_sample, n_nodes, n_categories, n_permutations, permut
   step_2
 }
 
-hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
+hergm.min_loss <- function(n_categories, indicator, n_burnin, stop_criterion)
 # Minimize posterior expected loss
 # input: number of categories, convergence criterion, stop criterion
 # output: minimizing permutations, classification probabilities, relabeled MCMC output of categories of nodes
@@ -240,11 +240,6 @@ hergm.min_loss <- function(n_categories, filename, n_burnin, stop_criterion)
   min_permutations <- min_min_permutations
   indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)
   cat("\n\nMCMC sample relabeled\n")
-  name <- sub(pattern = "_indicator.out", replacement = "", filename)
-  x <- c("Local minimum of loss function:", min_min_loss)
-  write(x, paste(sep = "", name, "_min_loss.out"), ncolumns = 2)
-  write(t(p), paste(sep = "", name, "_classification.out"), ncolumns = n_categories)
-  write(t(indicator), paste(sep = "", name, "_indicator_min.out"), ncolumns = n_nodes)
   minimizer <- list()
   minimizer$min_permutations <- min_permutations
   minimizer$p <- p
