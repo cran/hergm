@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -86,6 +86,12 @@ void Get_Permutation(long int n, long int index, int *permutation);
 /*
 input: number of elements, index of permutation, permutation
 output: permutation which follows given permutation in lexigraphical order
+*/
+
+int Max(int n, int *vector);
+/*
+input: vector of integers
+output: maximum of vector of integers
 */
 
 void Permutations(long int *n_elements, long int *n_permutations, int *permutation);

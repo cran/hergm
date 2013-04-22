@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm.h"
@@ -42,9 +42,9 @@ output: category probability vector
   int i;
   double *b, c, *p;
   b = (double*) calloc(ls->number,sizeof(double));
-  if (b == NULL) { Rprintf("\n\ncalloc failed: Stick_Breaking, b\n\n"); exit(1); }
+  if (b == NULL) { Rprintf("\n\ncalloc failed: Stick_Breaking, b\n\n"); error("Error: out of memory"); }
   p = (double*) calloc(ls->number,sizeof(double));
-  if (p == NULL) { Rprintf("\n\ncalloc failed: Stick_Breaking, p\n\n"); exit(1); }
+  if (p == NULL) { Rprintf("\n\ncalloc failed: Stick_Breaking, p\n\n"); error("Error: out of memory"); }
   /* Sample beta random variates: */
   /*
   Rprintf("\nStick_Breaking");
@@ -92,9 +92,9 @@ output: category probability vector
   int i, rest;
   double *p, *shape1, *shape2;
   shape1 = (double*) calloc(ls->number-1,sizeof(double)); /* Element 0..ls->number-2 required */
-  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Sample_P, sample1\n\n"); exit(1); }
+  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Sample_P, sample1\n\n"); error("Error: out of memory"); }
   shape2 = (double*) calloc(ls->number-1,sizeof(double)); /* Element 0..ls->number-2 required */
-  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Sample_P, sample2\n\n"); exit(1); }
+  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Sample_P, sample2\n\n"); error("Error: out of memory"); }
   rest = ls->n;
   for (i = 0; i < (ls->number - 1); i++)
     {
@@ -174,14 +174,14 @@ output: structural, non-structural parameters showing up in ergm pmf
   log_ratio = 0.0;
   /* Propose ls->theta: */
   ls_theta = (double**) calloc(ls->d,sizeof(double*)); /* Remark: since memory is allocated to ls_theta by calloc, between-block parameters are 0 */
-  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, ls_theta\n\n"); exit(1); }
+  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, ls_theta\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     ls_theta[i] = (double*) calloc(ls->number+1,sizeof(double));
-    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, ls_theta[%i]\n\n",i); exit(1); }
+    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, ls_theta[%i]\n\n",i); error("Error: out of memory"); }
     }
   present = (double*) calloc(ls->d,sizeof(double));  
-  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, present\n\n"); exit(1); }
+  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Independence, present\n\n"); error("Error: out of memory"); }
   cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
   for (i = 0; i < ls->number; i++) 
     {
@@ -264,14 +264,14 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   /* Propose ls->theta: */
   ls_theta = (double**) calloc(ls->d,sizeof(double*)); /* Remark: since memory is allocated to ls_theta by calloc, between-block parameters are 0 */
-  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, ls_theta\n\n"); exit(1); }
+  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, ls_theta\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     ls_theta[i] = (double*) calloc(ls->number+1,sizeof(double));
-    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, ls_theta[%i]\n\n",i); exit(1); }
+    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, ls_theta[%i]\n\n",i); error("Error: out of memory"); }
     }
   present = (double*) calloc(ls->d,sizeof(double));  
-  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, present\n\n"); exit(1); }
+  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Parameters_Independence, present\n\n"); error("Error: out of memory"); }
   cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[1]); /* Rescale Cholesky factor of Gaussian prior */ 
   for (i = 0; i < ls->number; i++) 
     {
@@ -342,21 +342,21 @@ int Sample_Indicators_Dependence(int model, ergmstructure *ergm, latentstructure
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node)
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node, int *status)
 /*
 input: ergm structure, latent structure, prior
 output: indicators
 */
 {
-  int accept, computation, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, *sample_i, sample_size;
+  int number_networks, accept, computation, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, *sample_i, sample_size;
   double a_i, entropy, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *p, *q_i, present_a, proposal_a, present_energy, proposal_energy, sum, t, *theta, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
-  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, input_proposal\n\n"); exit(1); }
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, input_proposal\n\n"); error("Error: out of memory"); }
   ls_indicator = (int*) calloc(ls->n,sizeof(int));
-  if (ls_indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, ls_indicator\n\n"); exit(1); }
+  if (ls_indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, ls_indicator\n\n"); error("Error: out of memory"); }
   ls_size = (int*) calloc(ls->number,sizeof(int));
-  if (ls_size == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, ls_size\n\n"); exit(1); }
+  if (ls_size == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, ls_size\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->n; i++) 
     {
     ls_indicator[i] = ls->indicator[i];
@@ -371,19 +371,35 @@ output: indicators
   there are two mean-field methods, one fast and one slow; both give rise to exact results when ls->size[k] == 2 and work well as long as ls->size[k] is not too large, but when ls->size[k] > 5, the slow method is much more accurate than the slow method */
   if (model == 0) proposal_distribution = 0;
   else proposal_distribution = 1;
-  if (proposal_distribution == 0) q_i = &ls->p[0]; /* General case: proposal distribution: ls->p */
-  else q_i = Candidate_Generating_Distribution_Indicators_Dependence(update_node,model,ls,ergm,heads,tails,input_present,dnedges,dn,directed,bipartite,nterms,funnames,sonames); /* Special case:  proposal distribution: exact or approximate full conditional distribution */
+
+/*  if (proposal_distribution == 0) q_i = &ls->p[0]; /* General case: proposal distribution: ls->p */
+/*  else q_i = Candidate_Generating_Distribution_Indicators_Dependence(update_node,model,ls,ergm,heads,tails,input_present,dnedges,dn,directed,bipartite,nterms,funnames,sonames); /* Special case:  proposal distribution: exact or approximate full conditional distribution */
+
+  /* 666 */
+  proposal_distribution = 0; 
+  q_i = (double*) calloc(ls->number,sizeof(double));
+  if (q_i == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, q_i\n\n"); error("Error: out of memory"); }
+  for (k = 0; k < ls->number; k++) 
+    {
+    q_i[k] = 1.0 / ls->number;
+    }
+  /* 666 */
+
   entropy = S(ls->number,q_i); /* Entropy of ls->p as indicator of how much the nodes are spread out across blocks */
   entropy = entropy / ln(ls->number);
   /*
   Rprintf("\nEntropy of ls->p: %8.4f",entropy);
   */
   /* Temperature: note that the entropy of the full conditional distribution may be strongly peaked, and high temperatures are required to unfreeze the algorithm */
-  t = 1.0 / entropy;
+  if ((entropy > epsilon) && (entropy < maximum)) t = 1.0 / entropy;
+  else t = 10.0;
+
+  t = 1.0; /* 666 */
+
   if (t != 1.0) /* Melt down the full conditional distribution, since the dependence of the indicators implies that the full conditional distribution may have low entropy */
     {
     p = (double*) calloc(ls->number,sizeof(double));
-    if (p == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, p\n\n"); exit(1); }
+    if (p == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, p\n\n"); error("Error: out of memory"); }
     sum = 0.0;
     for (k = 0; k < ls->number; k++)
       {
@@ -405,47 +421,66 @@ output: indicators
   ls_size[proposal_block] = ls_size[proposal_block] + 1;
   /* Compute log acceptance ratio : */    
   log_ratio = 0.0;
-  if ((ls_size[present_block] < ls->threshold) && (ls_size[proposal_block] < ls->threshold) && (ls->size[present_block] < ls->threshold) && (ls->size[proposal_block] < ls->threshold)) large = 0;
+  if (Max(ls->number,ls->size) < 5) large = 0;
   else large = 1;
-  if (proposal_block == present_block) /* Special case: proposed == present block: log acceptance ratio vanishes */
+  if (large == 0) /* Small blocks */
     {
-    computation = 0; 
-    log_ratio = 0.0;
-    }
-  else if (large == 0) /* Special case: proposed != present block and the two blocks are small before as well as after the proposed move: log acceptance ratio can be computed exactly */
-    {
-    /* General remarks:
-
-    Log likelihood ratio + log prior ratio
-    --------------------------------------
-    ln(p[proposal_block]) - ln(p[present_block]),
-    where 
-    - p[k] = ls->p[k] * e(energy_k - a_k),  
-    - e(energy_k - a_k) is the PMF of the observed graph given that the node is member of block k,
-    - energy_k is the energy of the observed graph,
-    - a_k is the log partition function of the PMF of the observed graph and is given by a_k = sum_block a_within_block + a_between;
-    if the proposed and present block are small before as well as after the proposed move, 
-    a_within_proposed_block and a_within_present_block before and after the proposed move can be computed by complete enumeration,
-    and because all other within-block partition functions cancel in the log likelihood ratio,
-    the log acceptance ratio can computed exactly;
-    note that the between-block partition functions can be computed as well
-
-    Log likelihood ratio + log prior ratio + log proposal ratio
-    -----------------------------------------------------------
-    ln(p[proposal_block]) - ln(p[present_block]) + ln(q_i[present_block]) - ln(q_i[proposal_ratio])
-    where 
-    - p[k] is defined as above and q_i[k] is the propobability that block k is proposed,
-    - q_i[k] may be given by
-      * q_i[k] = p[k]: the log acceptance ratio vanishes;
-      * q_i[k] = function(p[k], temperature t): the log acceptance ratio does not vanish, but can readily and exactly be computed, since p[k] has already been computed
-      * q_i[k] = ls->p[k]: the log acceptance ratio does not vanish, but can exactly be computed
-
-    */
-    computation = 0;
-    if (proposal_distribution == 1) /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by full conditional distribution, computed either exactly by complete enumeration or approximately by mean-field methods */
+    if (proposal_block == present_block) /* Special case: proposed == present block: log acceptance ratio vanishes */
       {
-      if (t == 1.0) log_ratio = 0.0; /* Proposal distribution: full conditional distribution */
-      else /* Proposal distribution: full conditional distribution at temperature t */
+      computation = 0; 
+      log_ratio = 0.0;
+      }
+    else
+      {
+      /* General remarks:
+
+      Log likelihood ratio + log prior ratio
+      --------------------------------------
+      ln(p[proposal_block]) - ln(p[present_block]),
+      where 
+      - p[k] = ls->p[k] * e(energy_k - a_k),  
+      - e(energy_k - a_k) is the PMF of the observed graph given that the node is member of block k,
+      - energy_k is the energy of the observed graph,
+      - a_k is the log partition function of the PMF of the observed graph and is given by a_k = sum_block a_within_block + a_between;
+      if the proposed and present block are small before as well as after the proposed move, 
+      a_within_proposed_block and a_within_present_block before and after the proposed move can be computed by complete enumeration,
+      and because all other within-block partition functions cancel in the log likelihood ratio,
+      the log acceptance ratio can computed exactly;
+      note that the between-block partition functions can be computed as well
+  
+      Log likelihood ratio + log prior ratio + log proposal ratio
+      -----------------------------------------------------------
+      ln(p[proposal_block]) - ln(p[present_block]) + ln(q_i[present_block]) - ln(q_i[proposal_ratio])
+      where 
+      - p[k] is defined as above and q_i[k] is the propobability that block k is proposed,
+      - q_i[k] may be given by
+        * q_i[k] = p[k]: the log acceptance ratio vanishes;
+        * q_i[k] = function(p[k], temperature t): the log acceptance ratio does not vanish, but can readily and exactly be computed, since p[k] has already been computed
+        * q_i[k] = ls->p[k]: the log acceptance ratio does not vanish, but can exactly be computed
+  
+      */
+      computation = 0;
+      if (proposal_distribution == 1) /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by full conditional distribution, computed either exactly by complete enumeration or approximately by mean-field methods */
+        {
+        if (t == 1.0) log_ratio = 0.0; /* Proposal distribution: full conditional distribution */
+        else /* Proposal distribution: full conditional distribution at temperature t */
+          {
+          log_ratio = 0.0;
+          log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
+          /*
+          Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
+          */
+          log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
+          /*
+          Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
+          */
+          log_ratio = log_ratio + ln(p[proposal_block]) - ln(p[present_block]); /* Log likelihood ratio */
+          /*
+          Rprintf("\n- log ratio (log likelihood ratio) = %8.4f",log_ratio);  
+          */
+          }
+        }
+      else /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by ls->p */
         {
         log_ratio = 0.0;
         log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
@@ -455,58 +490,42 @@ output: indicators
         log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
         /*
         Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
-        */
-        log_ratio = log_ratio + ln(p[proposal_block]) - ln(p[present_block]); /* Log likelihood ratio */
+       */
+        for (i = 0; i < n_input; i++) 
+          { 
+          input_proposal[i] = input_present[i];
+          }
+        Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
+        Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
+        theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
+        statistic = (double*) calloc(ergm->d,sizeof(double));
+        if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); error("Error: out of memory"); }
+        ls->indicator[update_node] = proposal_block; /* Set ls->indicator to proposed block */
+        ls->size[present_block] = ls->size[present_block] - 1;
+        ls->size[proposal_block] = ls->size[proposal_block] + 1;
+        proposal_energy = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+        proposal_a = 0.0;
+        proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+        proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+        proposal_a = proposal_a + Between_Block_Partition_Function(ls,ergm,input_proposal,theta,dn,directed,bipartite,nterms,funnames,sonames);
+        log_proposal = proposal_energy - proposal_a;
+        ls->indicator[update_node] = present_block; /* Reset ls->indicator to present block */
+        ls->size[proposal_block] = ls->size[proposal_block] - 1;
+        ls->size[present_block] = ls->size[present_block] + 1;
+        present_energy = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+        present_a = 0.0;
+        present_a = present_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+        present_a = present_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+        present_a = present_a + Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
+        log_present = present_energy - present_a;
+        log_ratio = log_ratio + (log_proposal - log_present);
         /*
-        Rprintf("\n- log ratio (log likelihood ratio) = %8.4f",log_ratio);  
+        Rprintf("\n- node %i: block %i > %i (block size %i > %i): log_ratio: %8.4f",update_node+1,ls->indicator[update_node]+1,ls_indicator[update_node]+1,ls->size[present_block],ls_size[proposal_block],log_ratio);
         */
         }
-      }
-    else /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by ls->p */
-      {
-      log_ratio = 0.0;
-      log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
-      /*
-      Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
-      */
-      log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
-      /*
-      Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
-      */
-      for (i = 0; i < n_input; i++) 
-        { 
-        input_proposal[i] = input_present[i];
-        }
-      Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
-      Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
-      theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
-      statistic = (double*) calloc(ergm->d,sizeof(double));
-      if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); exit(1); }
-      ls->indicator[update_node] = proposal_block; /* Set ls->indicator to proposed block */
-      ls->size[present_block] = ls->size[present_block] - 1;
-      ls->size[proposal_block] = ls->size[proposal_block] + 1;
-      proposal_energy = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
-      proposal_a = 0.0;
-      proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
-      proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
-      proposal_a = proposal_a + Between_Block_Partition_Function(ls,ergm,input_proposal,theta,dn,directed,bipartite,nterms,funnames,sonames);
-      log_proposal = proposal_energy - proposal_a;
-      ls->indicator[update_node] = present_block; /* Reset ls->indicator to present block */
-      ls->size[proposal_block] = ls->size[proposal_block] - 1;
-      ls->size[present_block] = ls->size[present_block] + 1;
-      present_energy = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
-      present_a = 0.0;
-      present_a = present_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
-      present_a = present_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
-      present_a = present_a + Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
-      log_present = present_energy - present_a;
-      log_ratio = log_ratio + (log_proposal - log_present);
-      /*
-      Rprintf("\n- node %i: block %i > %i (block size %i > %i): log_ratio: %8.4f",update_node+1,ls->indicator[update_node]+1,ls_indicator[update_node]+1,ls->size[present_block],ls_size[proposal_block],log_ratio);
-      */
       }
     }
-  else /* General case: log acceptance ratio does not vanish and cannot be computed exactly: introduce auxiliary variables */
+  else /* Large blocks: introduce auxiliary variables */
     {
     computation = 1; /* Log acceptance ratio computed exactly */
     log_ratio = 0.0;
@@ -526,10 +545,13 @@ output: indicators
     Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
     theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
     statistic = (double*) calloc(ergm->d,sizeof(double));
-    if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); exit(1); }
+    if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); error("Error: out of memory"); }
     sample_size = 1; /* One sample point is all that is required */
-    MCMC_wrapper(heads,tails,dnedges,  /* Sample one graph from posterior predictive distribution given input and theta */
-                    maxpossibleedges,
+    number_networks = 1;
+    /*
+    Rprintf("\n\nbefore: newnetworkheads[0]=%i",newnetworkheads[0]);
+    */
+    MCMC_wrapper(&number_networks,dnedges,tails,heads,  /* Sample one graph from posterior predictive distribution given input and theta */
                     dn,directed,bipartite, 
                     nterms,funnames,
                     sonames, 
@@ -542,12 +564,15 @@ output: indicators
                     attribs,maxout,maxin,minout,
                     minin,condAllDegExact,attriblength, 
                     maxedges,
-                    mheads,mtails,mdnedges);
+                    status);
+    /*
+    Rprintf("\n\nafter: newnetworkheads[0]=%i",newnetworkheads[0]);
+    */
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
-    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_heads\n\n"); exit(1); }
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
     proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
-    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_tails\n\n"); exit(1); }
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_tails\n\n"); error("Error: out of memory"); }
     for (i = 0; i < proposal_n_edges; i++)  
       {
       proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
@@ -615,7 +640,7 @@ output: indicators
   /* Free memory: */
   free(ls_indicator);
   free(ls_size);
-  if (proposal_distribution > 0) free(q_i);
+  free(q_i); /* 666 */
   if (t != 1.0) free(p);
   if (computation > 0)
     {
@@ -642,17 +667,17 @@ int Sample_Ergm_Theta_Dependence(int model, ergmstructure *ergm, latentstructure
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor)
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int *status)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int accept, i, j, k, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
+  int number_networks, accept, i, j, k, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
   double **cf, *ergm_theta, *present, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *mean, *proposal, *theta_present, *theta_proposal, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
-  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, input_proposal\n\n"); exit(1); }
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, input_proposal\n\n"); error("Error: out of memory"); }
   log_ratio = 0.0;
   /* Propose ergm->theta: */
   cf = Scale(ergm->d1,ergm->d1,prior->cf1,scale_factor[0]); /* Rescale Cholesky factor of Gaussian prior */        
@@ -673,8 +698,8 @@ output: structural, non-structural parameters showing up in ergm pmf
   theta_proposal = Get_Parameter(ergm->d,ergm->structural,ergm_theta); /* Set parameter; note: if ergm_d1 == 0, ergm_theta is not used */
   theta_present = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm_theta is not used */
   sample_size = 1; /* One sample point is all that is required */
-  MCMC_wrapper(heads,tails,dnedges,  /* Sample one graph from posterior predictive distribution given input and theta */
-                  maxpossibleedges,
+  number_networks = 1;
+  MCMC_wrapper(&number_networks,dnedges,tails,heads,  /* Sample one graph from posterior predictive distribution given input and theta */
                   dn,directed,bipartite, 
                   nterms,funnames,
                   sonames, 
@@ -687,12 +712,12 @@ output: structural, non-structural parameters showing up in ergm pmf
                   attribs,maxout,maxin,minout,
                   minin,condAllDegExact,attriblength, 
                   maxedges,
-                  mheads,mtails,mdnedges);
+                  status);
   proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
   proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
-  if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_heads\n\n"); exit(1); }
+  if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
   proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
-  if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_tails\n\n"); exit(1); }
+  if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_tails\n\n"); error("Error: out of memory"); }
   for (i = 0; i < proposal_n_edges; i++)  
     {
     proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
@@ -700,7 +725,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   /* Ratio of proposal pmfs of auxiliary graph under proposal / present */
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, statistic\n\n"); error("Error: out of memory"); }
   log_numerator = Minus_Energy(ergm->d,input_present,theta_present,
   proposal_heads,proposal_tails,&proposal_n_edges,dn,directed,bipartite,nterms,funnames,sonames,statistic); 
   /*
@@ -769,23 +794,23 @@ int Sample_Ls_Theta_Dependence(int model, ergmstructure *ergm, latentstructure *
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_block)
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_block, int *status)
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int accept, computation, count, h, i, j, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, *permutation, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, t, update_size;
+  int number_networks, accept, computation, count, **edge_list_block, h, i, j, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, t, update_size;
   double **cf, *present, *input_proposal, *input_present_block, *input_proposal_block, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal, *statistic, present_a, proposal_a, present_energy, proposal_energy;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
-  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, input_proposal\n\n"); exit(1); }
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, input_proposal\n\n"); error("Error: out of memory"); }
   ls_theta = (double**) calloc(ls->d,sizeof(double*));
-  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, ls_theta\n\n"); exit(1); }
+  if (ls_theta == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, ls_theta\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     ls_theta[i] = (double*) calloc(ls->number+1,sizeof(double));
-    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, ls_theta[%i]\n\n",i); exit(1); }
+    if (ls_theta[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, ls_theta[%i]\n\n",i); error("Error: out of memory"); }
     }
   for (i = 0; i < ls->d; i++)
     { 
@@ -796,9 +821,9 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   /* Propose ls->theta: */
   present = (double*) calloc(ls->d,sizeof(double));  
-  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, present\n\n"); exit(1); }
+  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, present\n\n"); error("Error: out of memory"); }
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, statistic\n\n"); error("Error: out of memory"); }
   update_size = ls->size[update_block];
   cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[update_size-2]); /* Rescale Cholesky factor of Gaussian prior */ 
   Get_Column(ls->d,present,ls->theta,update_block); /* Set mean to ls->theta[][i] */
@@ -844,32 +869,15 @@ output: structural, non-structural parameters showing up in ergm pmf
     if (*directed == 0) maxpossibleedges_block = ls->size[update_block] * (ls->size[update_block] - 1) / 2;
     else maxpossibleedges_block = ls->size[update_block] * (ls->size[update_block] - 1);
     /* Extract subgraph corresponding to nodes which are members of the block from observed graph: */
-    heads_block = NULL;
-    tails_block = NULL;
-    permutation = (int*) calloc(ls->n,sizeof(int));
-    count = 0;
-    for (i = 0; i < ls->n; i++)
-      {
-      if (ls->indicator[i] == update_block)
-        {
-        count = count + 1;
-        permutation[i] = count; /* Permute labels of nodes so that the nodes belonging to the block have labels 1..ls->size[update_block] */
-        }
-      }
-    number_edges_block = 0;
-    for (k = 0; k < *dnedges; k++)
-      {
-      h = heads[k];
-      t = tails[k];
-      if ((ls->indicator[h-1] == update_block) && (ls->indicator[t-1] == update_block))
-        {
-        number_edges_block = number_edges_block + 1;
-        heads_block = realloc(heads_block,number_edges_block*sizeof(int));
-        tails_block = realloc(tails_block,number_edges_block*sizeof(int));
-        heads_block[number_edges_block-1] = permutation[h-1];
-        tails_block[number_edges_block-1] = permutation[t-1];
-        }
-      }
+    edge_list_block = Edge_List_Block(ls,update_block,dnedges,heads,tails);
+    number_edges_block = edge_list_block[0][0];
+    heads_block = &edge_list_block[1][0];
+    tails_block = &edge_list_block[2][0];
+    /*
+    Rprintf("\nedge list of block %i with %i nodes and %i edges",update_block,ls->size[update_block],edge_list_block[0][0]);
+    Print_I(number_edges_block,heads_block);
+    Print_I(number_edges_block,tails_block);
+    */
     input_present_block = Set_Input_Block(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->size[update_block],present,input_present);
     /*
     Rprintf("\n\n- block %i of size %i with %i edges",update_block,ls->size[update_block],number_edges_block);
@@ -896,8 +904,8 @@ output: structural, non-structural parameters showing up in ergm pmf
     mdnedges_block = 0;
     mheads_block = NULL;
     mtails_block = NULL;
-    MCMC_wrapper(heads_block,tails_block,&number_edges_block,  /* Sample one graph from posterior predictive distribution given input and theta */
-                    &maxpossibleedges_block,
+    number_networks = 1;
+    MCMC_wrapper(&number_networks,&number_edges_block,tails_block,heads_block,  /* Sample one graph from posterior predictive distribution given input and theta */
                     &ls->size[update_block],directed,bipartite, 
                     nterms,funnames,
                     sonames, 
@@ -910,7 +918,7 @@ output: structural, non-structural parameters showing up in ergm pmf
                     attribs,maxout,maxin,minout,
                     minin,condAllDegExact,attriblength, 
                     maxedges,
-                    mheads,mtails,mdnedges);
+                    status);
     /*
     Rprintf("\n- maximum number of edges: %i",maxpossibleedges_block);
     Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
@@ -918,9 +926,9 @@ output: structural, non-structural parameters showing up in ergm pmf
     */
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
-    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); exit(1); }
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
     proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
-    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_tails\n\n"); exit(1); }
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_tails\n\n"); error("Error: out of memory"); }
     for (i = 0; i < proposal_n_edges; i++)  
       {
       proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
@@ -978,11 +986,13 @@ output: structural, non-structural parameters showing up in ergm pmf
     /*
     Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
     */
-    free(heads_block);
-    free(tails_block);
+    for (i = 0; i < 3; i++) 
+      {
+      free(edge_list_block[i]);
+      }
+    free(edge_list_block);
     free(input_present_block);
     free(input_proposal_block);
-    free(permutation);
     free(proposal_heads);
     free(proposal_tails);
     }
@@ -990,8 +1000,8 @@ output: structural, non-structural parameters showing up in ergm pmf
     {
     computation = 1;
     sample_size = 1; /* One sample point is all that is required */
-    MCMC_wrapper(heads,tails,dnedges,  /* Sample one graph from posterior predictive distribution given input and theta */
-                    maxpossibleedges,
+    number_networks = 1;
+    MCMC_wrapper(&number_networks,dnedges,tails,heads,  /* Sample one graph from posterior predictive distribution given input and theta */
                     dn,directed,bipartite, 
                     nterms,funnames,
                     sonames, 
@@ -1004,12 +1014,12 @@ output: structural, non-structural parameters showing up in ergm pmf
                     attribs,maxout,maxin,minout,
                     minin,condAllDegExact,attriblength, 
                     maxedges,
-                    mheads,mtails,mdnedges);
+                    status);
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
-    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); exit(1); }
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
     proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
-    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_tails\n\n"); exit(1); }
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_tails\n\n"); error("Error: out of memory"); }
     for (i = 0; i < proposal_n_edges; i++)  
       {
       proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
@@ -1091,22 +1101,22 @@ output: structural, non-structural parameters showing up in ergm pmf
   double **cf, *input_proposal, log_present, log_proposal, log_ratio, present_energy, present_a, proposal_energy, proposal_a, *present, *proposal, *theta, *statistic;
   number_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(number_input,sizeof(double));
-  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, input_proposal\n\n"); exit(1); }
+  if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, input_proposal\n\n"); error("Error: out of memory"); }
   for (i = 0; i < number_input; i++) 
     { 
     input_proposal[i] = input_present[i];
     }
   present = (double*) calloc(ls->d,sizeof(double));  
-  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, present\n\n"); exit(1); }
+  if (present == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, present\n\n"); error("Error: out of memory"); }
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, statistic\n\n"); error("Error: out of memory"); }
   /* Generate candidate: */
   for (i = 0; i < ls->d; i++)
     {
     present[i] = ls->theta[i][ls->number];
     } 
   cf = (double**) calloc(ls->d,sizeof(double*));
-  if (cf == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, cf\n\n"); exit(1); }
+  if (cf == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Between, cf\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     cf[i] = (double*) calloc(ls->d,sizeof(double));
@@ -1219,7 +1229,7 @@ output: means of parameters
   int i, k;
   double sum, mean, numerator, denominator, precision, *sample, std;  
   sample = (double*) calloc(ls->d,sizeof(double));
-  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Means, sample\n\n"); exit(1); }
+  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Means, sample\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     sum = 0.0;
@@ -1255,7 +1265,7 @@ output: precisions of parameters
   int i, k;
   double rate, shape, *sample, sum, d;
   sample = (double*) calloc(ls->d,sizeof(double)); 
-  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Precisions, sample\n\n"); exit(1); }
+  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Precisions, sample\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     shape = prior->precision2_shape + (ls->number / 2.0);
@@ -1288,9 +1298,9 @@ input: clustering parameter, priors, latent structure, ergm structure, user-spec
   if (*parallel == 1) ls->alpha = *alpha; /* Clustering parameter */
   else ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
   shape1 = (double*) calloc(ls->number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
-  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Initial_State, shape1\n\n"); exit(1); }
+  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Initial_State, shape1\n\n"); error("Error: out of memory"); }
   shape2 = (double*) calloc(ls->number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
-  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Initial_State, shape2\n\n"); exit(1); }
+  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Initial_State, shape2\n\n"); error("Error: out of memory"); }
   for (i = 0; i < (ls->number - 1); i++)
     {
     shape1[i] = 1.0; /* First shape of Beta distribution */
@@ -1334,7 +1344,7 @@ output: partition of set of nodes drawn from Chinese restaurant process with sca
     ls->size[i] = 0;
     }
   p = (double*) calloc(ls->n,sizeof(double));
-  if (p == NULL) { Rprintf("\n\ncalloc failed: Sample_CRP, p\n\n"); exit(1); }
+  if (p == NULL) { Rprintf("\n\ncalloc failed: Sample_CRP, p\n\n"); error("Error: out of memory"); }
   k = 0;
   ls->indicator[0] = k; /* First guest sits down at first table */
   ls->size[k] = ls->size[k] + 1; /* Increment number of guests at first table */
@@ -1431,14 +1441,14 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior)
+             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior, int *status)
 /*
 input: R input
 output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
+  int *lasttoggle, coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *time, *verbose;
   double *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
@@ -1483,26 +1493,26 @@ output: simulated graph
   mheads = NULL;
   mtails = NULL;
   shape1 = (double*) calloc(ls->number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
-  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Simulation, shape1\n\n"); exit(1); }
+  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Simulation, shape1\n\n"); error("Error: out of memory"); }
   shape2 = (double*) calloc(ls->number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
-  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Simulation, shape2\n\n"); exit(1); }
+  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Simulation, shape2\n\n"); error("Error: out of memory"); }
   p = (double*) calloc(*maxpossibleedges,sizeof(double));
-  if (p == NULL) { Rprintf("\n\ncalloc failed: Simulation, p\n\n"); exit(1); }
+  if (p == NULL) { Rprintf("\n\ncalloc failed: Simulation, p\n\n"); error("Error: out of memory"); }
   parameter = (double**) calloc(ls->d,sizeof(double*));
-  if (parameter == NULL) { Rprintf("\n\ncalloc failed: Simulation, parameter\n\n"); exit(1); }
+  if (parameter == NULL) { Rprintf("\n\ncalloc failed: Simulation, parameter\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls->d; i++)
     {
     parameter[i] = (double*) calloc(ls->number+1,sizeof(double));
-    if (parameter[i] == NULL) { Rprintf("\n\ncalloc failed: Simulation, parameter[%i]\n\n"); exit(1); }
+    if (parameter[i] == NULL) { Rprintf("\n\ncalloc failed: Simulation, parameter[%i]\n\n"); error("Error: out of memory"); }
     }
   pseudo_indicator = (int*) calloc(ls->n,sizeof(int));
-  if (pseudo_indicator == NULL) { Rprintf("\n\ncalloc failed: Simulation, pseudo_indicator\n\n"); exit(1); }
+  if (pseudo_indicator == NULL) { Rprintf("\n\ncalloc failed: Simulation, pseudo_indicator\n\n"); error("Error: out of memory"); }
   pp = (double*) calloc(ergm->d,sizeof(double));
-  if (pp == NULL) { Rprintf("\n\ncalloc failed: Simulation, pp\n\n"); exit(1); }
+  if (pp == NULL) { Rprintf("\n\ncalloc failed: Simulation, pp\n\n"); error("Error: out of memory"); }
   newnetworkheads = (int*) calloc(*maxpossibleedges+1,sizeof(int));
-  if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); exit(1); }
+  if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); error("Error: out of memory"); }
   newnetworktails = (int*) calloc(*maxpossibleedges+1,sizeof(int));
-  if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); exit(1); }
+  if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); error("Error: out of memory"); }
   /****************/
   /* Sample graph */
   /****************/
@@ -1535,7 +1545,10 @@ output: simulated graph
     progress = (iteration * 100.0) / max_iteration;
     if (print == 1) Rprintf("\nProgress: %5.2f%%",progress);
     if (*null_alpha == 1) ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
-    ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */
+    /*
+    Sample_Dirichlet(ls->number,ls->alpha,ls->p);
+    */
+    ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */ 
     for (k = 0; k < ls->number; k++)
       {
       ls->size[k] = 0;
@@ -1563,9 +1576,23 @@ output: simulated graph
         }
       for (i = 0; i < ls->number; i++) 
         {
+        /*
+        ls->theta[0][i] = -5.0 * unif_rand();
+        ls->theta[1][i] = 5.0 * unif_rand();
+        */
         draw = Sample_MVN(ls->d,prior->mean2,prior->cf2);
-        Set_Column(ls->d,ls->theta,i,draw); /* Set ls_theta[][i] to proposal */
+        Set_Column(ls->d,ls->theta,i,draw); /* Set ls_theta[][i] to proposal */ 
         free(draw);
+        }
+      for (i = 0; i < ls->d; i++)
+        {
+        if (between[i] == 1) 
+          { 
+          ls->theta[i][ls->number] = -5.0 + norm_rand();
+          /*
+          ls->theta[i][ls->number] = (2 * prior->mean2[i]) + (prior->cf2[i][i] * norm_rand()); /* Ad hoc: must be changed 
+          */
+          } 
         }
       }
     Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,inputs);
@@ -1597,15 +1624,17 @@ output: simulated graph
       Set_Input(terms,hierarchical,number,ls->n,pseudo_indicator,parameter,inputs);
       n_edges = newnetworkheads; /* First element of newnetworkheads = newnetworkheads[0] is number of edges */
       mheads = (int*) calloc(*n_edges,sizeof(int));
-      if (mheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, mheads\n\n"); exit(1); }
+      if (mheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, mheads\n\n"); error("Error: out of memory"); }
       mtails = (int*) calloc(*n_edges,sizeof(int));
-      if (mtails == NULL) { Rprintf("\n\ncalloc failed: Simulation, mtails\n\n"); exit(1); }
+      if (mtails == NULL) { Rprintf("\n\ncalloc failed: Simulation, mtails\n\n"); error("Error: out of memory"); }
       for (i = 0; i < *n_edges; i++) /* Since first element of newnetworkheads and newnetworktails is number of edges, heads and tails must be extracted */
         {
         mheads[i] = newnetworkheads[i+1];
         mtails[i] = newnetworktails[i+1];
         }
-      network_stats_wrapper(mheads,mtails,n_edges,dn,directed,bipartite,nterms,funnames,sonames,inputs,pp); /* Compute non-structural function of graph */
+      time = 0;
+      lasttoggle = 0; /* 666 */
+      network_stats_wrapper(mtails,mheads,time,lasttoggle,n_edges,dn,directed,bipartite,nterms,funnames,sonames,inputs,pp); /* Compute non-structural function of graph */
       if (print == 1)
         {
         degree = Degree_Sequence(ls->n,*directed,*n_edges,mheads,mtails);
@@ -1619,7 +1648,7 @@ output: simulated graph
                          sonames,MHproposaltype,MHproposalpackage,inputs,theta,samplesize,
                          sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                          attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                         maxedges,mheads,mtails,mdnedges);
+                         maxedges,mheads,mtails,mdnedges,status);
     if (ergm->d1 > 0)
       {
       if (print == 1) Rprintf("\nparameters:");
@@ -1795,7 +1824,7 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior)
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior, int *status)
 /*
 input: R input
 output: MCMC sample of unknowns from posterior
@@ -1852,9 +1881,9 @@ output: MCMC sample of unknowns from posterior
   mheads = NULL;
   mtails = NULL;
   pp = (double*) calloc(ergm->d,sizeof(double));
-  if (pp == NULL) { Rprintf("\n\ncalloc failed: Inference, pp\n\n"); exit(1); }
+  if (pp == NULL) { Rprintf("\n\ncalloc failed: Inference, pp\n\n"); error("Error: out of memory"); }
   scale_factor = (double*) calloc(2+ls->n-ls->minimum_size,sizeof(double));   
-  if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); exit(1); }
+  if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); error("Error: out of memory"); }
   /*************************/
   /* MCMC sample posterior */
   /*************************/
@@ -1899,9 +1928,9 @@ output: MCMC sample of unknowns from posterior
     }
   number_local_mh = 2 + (ls->n - ls->minimum_size);
   local_mh = (double*) calloc(number_local_mh,sizeof(double));
-  if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); exit(1); }
+  if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); error("Error: out of memory"); }
   local_mh_accept = (double*) calloc(number_local_mh,sizeof(double));
-  if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); exit(1); }
+  if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); error("Error: out of memory"); }
   Set_D_D(number_local_mh,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
   if (ls->n < 20) sample_size_indicators = ls->n / 2;
   else if (ls->n < 50) sample_size_indicators = ls->n / 5;
@@ -1945,7 +1974,7 @@ output: MCMC sample of unknowns from posterior
       else /* Dyad-dependence conditional on latent structure */
         {
         available = (int*) calloc(ls->n,sizeof(int));
-        if (available == NULL) { Rprintf("\n\ncalloc failed: Inference, available\n\n"); exit(1); }
+        if (available == NULL) { Rprintf("\n\ncalloc failed: Inference, available\n\n"); error("Error: out of memory"); }
         for (i = 0; i < sample_size_indicators; i++)
           {
           do update_node = trunc(unif_rand() * ls->n); /* Sample indicator of node to be updated */
@@ -1955,7 +1984,7 @@ output: MCMC sample of unknowns from posterior
                          heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node);
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node,status);
           }
         free(available);
         if (ergm->d1 > 0)
@@ -1965,7 +1994,7 @@ output: MCMC sample of unknowns from posterior
                          heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor);
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,status);
           }
         for (i = 0; i < ls->number; i++)
           {
@@ -1978,7 +2007,7 @@ output: MCMC sample of unknowns from posterior
                          heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_block);
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_block,status);
             }
           }
         }
@@ -1990,7 +2019,6 @@ output: MCMC sample of unknowns from posterior
                               nterms,funnames,sonames,inputs,print,scale_factor);
          }
       Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
-
       ls_p = Sample_P(ls); /* Category probability vector */ 
       Set_D_D(ls->number,ls->p,ls_p);
       free(ls_p);
@@ -2015,8 +2043,8 @@ output: MCMC sample of unknowns from posterior
         if (*output == 1)
           {
           Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,inputs);
-          Set_Parameter(ergm->d,ergm->structural,ergm->theta,theta); 
-          for (i = 0; i < *maxpossibleedges; i++)
+          Set_Parameter(ergm->d,ergm->structural,ergm->theta,theta);
+          for (i = 0; i < *maxedges; i++)
             {
             newnetworkheads[i] = 0;
             newnetworktails[i] = 0;
@@ -2030,8 +2058,8 @@ output: MCMC sample of unknowns from posterior
                            sonames,MHproposaltype,MHproposalpackage,inputs,theta,samplesize,
                            sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                            attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                           maxedges,mheads,mtails,mdnedges);
-          }
+                           maxedges,mheads,mtails,mdnedges,status);
+         }
         /* Store and output MCMC sample: */ 
         if (ergm->d1 > 0)
           {

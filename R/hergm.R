@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Michael Schweinberger                                    #
+# Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -74,11 +74,11 @@ hergm <- function(formula,
     }
   d <- Clist$nstats
   constraints <- ~.
-  MHproposal <- MHproposal(constraints,weights=control$prop.weights,control$prop.args,nw,model,class="c")
-  MHproposal.miss <- MHproposal("randomtoggleNonObserved",control$prop.args, nw, model)
-  MCMCparams=c(control,list(samplesize=MCMCsamplesize,burnin=burnin,interval=interval,maxit=1,Clist.miss=Clist.miss,mcmc.precision=control$mcmc.precision))
+  MHproposal <- MHproposal(constraints, weights=control$MCMC.prop.weights, control$MCMC.prop.args, nw, class="c")
+# MHproposal.miss <- MHproposal("randomtoggleNonObserved",arguments=control$MCMC.prop.args, nw=nw,reference=~Bernoulli)
+  MCMCparams=c(control,list(samplesize=MCMCsamplesize,burnin=burnin,interval=interval,maxit=1,Clist.miss=Clist.miss,mcmc.precision=control$MCMLE.mcmc.precision))
   MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=MCMCparams$samplesize)
-  MCMCparams$meanstats <- Clist$meanstats
+  MCMCparams$target.stats <- Clist$target.stats
   print(
     system.time(
       sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, output)

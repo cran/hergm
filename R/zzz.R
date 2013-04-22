@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Michael Schweinberger                                    #
+# Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,19 +18,13 @@
 #                                                                         # 
 ###########################################################################
 
-.First.lib <- function(lib, pkg)
-  {
-  library.dynam("hergm", pkg, lib)
-  DESCpath <- file.path(system.file(package="hergm"), "DESCRIPTION")
-  info <- read.dcf(DESCpath)
-  cat('\nhergm:', info[,"Title"], 
-      '\nVersion', info[,"Version"], 'created on', info[,"Date"], '\n')   
-  cat(paste("Copyright (c) 2009, Michael Schweinberger, Pennsylvania State University\n", sep = ""))
-  cat('To start hergm: enter help(package=\"hergm\")\n')
-  cat('To cite hergm: enter citation(\"hergm\")\n')
-  }
-
-.Last.lib <- function(libpath)
-  {
-  library.dynam.unload("hergm",libpath)
-  }
+.onAttach <- function(lib, pkg){
+  info <- packageDescription("hergm")
+  packageStartupMessage(
+    paste('\nhergm: version ', info$Version, ', created on ', info$Date, '\n',
+          "Copyright (c) 2012, Michael Scehweinberger\n",
+          "                    Mark S. Handcock, University of California-Los Angeles\n",
+          "To start hergm: enter help(package=\"hergm\")\n",
+          'For license and citation information type citation("hergm").\n', sep="")
+ )
+}

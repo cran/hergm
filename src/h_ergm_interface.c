@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_interface.h"
@@ -194,7 +194,7 @@ output: parameter
   int i, k;
   double *parameter;
   parameter = (double*) calloc(d,sizeof(double)); 
-  if (parameter == NULL) { Rprintf("\n\ncalloc failed: Get_Parameter, parameter\n\n"); exit(1); }
+  if (parameter == NULL) { Rprintf("\n\ncalloc failed: Get_Parameter, parameter\n\n"); error("Error: out of memory"); }
   k = -1;
   for (i = 0; i < d; i++)
     {
@@ -244,7 +244,7 @@ input: number of parameters, input parameters, parameters
 output: statistic, inner product <parameter, statistic>
 */
 {
-  int i;
+  int i, *lasttoggle, *time;
   double sum;
   /*
   Rprintf("\nMinus_Energy: number of edges = %i",*nedges);
@@ -253,7 +253,9 @@ output: statistic, inner product <parameter, statistic>
     {
     statistic[i] = 0.0;
     }
-  network_stats_wrapper(heads,tails,nedges,n,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute statistic given input */
+  time = 0;
+  lasttoggle = 0; /* 666 */
+  network_stats_wrapper(tails,heads,time,lasttoggle,nedges,n,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute statistic given input */
   sum = 0.0;
   for (i = 0; i < d; i++)
     {

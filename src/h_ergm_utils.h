@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_basics.h"
@@ -36,6 +36,12 @@ int Sample_Discrete(double *p);
 /*
 input: probability vector p
 output: value of discrete random variable with pmf p
+*/
+
+void Sample_Dirichlet(int d, double alpha, double *p);
+/*
+input: dimension, parameter
+output: probability vector
 */
 
 double* Sample_MVN(int d, double *m, double **C);

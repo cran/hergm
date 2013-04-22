@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Michael Schweinberger                                    #
+# Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -241,6 +241,7 @@ hergm.min_loss <- function(n_categories, indicator, n_burnin, stop_criterion)
   indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)
   cat("\n\nMCMC sample relabeled\n")
   minimizer <- list()
+  minimizer$loss <- last_loss
   minimizer$min_permutations <- min_permutations
   minimizer$p <- p
   minimizer$indicator <- indicator

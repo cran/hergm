@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_latent.h"
@@ -29,18 +29,18 @@ ouput: latent structure
   int i, k;
   latentstructure *ls;
   ls = (latentstructure*) calloc(1,sizeof(latentstructure));
-  if (ls == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls\n\n"); exit(1); }
+  if (ls == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls\n\n"); error("Error: out of memory"); }
   /* Basics: */
   ls->number = number; /* (Maximum) number of categories */
   ls->n = n; /* Number of nodes */
   /* Law generating structure: */
   ls->p = (double*) calloc(number,sizeof(double)); /* Category-bound probability */
-  if (ls->p == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->p\n\n"); exit(1); }
+  if (ls->p == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->p\n\n"); error("Error: out of memory"); }
   /* Structure: */
   ls->size = (int*) calloc(number,sizeof(int)); /* Category-bound variable: number of nodes belonging to category */
-  if (ls->size == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->size\n\n"); exit(1); }
+  if (ls->size == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->size\n\n"); error("Error: out of memory"); }
   ls->indicator = (int*) calloc(n,sizeof(int)); /* Node-bound variable: category to which node belongs */
-  if (ls->indicator == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->indicator\n\n"); exit(1); }
+  if (ls->indicator == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->indicator\n\n"); error("Error: out of memory"); }
   /* Law generating data: */
   ls->minimum_size = minimum_size; /* Minimum number of nodes so that structural parameters show up in PMF */
   ls->threshold = threshold; /* Category-bound PMF tractable as long as number of nodes in category is smaller than threshold */
@@ -53,7 +53,7 @@ ouput: latent structure
   if (ls->number_between > 0)
     {
     ls->between = (int*) calloc(ls->number_between,sizeof(int)); /* Indicators of whether between-category parameters are restricted to 0 */
-    if (ls->between == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->between\n\n"); exit(1); }
+    if (ls->between == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->between\n\n"); error("Error: out of memory"); }
     k = -1;
     for (i = 0; i < d; i++)
       {
@@ -65,11 +65,11 @@ ouput: latent structure
       }
     }
   ls->theta = (double**) calloc(d,sizeof(double*));
-  if (ls->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta\n\n"); exit(1); }
+  if (ls->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta\n\n"); error("Error: out of memory"); }
   for (i = 0; i < d; i++)
     {
     ls->theta[i] = (double*) calloc(number+1,sizeof(double)); /* Category-bound parameters */
-    if (ls->theta[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta[%i]\n\n",i); exit(1); }
+    if (ls->theta[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta[%i]\n\n",i); error("Error: out of memory"); }
     }
   return ls;
 }
@@ -82,19 +82,19 @@ output: ergm structure
 {
   ergmstructure *ergm;
   ergm = (ergmstructure*) calloc(1,sizeof(ergmstructure));
-  if (ergm == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm\n\n"); exit(1); }
+  if (ergm == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm\n\n"); error("Error: out of memory"); }
   ergm->terms = terms; /* Number of ergm terms */
   ergm->hierarchical = (int*) calloc(terms,sizeof(int)); /* Indicator of hierarchical ergm terms */
-  if (ergm->hierarchical == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm->hierarchical\n\n"); exit(1); }
+  if (ergm->hierarchical == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm->hierarchical\n\n"); error("Error: out of memory"); }
   Set_I_I(terms,ergm->hierarchical,hierarchical);
   ergm->d = d; /* Number of parameters */
   ergm->d1 = d1; /* Number of non-structural parameters */
   ergm->d2 = d2; /* Number of structural parameters */
   ergm->structural = (int*) calloc(d,sizeof(int)); /* Indicator of structural parameters */
-  if (ergm->structural == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm->structural\n\n"); exit(1); }
+  if (ergm->structural == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm->structural\n\n"); error("Error: out of memory"); }
   Set_I_I(d,ergm->structural,structural);
   ergm->theta = (double*) calloc(d1,sizeof(double)); /* Non-structural parameters */
-  if (ergm->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm->theta\n\n"); exit(1); }
+  if (ergm->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Ergm, ergm->theta\n\n"); error("Error: out of memory"); }
   return ergm;
 }
 

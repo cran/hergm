@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_mcmc.h"
@@ -32,7 +32,7 @@ and ordered in accordance with i < j
   double log_odds, *statistic;
   number_edges = &one;
   statistic = (double*) calloc(*number_parameters,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: P_Edge_Independence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: P_Edge_Independence, statistic\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
@@ -64,7 +64,7 @@ output: partition function on log scale, computed under the assumption of condit
   double a, b, *statistic;
   number_edges = &one;
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Edge_Independence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Edge_Independence, statistic\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
@@ -98,7 +98,7 @@ output: partition function on log scale, computed under the assumption of condit
   int i, j, *number_edges, *heads, *tails;
   double a, b, *statistic, sum;
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, statistic\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
@@ -113,9 +113,9 @@ output: partition function on log scale, computed under the assumption of condit
       /* One edge present */
       number_edges = &one;
       heads = (int*) calloc(*number_edges,sizeof(int)); 
-      if (heads == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, heads 1\n\n"); exit(1); }
+      if (heads == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, heads 1\n\n"); error("Error: out of memory"); }
       tails = (int*) calloc(*number_edges,sizeof(int)); 
-      if (tails == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, tails 1\n\n"); exit(1); }
+      if (tails == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, tails 1\n\n"); error("Error: out of memory"); }
       heads[0] = i; /* Edge (i, j) */
       tails[0] = j;
       b = Minus_Energy(ergm->d,input,theta,heads,tails,number_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> */
@@ -129,9 +129,9 @@ output: partition function on log scale, computed under the assumption of condit
       /* Two edges present */
       number_edges = &two;
       heads = (int*) calloc(*number_edges,sizeof(int)); 
-      if (heads == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, heads 2\n\n"); exit(1); }
+      if (heads == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, heads 2\n\n"); error("Error: out of memory"); }
       tails = (int*) calloc(*number_edges,sizeof(int)); 
-      if (tails == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, tails 2\n\n"); exit(1); }
+      if (tails == NULL) { Rprintf("\n\ncalloc failed: Partition_Function_Dyad_Independence, tails 2\n\n"); error("Error: out of memory"); }
       heads[0] = i; /* Edge (i, j) */
       tails[0] = j;
       heads[1] = j; /* Edge (j, i) */
@@ -157,7 +157,7 @@ output: probability mass on log scale, computed under the assumption of dyad-dep
 {
   double a, log_p, *statistic, u;
   statistic = (double*) calloc(ergm->d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence, statistic\n\n"); error("Error: out of memory"); }
   u = Minus_Energy(ergm->d,input,theta,heads,tails,n_edges,n,directed,bipartite,nterms,funnames,sonames,statistic); /* Compute statistic given input_present and compute exponential function of inner product <theta_present, statistic> on log scale */
   /*
   Rprintf("\nPMF_Independence: minus potential energy function = %f",- u);
@@ -207,14 +207,16 @@ output: minus energy of node i on log scale, computed under the assumption of co
 {
   int zero = 0;
   int one = 1;
-  int i, j, edge, *number_edges, *pseudo_heads, *pseudo_tails;
+  int i, j, edge, *lasttoggle, *number_edges, *pseudo_heads, *pseudo_tails, time;
   double sign, change, log_p_i_k, *statistic;
   Network nw;
   number_edges = &one;
   statistic = (double*) calloc(d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence_Node, statistic\n\n"); exit(1); }
-  nw = NetworkInitialize(heads,tails,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite,zero);
-  if (nw.outedges == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence_Node, nw\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence_Node, statistic\n\n"); error("Error: out of memory"); }
+  time = 0;
+  lasttoggle = 0; /* 666 */
+  nw = NetworkInitialize(tails,heads,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite,zero,time,lasttoggle);
+  if (nw.outedges == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence_Node, nw\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
@@ -258,13 +260,15 @@ output: minus energy of node i on log scale, computed under the assumption of co
   int zero = 0;
   int one = 1;
   int two = 2;
-  int i, j, energy_0, energy_1, energy_2, energy_3, dyad, edge, *number_edges, *pseudo_heads, *pseudo_tails;
+  int i, j, energy_0, energy_1, energy_2, energy_3, dyad, edge, *number_edges, *pseudo_heads, *pseudo_tails, *lasttoggle, time;
   double change, log_p_i_k, *statistic;
   Network nw;
   statistic = (double*) calloc(d,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, statistic\n\n"); exit(1); }
-  nw = NetworkInitialize(heads,tails,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite,zero);
-  if (nw.outedges == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, nw\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, statistic\n\n"); error("Error: out of memory"); }
+  time = 0;
+  lasttoggle = 0; /* 666 */
+  nw = NetworkInitialize(tails,heads,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite,zero,time,lasttoggle);
+  if (nw.outedges == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, nw\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
   Note 2: i, j should be integers between 1 and n
@@ -287,9 +291,9 @@ output: minus energy of node i on log scale, computed under the assumption of co
     /* One edge present */
     number_edges = &one;
     pseudo_heads = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 1\n\n"); exit(1); }
+    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 1\n\n"); error("Error: out of memory"); }
     pseudo_tails = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 1\n\n"); exit(1); }
+    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 1\n\n"); error("Error: out of memory"); }
     pseudo_heads[0] = i; /* Edge (i, j) */
     pseudo_tails[0] = j;
     if (EdgetreeSearch((int)*pseudo_heads,(int)*pseudo_tails,nw.outedges) != 0) dyad = 1; 
@@ -314,9 +318,9 @@ output: minus energy of node i on log scale, computed under the assumption of co
     /* Two edges present */
     number_edges = &two;
     pseudo_heads = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 2\n\n"); exit(1); }
+    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 2\n\n"); error("Error: out of memory"); }
     pseudo_tails = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 2\n\n"); exit(1); }
+    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 2\n\n"); error("Error: out of memory"); }
     pseudo_heads[0] = i; /* Edge (i, j) */
     pseudo_tails[0] = j;
     pseudo_heads[1] = j; /* Edge (j, i) */
@@ -355,9 +359,9 @@ output: minus energy of node i on log scale, computed under the assumption of co
     /* One edge present */
     number_edges = &one;
     pseudo_heads = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 1\n\n"); exit(1); }
+    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 1\n\n"); error("Error: out of memory"); }
     pseudo_tails = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 1\n\n"); exit(1); }
+    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 1\n\n"); error("Error: out of memory"); }
     pseudo_heads[0] = i; /* Edge (i, j) */
     pseudo_tails[0] = j;
     if (EdgetreeSearch((int)*pseudo_heads,(int)*pseudo_tails,nw.outedges) != 0) dyad = 1; 
@@ -382,9 +386,9 @@ output: minus energy of node i on log scale, computed under the assumption of co
     /* Two edges present */
     number_edges = &two;
     pseudo_heads = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 2\n\n"); exit(1); }
+    if (pseudo_heads == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_heads 2\n\n"); error("Error: out of memory"); }
     pseudo_tails = (int*) calloc(*number_edges,sizeof(int)); 
-    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 2\n\n"); exit(1); }
+    if (pseudo_tails == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, pseudo_tails 2\n\n"); error("Error: out of memory"); }
     pseudo_heads[0] = i; /* Edge (i, j) */
     pseudo_tails[0] = j;
     pseudo_heads[1] = j; /* Edge (j, i) */
@@ -425,9 +429,9 @@ output: indicators
   int i, k, *sample, sample_size;
   double center, log_p_i_k, p_i_k, *p_i, sum, u;
   p_i = (double*) calloc(ls->number,sizeof(double));
-  if (p_i == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, p_i\n\n"); exit(1); }
+  if (p_i == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, p_i\n\n"); error("Error: out of memory"); }
   sample = (int*) calloc(ls->n,sizeof(int));
-  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, sample\n\n"); exit(1); }
+  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, sample\n\n"); error("Error: out of memory"); }
   for (k = 0; k < ls->number; k++) /* Reset size */
     {
     ls->size[k] = 0;
@@ -479,6 +483,46 @@ output: indicators
   free(sample);
 }
 
+int** Edge_List_Block(latentstructure *ls, int block, int *number_edges, int *heads, int *tails)
+/*
+input: latent structure, block, number of edges and edge list in terms of heads and tails
+output: number of edges of block, block-dependent edge list in terms of heads and tails
+*/
+{
+  int count, **edge_list_block, h, i, t, number_edges_block, *permutation;
+  permutation = (int*) calloc(ls->n,sizeof(int));
+  count = 0;
+  for (i = 0; i < ls->n; i++)
+    {
+    if (ls->indicator[i] == block)
+      {
+      count = count + 1;
+      permutation[i] = count; /* Permute labels of nodes so that nodes belonging to block have labels 1..ls->size[block] */
+      }
+    }
+  edge_list_block = (int**) calloc(3,sizeof(int*));
+  edge_list_block[0] = (int*) calloc(1,sizeof(int));
+  edge_list_block[1] = NULL;
+  edge_list_block[2] = NULL;
+  number_edges_block = 0;
+  for (i = 0; i < *number_edges; i++)
+    {
+    h = heads[i];
+    t = tails[i];
+    if ((ls->indicator[h-1] == block) && (ls->indicator[t-1] == block))
+      {
+      number_edges_block = number_edges_block + 1;
+      edge_list_block[1] = realloc(edge_list_block[1],number_edges_block*sizeof(int));
+      edge_list_block[2] = realloc(edge_list_block[2],number_edges_block*sizeof(int));
+      edge_list_block[1][number_edges_block-1] = permutation[h-1];
+      edge_list_block[2][number_edges_block-1] = permutation[t-1];
+      }
+    }
+  edge_list_block[0][0] = number_edges_block; 
+  free(permutation);
+  return edge_list_block;
+}
+
 int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails)
 /*
 input: number of nodes, indicator of directed network, number of edges, heads and tails of edge list
@@ -487,7 +531,7 @@ output: degree sequence
 {
   int *degree, i, j, k, sum;
   degree = (int*) calloc(n,sizeof(int)); 
-  if (degree == NULL) { Rprintf("\n\ncalloc failed: Degree_Sequence, degree\n\n"); exit(1); }
+  if (degree == NULL) { Rprintf("\n\ncalloc failed: Degree_Sequence, degree\n\n"); error("Error: out of memory"); }
   for (k = 0; k < n_edges; k++)
     {
     i = heads[k] - 1;
@@ -506,7 +550,7 @@ output: degree frequencies
 {
   int *degree_freq, i, k;
   degree_freq = (int*) calloc(n,sizeof(int)); 
-  if (degree_freq == NULL) { Rprintf("\n\ncalloc failed: Degree_Freq, degree_freq\n\n"); exit(1); }
+  if (degree_freq == NULL) { Rprintf("\n\ncalloc failed: Degree_Freq, degree_freq\n\n"); error("Error: out of memory"); }
   for (i = 0; i < n; i++)
     {
     k = degree[i];
@@ -524,7 +568,7 @@ output: relative frequencies of degree by block
   int i, k;
   double *block_degree_freq;
   block_degree_freq = (double*) calloc(block_number,sizeof(double)); 
-  if (block_degree_freq == NULL) { Rprintf("\n\ncalloc failed: Block_Degree_Freq, block_degree_freq\n\n"); exit(1); }
+  if (block_degree_freq == NULL) { Rprintf("\n\ncalloc failed: Block_Degree_Freq, block_degree_freq\n\n"); error("Error: out of memory"); }
   for (i = 0; i < n; i++)
     {
     k = block_indicator[i];
@@ -1320,7 +1364,7 @@ output: within-block partition function on log scale, evaluated either by comple
   else /* Possible edges */
     {       
     eta = (double*) calloc(2,sizeof(double));
-    if (eta == NULL) { Rprintf("\n\ncalloc failed: Within_Block_Partition_Function, eta\n\n"); exit(1); }
+    if (eta == NULL) { Rprintf("\n\ncalloc failed: Within_Block_Partition_Function, eta\n\n"); error("Error: out of memory"); }
     if ((ergm->d1 == 0) && (ergm->d2 == 2))
       {
       eta[0] = ls->theta[0][k]; /* Within-block edge parameter */
@@ -1463,11 +1507,11 @@ output: candidate-generating distribution
   int k, block, indicator;
   double a_i, energy, lower_bound, lower_bound_k, *lower_bound_k_present, maximum, *q_i, *statistic, sum, *theta;
   lower_bound_k_present = (double*) calloc(ls->number,sizeof(double));
-  if (lower_bound_k_present == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, lower_bound_k_present\n\n"); exit(1); }
+  if (lower_bound_k_present == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, lower_bound_k_present\n\n"); error("Error: out of memory"); }
   q_i = (double*) calloc(ls->number,sizeof(double));
-  if (q_i == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, q_i\n\n"); exit(1); }
+  if (q_i == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, q_i\n\n"); error("Error: out of memory"); }
   statistic = (double*) calloc(ls->number,sizeof(double));
-  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, statistic\n\n"); exit(1); }
+  if (statistic == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, statistic\n\n"); error("Error: out of memory"); }
   indicator = ls->indicator[node];
   ls->size[indicator] = ls->size[indicator] - 1;
   Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input); /* Set input given ls->theta */
@@ -1589,21 +1633,21 @@ void Sample_Graph(int number, int n, int ls_d, int terms, int *hierarchical, int
                           int *attribs, int *maxout, int *maxin, int *minout,
                           int *minin, int *condAllDegExact, int *attriblength, 
                           int *maxedges,
-                          int *mheads, int *mtails, int *mdnedges)
+                          int *mheads, int *mtails, int *mdnedges, int *status)
 /*
 input: (maximum) number of categories, number of nodes, number of structural parameters, number of parameters
 output: one sample from posterior predictive distribution
 */
 {
-  int *h, *t, i, *indicator, k, *nedges, s;
+  int number_networks, *lasttoggle, *h, *t, i, *indicator, k, *nedges, s, *time;
   double **parameter;
   s = 1; /* Sample one graph from posterior predictive distribution */
   for (i = 0; i < ergm_d; i++)
     {
     sample[i] = 0.0;
     }
-  MCMC_wrapper(heads,tails,dnedges, /* Sample one graph from posterior predictive distribution given input and theta */
-               maxpossibleedges,
+  number_networks = 1;
+  MCMC_wrapper(&number_networks,dnedges,tails,heads, /* Sample one graph from posterior predictive distribution given input and theta */
                dn,directed,bipartite,
                nterms,funnames,
                sonames,
@@ -1616,19 +1660,19 @@ output: one sample from posterior predictive distribution
                attribs,maxout,maxin,minout,
                minin,condAllDegExact,attriblength,
                maxedges,
-               mheads,mtails,mdnedges);
+               status);
   indicator = (int*) calloc(n,sizeof(int));
-  if (indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, indicator\n\n"); exit(1); }
+  if (indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, indicator\n\n"); error("Error: out of memory"); }
   for (i = 0; i < n; i++) /* Identical indicators */
     {
     indicator[i] = 1;
     }
   parameter = (double**) calloc(ls_d,sizeof(double*));
-  if (parameter == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, parameter\n\n"); exit(1); }
+  if (parameter == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, parameter\n\n"); error("Error: out of memory"); }
   for (i = 0; i < ls_d; i++)
     {
     parameter[i] = (double*) calloc(number+1,sizeof(double));
-    if (parameter[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, parameter[%i]\n\n",i); exit(1); }
+    if (parameter[i] == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, parameter[%i]\n\n",i); error("Error: out of memory"); }
     }
   for (i = 0; i < ls_d; i++) /* Identical structural parameters, so that structural function of graph, structural parameters reduces to corresponding non-structural function of graph */
     {
@@ -1640,15 +1684,17 @@ output: one sample from posterior predictive distribution
   Set_Input(terms,hierarchical,number,n,indicator,parameter,input);
   nedges = newnetworkheads; /* First element of newnetworkheads = newnetworkheads[0] is number of edges */
   h = (int*) calloc(*nedges,sizeof(int));
-  if (h == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, h\n\n"); exit(1); }
+  if (h == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, h\n\n"); error("Error: out of memory"); }
   t = (int*) calloc(*nedges,sizeof(int));
-  if (t == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, t\n\n"); exit(1); }
+  if (t == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, t\n\n"); error("Error: out of memory"); }
   for (i = 0; i < *nedges; i++) /* Since first element of newnetworkheads and newnetworktails is number of edges, heads and tails must be extracted */
     {
     h[i] = newnetworkheads[i+1];
     t[i] = newnetworktails[i+1];
     }
-  network_stats_wrapper(h,t,nedges,dn,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute non-structural function of graph */
+  time = 0;
+  lasttoggle = 0; /* 666 */
+  network_stats_wrapper(t,h,time,lasttoggle,nedges,dn,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute non-structural function of graph */
   free(h);
   free(t);
   free(indicator);

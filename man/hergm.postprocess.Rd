@@ -15,7 +15,7 @@ hergm.postprocess(sample = NULL,
                   burnin = 0, 
                   thinning = 1,
                   relabel = FALSE,
-                  name = NULL, 
+                  name = "", 
                   \dots)
 
 }
@@ -61,6 +61,8 @@ The required computations can be time-consuming when the number of blocks \code{
 \item{eta_precision}{precision parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
 
 \item{hergm_theta}{parameters of \code{hergm-terms}.}
+
+\item{loss}{if \code{relabel == TRUE}, local minimum of loss function.}
 
 \item{p_k}{probabilities of membership to blocks.}
 

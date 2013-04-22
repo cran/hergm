@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_mcmc.h"
@@ -87,7 +87,7 @@ int Sample_Indicators_Dependence(int model, ergmstructure *ergm, latentstructure
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node);
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node, int *status);
 /*
 input: ergm structure, latent structure, prior
 output: indicators
@@ -108,7 +108,7 @@ int Sample_Ergm_Theta_Dependence(int model, ergmstructure *ergm, latentstructure
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor);
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int *status);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -129,7 +129,7 @@ int Sample_Ls_Theta_Dependence(int model, ergmstructure *ergm, latentstructure *
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_block);
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_block, int *status);
 /*
 input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
@@ -220,7 +220,7 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior);
+             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior, int *status);
 /*
 input: R input
 output: simulated graph
@@ -264,7 +264,7 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior);
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior, int *status);
 /*
 input: R input
 output: MCMC sample of unknowns from posterior

@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_latent.h"
@@ -70,6 +70,12 @@ double PMF_Dyad_Independence_Node(int node, int d, double *input, double *theta,
 /*
 input: input
 output: minus energy of node i on log scale, computed under the assumption of conditional dyad-independence given latent structure
+*/
+
+int** Edge_List_Block(latentstructure *ls, int block, int *number_edges, int *heads, int *tails);
+/*
+input: latent structure, block, number of edges and edge list in terms of heads and tails
+output: number of edges of block, block-dependent edge list in terms of heads and tails
 */
 
 int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails);
@@ -201,7 +207,7 @@ void Sample_Graph(int number, int n, int ls_d, int terms, int *hierarchical, int
                           int *attribs, int *maxout, int *maxin, int *minout,
                           int *minin, int *condAllDegExact, int *attriblength, 
                           int *maxedges,
-                          int *mheads, int *mtails, int *mdnedges);
+                          int *mheads, int *mtails, int *mdnedges, int *status);
 /*
 input: (maximum) number of categories, number of nodes, number of structural parameters, number of parameters
 output: one sample from posterior predictive distribution

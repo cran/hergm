@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_utils.h"
@@ -73,6 +73,26 @@ output: value of discrete random variable with pmf p
   return i;
 }
 
+void Sample_Dirichlet(int d, double alpha, double *p)
+/*
+input: dimension, parameter
+output: probability vector
+*/
+{
+  int i;
+  double sum;
+  sum = 0.0;
+  for (i = 0; i < d; i++)
+    { 
+    p[i] = rgamma(alpha,1.0);
+    sum = sum + p[i];
+    }
+  for (i = 0; i < d; i++)
+    {
+    p[i] = p[i] / sum;
+    }
+}
+
 double* Sample_MVN(int d, double *m, double **C)
 /* 
 input: dimension d, mean vector m, Cholesky factor C of covariance matrix S = C t(C)
@@ -82,9 +102,9 @@ output: random vector x with multivariate normal(m,S) pdf
   int i, j;
   double sum, *x, *z;
   x = (double*) calloc(d,sizeof(double));
-  if (x == NULL) { Rprintf("\n\ncalloc failed: SampleMVN, x\n\n"); exit(1); }
+  if (x == NULL) { Rprintf("\n\ncalloc failed: SampleMVN, x\n\n"); error("Error: out of memory"); }
   z = (double*) calloc(d,sizeof(double));
-  if (z == NULL) { Rprintf("\n\ncalloc failed: SampleMVN, z\n\n"); exit(1); }
+  if (z == NULL) { Rprintf("\n\ncalloc failed: SampleMVN, z\n\n"); error("Error: out of memory"); }
   for (i = 0; i < d; i++)
     {
     z[i] = norm_rand(); /* Sample normal(0,1) */
@@ -112,7 +132,7 @@ output: multivariate normal(m,inverse(P)) kernel on log scale
   double log_kernel, *y;
   log_kernel = 0.0;
   y = (double*) calloc(d,sizeof(double));
-  if (y == NULL) { Rprintf("\n\ncalloc failed: MVN_PDF, y\n\n"); exit(1); }
+  if (y == NULL) { Rprintf("\n\ncalloc failed: MVN_PDF, y\n\n"); error("Error: out of memory"); }
   for (i = 0; i < d; i++)
     {
     y[i] = x[i] - m[i]; /* Center x */

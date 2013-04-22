@@ -1,11 +1,7 @@
-# Default NAMESPACE created by R
-# Remove the previous line if you edit this file
 
-# Export all names
-exportPattern(".")
+useDynLib(hergm)
 
-# Import all packages listed as Imports or Depends
-import(
-  ergm,
-  snow
-)
+importFrom(utils, packageDescription)
+
+# Export all names that do not begin with a dot.
+exportPattern("^[^\\.]")

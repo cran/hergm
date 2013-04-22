@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_bayes.h"
@@ -28,7 +28,7 @@ output: prior
 {
   priorstructure_ls *prior_ls;
   prior_ls = (priorstructure_ls*) calloc(1,sizeof(priorstructure_ls));
-  if (prior_ls == NULL) { Rprintf("\n\ncalloc failed: Initialize_Prior_ls, prior_ls\n\n"); exit(1); }
+  if (prior_ls == NULL) { Rprintf("\n\ncalloc failed: Initialize_Prior_ls, prior_ls\n\n"); error("Error: out of memory"); }
   prior_ls->alpha_shape = shape; 
   prior_ls->alpha_rate = rate; 
   return prior_ls;
@@ -43,36 +43,36 @@ output: prior
   int i;
   priorstructure *prior;
   prior = (priorstructure*) calloc(1,sizeof(priorstructure));
-  if (prior == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior\n\n"); exit(1); }
+  if (prior == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior\n\n"); error("Error: out of memory"); }
   prior->mean2_mean = (double*) calloc(d2,sizeof(double)); 
-  if (prior->mean2_mean == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean2_mean\n\n"); exit(1); }
+  if (prior->mean2_mean == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean2_mean\n\n"); error("Error: out of memory"); }
   prior->mean2_precision = (double*) calloc(d2,sizeof(double)); 
-  if (prior->mean2_precision == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean2_precision\n\n"); exit(1); }
+  if (prior->mean2_precision == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean2_precision\n\n"); error("Error: out of memory"); }
   prior->mean1 = (double*) calloc(d1,sizeof(double)); 
-  if (prior->mean1 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean1\n\n"); exit(1); }
+  if (prior->mean1 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean1\n\n"); error("Error: out of memory"); }
   prior->mean2 = (double*) calloc(d2,sizeof(double)); 
-  if (prior->mean2 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean2\n\n"); exit(1); }
+  if (prior->mean2 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->mean2\n\n"); error("Error: out of memory"); }
   prior->cf1 = (double**) calloc(d1,sizeof(double*));
-  if (prior->cf1 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf1\n\n"); exit(1); }
+  if (prior->cf1 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf1\n\n"); error("Error: out of memory"); }
   prior->precision1 = (double**) calloc(d1,sizeof(double*));
-  if (prior->precision1 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision1\n\n"); exit(1); }
+  if (prior->precision1 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision1\n\n"); error("Error: out of memory"); }
   for (i = 0; i < d1; i++)
     {
     prior->cf1[i] = (double*) calloc(d1,sizeof(double));
-    if (prior->cf1[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf1[%i]\n\n",i); exit(1); }
+    if (prior->cf1[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf1[%i]\n\n",i); error("Error: out of memory"); }
     prior->precision1[i] = (double*) calloc(d1,sizeof(double));
-    if (prior->precision1[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision1[%i]\n\n",i); exit(1); }
+    if (prior->precision1[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision1[%i]\n\n",i); error("Error: out of memory"); }
     }
   prior->cf2 = (double**) calloc(d2,sizeof(double*));
-  if (prior->cf2 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf2\n\n"); exit(1); }
+  if (prior->cf2 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf2\n\n"); error("Error: out of memory"); }
   prior->precision2 = (double**) calloc(d2,sizeof(double*));
-  if (prior->precision2 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision2\n\n"); exit(1); }
+  if (prior->precision2 == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision2\n\n"); error("Error: out of memory"); }
   for (i = 0; i < d2; i++)
     {  
     prior->cf2[i] = (double*) calloc(d2,sizeof(double)); 
-    if (prior->cf2[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf2[%i]\n\n",i); exit(1); }
+    if (prior->cf2[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->cf2[%i]\n\n",i); error("Error: out of memory"); }
     prior->precision2[i] = (double*) calloc(d2,sizeof(double)); 
-    if (prior->precision2[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision2[%i]\n\n",i); exit(1); }
+    if (prior->precision2[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Priorstructure, prior->precision2[%i]\n\n",i); error("Error: out of memory"); }
     }
   return prior;
 }

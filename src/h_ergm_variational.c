@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_variational.h"
@@ -196,11 +196,11 @@ output: lower bound of log partition function obtained by variational approximat
   int i, j, iteration;
   double last_lower_bound, lower_bound, **mu;
   mu = (double**) calloc(n,sizeof(double*)); 
-  if (mu == NULL) { Rprintf("\n\nEM: calloc failed...\n\n"); exit(1); }
+  if (mu == NULL) { Rprintf("\n\nEM: calloc failed...\n\n"); error("Error: out of memory"); }
   for (i = 0; i < n; i++) 
     {
     mu[i] = (double*) calloc(n,sizeof(double));
-    if (mu[i] == NULL) { Rprintf("\n\nEM: calloc failed...\n\n"); exit(1); }
+    if (mu[i] == NULL) { Rprintf("\n\nEM: calloc failed...\n\n"); error("Error: out of memory"); }
     }
   for (i = 0; i < n - 1; i++) /* Main diagonal of mu is 0, since it is initialized as 0 */
     {

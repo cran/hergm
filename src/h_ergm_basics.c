@@ -1,5 +1,5 @@
 /***************************************************************************/
-/* Copyright 2009 Michael Schweinberger                                    */
+/* Copyright 2009 Nobody                                                   */
 /*                                                                         */
 /* This file is part of hergm.                                             */
 /*                                                                         */
@@ -15,7 +15,7 @@
 /*                                                                         */
 /*    You should have received a copy of the GNU General Public License    */
 /*    along with hergm.  If not, see <http://www.gnu.org/licenses/>.       */
-/*                                                                         */ 
+/*                                                                         */
 /***************************************************************************/
 
 #include "h_ergm_basics.h"
@@ -32,7 +32,7 @@ output: pointer to lower half of n x n matrix
   if (x == NULL) 
     { 
     Rprintf("\n\ncalloc failed...\n\n"); 
-    exit(1); 
+    error("Error: out of memory"); 
     }
   for (i = 0; i < n + 1; i++) /* For row i, allocate memory for elements 0..i (element 0 is redundant) */
     {
@@ -40,7 +40,7 @@ output: pointer to lower half of n x n matrix
     if (x[i] == NULL) 
       { 
       Rprintf("\n\ncalloc failed...\n\n"); 
-      exit(1); 
+      error("Error: out of memory"); 
       }
     }
   return x;
@@ -139,11 +139,11 @@ output: scaled matrix
   int i, j;
   double **x;
   x = (double**) calloc(d1,sizeof(double*));
-  if (x == NULL) { Rprintf("\n\ncalloc failed: Scale, x\n\n"); exit(1); }
+  if (x == NULL) { Rprintf("\n\ncalloc failed: Scale, x\n\n"); error("Error: out of memory"); }
   for (i = 0; i < d1; i++)
     {
     x[i] = (double*) calloc(d2,sizeof(double));
-    if (x[i] == NULL) { Rprintf("\n\ncalloc failed: Scale, x[%i]\n\n",i); exit(1); }
+    if (x[i] == NULL) { Rprintf("\n\ncalloc failed: Scale, x[%i]\n\n",i); error("Error: out of memory"); }
     }
   for (i = 0; i < d1; i++)
     {
@@ -193,24 +193,22 @@ void Print_DD(int d1, int d2, double **matrix)
     }
 }
 
-int Minimizer(int n, int *vector)
+int Max(int n, int *vector)
 /*
 input: vector of integers
-output: minimum of vector of integers
+output: maximum of vector of integers
 */
 {
-  int i, minimum, minimizer;
-  minimizer = INT_MAX;
-  minimum = INT_MAX;
-  for (i = 0; i < n; i++)
+  int i, maximum;
+  maximum = vector[0];
+  for (i = 1; i < n; i++)
     {
-    if (vector[i] < minimum) 
+    if (vector[i] > maximum)
       {
-      minimizer = i;
-      minimum = vector[i];
+      maximum = vector[i];
       }
     }
-  return minimizer;
+  return maximum;
 }
  
 void Get_Permutation(long int n, long int index, int *permutation)

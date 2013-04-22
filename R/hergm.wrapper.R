@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Michael Schweinberger                                    #
+# Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -51,7 +51,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.double(hergm_list$eta),
     as.integer(hergm_list$indicator),
     as.integer(hergm_list$Clist$heads), as.integer(hergm_list$Clist$tails),
-    as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$Clist$maxpossibleedges), as.integer(hergm_list$Clist$n),
+    as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$MCMCparams$MCMC.init.maxedges), as.integer(hergm_list$Clist$n),
     as.integer(hergm_list$Clist$dir), as.integer(hergm_list$Clist$bipartite),
     as.integer(hergm_list$Clist$nterms),
     as.character(hergm_list$Clist$fnamestring),
@@ -64,10 +64,10 @@ hergm.wrapper <- function(seed, hergm_list)
     sample = as.double(t(hergm_list$MCMCparams$stats)),
     as.integer(hergm_list$MCMCparams$burnin), 
     as.integer(hergm_list$MCMCparams$interval),
-    as.integer(hergm_list$verbose), as.integer(hergm_list$MHproposal$bd$attribs),
-    as.integer(hergm_list$MHproposal$bd$maxout), as.integer(hergm_list$MHproposal$bd$maxin),
-    as.integer(hergm_list$MHproposal$bd$minout), as.integer(hergm_list$MHproposal$bd$minin),
-    as.integer(hergm_list$MHproposal$bd$condAllDegExact), as.integer(length(hergm_list$MHproposal$bd$attribs)),
+    as.integer(hergm_list$verbose), as.integer(hergm_list$MHproposal$arguments$constraints$bd$attribs),
+    as.integer(hergm_list$MHproposal$arguments$constraints$bd$maxout), as.integer(hergm_list$MHproposal$arguments$constraints$bd$maxin),
+    as.integer(hergm_list$MHproposal$arguments$constraints$bd$minout), as.integer(hergm_list$MHproposal$arguments$constraints$bd$minin),
+    as.integer(hergm_list$MHproposal$arguments$constraints$bd$condAllDegExact), as.integer(length(hergm_list$MHproposal$arguments$constraints$bd$attribs)),
     as.integer(hergm_list$maxedges),
     as.integer(hergm_list$max_iteration),
     as.integer(hergm_list$between),
@@ -77,6 +77,7 @@ hergm.wrapper <- function(seed, hergm_list)
     sample_tails = as.integer(hergm_list$sample_tails),
     as.integer(hergm_list$call_RNGstate),
     as.integer(hergm_list$hyper_prior),
+    status = integer(1), 
     PACKAGE="hergm")
     }
   else
@@ -106,7 +107,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.double(hergm_list$eta_precision_rate),
     as.integer(hergm_list$indicator),
     as.integer(hergm_list$Clist$heads), as.integer(hergm_list$Clist$tails),
-    as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$Clist$maxpossibleedges), as.integer(hergm_list$Clist$n),
+    as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$MCMCparams$MCMC.init.maxedges), as.integer(hergm_list$Clist$n),
     as.integer(hergm_list$Clist$dir), as.integer(hergm_list$Clist$bipartite),
     as.integer(hergm_list$Clist$nterms),
     as.character(hergm_list$Clist$fnamestring),
@@ -121,10 +122,10 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$MCMCparams$interval),
     newnwheads = integer(hergm_list$maxedges),
     newnwtails = integer(hergm_list$maxedges),
-    as.integer(hergm_list$verbose), as.integer(hergm_list$MHproposal$bd$attribs),
-    as.integer(hergm_list$MHproposal$bd$maxout), as.integer(hergm_list$MHproposal$bd$maxin),
-    as.integer(hergm_list$MHproposal$bd$minout), as.integer(hergm_list$MHproposal$bd$minin),
-    as.integer(hergm_list$MHproposal$bd$condAllDegExact), as.integer(length(hergm_list$MHproposal$bd$attribs)),
+    as.integer(hergm_list$verbose), as.integer(hergm_list$MHproposal$arguments$constraints$bd$attribs),
+    as.integer(hergm_list$MHproposal$arguments$constraints$bd$maxout), as.integer(hergm_list$MHproposal$arguments$constraints$bd$maxin),
+    as.integer(hergm_list$MHproposal$arguments$constraints$bd$minout), as.integer(hergm_list$MHproposal$arguments$constraints$bd$minin),
+    as.integer(hergm_list$MHproposal$arguments$constraints$bd$condAllDegExact), as.integer(length(hergm_list$MHproposal$arguments$constraints$bd$attribs)),
     as.integer(hergm_list$maxedges),
     as.integer(hergm_list$max_iteration),
     as.integer(hergm_list$between),
@@ -136,6 +137,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$call_RNGstate),
     as.integer(hergm_list$parallel),
     as.integer(hergm_list$hyper_prior),
+    status = integer(1),
     PACKAGE="hergm")
     }
   sample

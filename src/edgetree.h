@@ -1,14 +1,13 @@
 /*
  *  File ergm/src/edgetree.h
- *  Part of the statnet package, http://statnetproject.org
+ *  Part of the statnet package, http://statnet.org
  *
  *  This software is distributed under the GPL-3 license.  It is free,
  *  open source, and has the attribution requirements (GPL Section 7) in
- *    http://statnetproject.org/attribution
+ *    http://statnet.org/attribution
  *
- *  Copyright 2010 the statnet development team
+ *  Copyright 2012 the statnet development team
  */
-
 #ifndef EDGETREE_H
 #define EDGETREE_H
 
@@ -49,7 +48,6 @@ edges in a network structure.
 typedef struct Dur_Infstruct {
   int MCMCtimer;
   int *lasttoggle;
-/*  double mean_edge_duration; This is probably not a good idea */
 } Dur_Inf;
 
 
@@ -68,7 +66,7 @@ typedef struct Dur_Infstruct {
      the smallest index of an edge object not being used.  
    outdegree[] and indegree[] are continually updated to give
      the appropriate degree values for each vertex.  These should
-     point to Vertex-vectors of length nnodes.  
+     point to Vertex-vectors of length nnodes+1.  
    value:  optional value(s) associated with this network 
 */
 typedef struct Networkstruct {
@@ -87,43 +85,56 @@ typedef struct Networkstruct {
   Edge maxedges;
 } Network;
 
+
+/* *** don't forget,  tails -> heads, so all the functions below using
+   heads & tails, now list tails before heads */
+
 /* Initialization and destruction. */
-Network NetworkInitialize(Vertex *heads, Vertex *tails, Edge nedges,
+Network NetworkInitialize(Vertex *tails, Vertex *heads, Edge nedges,
 			  Vertex nnodes, int directed_flag, Vertex bipartite,
-			  int lasttoggle_flag);
+			  int lasttoggle_flag, int time, int *lasttoggle);
 void NetworkDestroy(Network *nwp);
-Network NetworkInitializeD(double *heads, double *tails, Edge nedges,
+Network NetworkInitializeD(double *tails, double *heads, Edge nedges,
 			   Vertex nnodes, int directed_flag, Vertex bipartite,
-			   int lasttoggle_flag);
+			   int lasttoggle_flag, int time, int *lasttoggle);
+
+Network *NetworkCopy(Network *dest, Network *src);
 
 /* Accessors. */
 Edge EdgetreeSearch (Vertex a, Vertex b, TreeNode *edges);
 Edge EdgetreeSuccessor (TreeNode *edges, Edge x);
+Edge EdgetreePredecessor (TreeNode *edges, Edge x);
 Edge EdgetreeMinimum (TreeNode *edges, Edge x);
+Edge EdgetreeMaximum (TreeNode *edges, Edge x);
 
 /* Modifiers. */
-int ToggleEdge (Vertex head, Vertex tail, Network *nwp);
-int ToggleEdgeWithTimestamp (Vertex head, Vertex tail, Network *nwp);
-int AddEdgeToTrees(Vertex head, Vertex tail, Network *nwp);
+
+/* *** don't forget,  tails -> heads, so all the functions below using
+   heads & tails, now list tails before heads */
+
+int ToggleEdge (Vertex tail, Vertex head, Network *nwp);
+int ToggleEdgeWithTimestamp (Vertex tail, Vertex head, Network *nwp);
+int AddEdgeToTrees(Vertex tail, Vertex head, Network *nwp);
 void AddHalfedgeToTree (Vertex a, Vertex b, TreeNode *edges, Edge next_edge);
 void UpdateNextedge (TreeNode *edges, Edge *nextedge, Network *nwp);
-int DeleteEdgeFromTrees(Vertex head, Vertex tail, Network *nwp);
+int DeleteEdgeFromTrees(Vertex tail, Vertex head, Network *nwp);
 int DeleteHalfedgeFromTree(Vertex a, Vertex b, TreeNode *edges,
 		     Edge *next_edge);
 
 /* Duration functions. */
-int ElapsedTime(Vertex head, Vertex tail, Network *nwp);
-void TouchEdge(Vertex head, Vertex tail, Network *nwp);
+int ElapsedTime(Vertex tail, Vertex head, Network *nwp);
+void TouchEdge(Vertex tail, Vertex head, Network *nwp);
 
 /* Utility functions. */
-int FindithEdge (Vertex *head, Vertex *tail, Edge i, Network *nwp);
+int FindithEdge (Vertex *tail, Vertex *head, Edge i, Network *nwp);
+int GetRandEdge(Vertex *tail, Vertex *head, Network *nwp);
 void printedge(Edge e, TreeNode *edges);
 void InOrderTreeWalk(TreeNode *edges, Edge x);
 void NetworkEdgeList(Network *nwp);
-void ShuffleEdges(Vertex *heads, Vertex *tails, Edge nedges);
+void ShuffleEdges(Vertex *tails, Vertex *heads, Edge nedges);
 
 /* Others... */
 Edge DesignMissing (Vertex a, Vertex b, Network *mnwp);
-Edge EdgeTree2EdgeList(Vertex *heads, Vertex *tails, Network *nwp, Edge nmax);
+Edge EdgeTree2EdgeList(Vertex *tails, Vertex *heads, Network *nwp, Edge nmax);
 
 #endif

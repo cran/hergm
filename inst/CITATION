@@ -14,7 +14,7 @@ citEntry(entry = "Manual",
          title = hergmtitle,
          year         = hergmyear,
          note         = paste("Version ", hergmversion, sep = ""),
-         address      = "University Park, PA",
+         address      = "None",
          url = "http://CRAN.R-project.org/package=hergm",
          textVersion = paste(paste(hergmauthor, collapse=", "), " (", hergmyear, "), ", hergmtitle, ". Version ", hergmversion, ". URL http://CRAN.R-project.org/package=hergm.", sep="")
          )

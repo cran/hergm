@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Michael Schweinberger                                    #
+# Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -43,7 +43,7 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
   if (simulate == TRUE) parallel <- 1
   if (parallel > 1) # Parallel computing
     {
-    number <- parallel # Specify number of computer nodes on cluster
+    number <- parallel # Specify number of computing nodes on cluster
     cluster <- makeSOCKcluster(number)
     clusterEvalQ(cluster, library(hergm))
     s <- clusterApplyLB(cluster, seeds[1:number], hergm.wrapper, hergm_list)

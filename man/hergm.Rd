@@ -16,7 +16,7 @@ the non-parametric Dirichlet process prior encourages a small number of unique p
 
 - the stochastic block model of Snijders and Nowicki (1997) and Nowicki and Snijders (2001) with natural parameterization (restricted between-block parameters) and Dirichlet process priors (see edges_ij).
 
-- the hierarchical exponential-family models of Schweinberger and Handcock (2009) with stick-breaking priors (see mutual_ij, twostar_ijk, triangle_ijk, ttriple_ijk, ctriple_ijk).
+- hierarchical exponential-family models with stick-breaking priors (see mutual_ij, twostar_ijk, triangle_ijk, ttriple_ijk, ctriple_ijk).
 Hierarchical exponential-family models replace the strong dependence of simple exponential-family models by weak dependence with an eye to solving the near-degeneracy problem of simple exponential-family model.
 
 The package \code{hergm} implements simulation and Bayesian inference for the mentioned models.
@@ -111,8 +111,6 @@ Holland, P. W. and S. Leinhardt (1981). An exponential family of probability dis
 
 Nowicki, K. and T. A. B. Snijders (2001). Estimation and prediction for
   stochastic blockstructures. Journal of the American Statistical Association 96 (455), 1077--1087.
-
-Schweinberger, M. and M. S. Handcock (2009). Hierarchical exponential-family random graph models. Technical report, Pennsylvania State University. Submitted.
 
 Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for
   stochastic blockmodels for graphs with latent block structure. Journal of
