@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, mh_scale)
+hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, temperature, mh_scale)
 {
 
   # Prepare I
@@ -30,7 +30,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
   # Prepare II
   Clist <- ergm.Cprepare(nw, model)
   maxedges <- max(50000, Clist$nedges)
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, output = FALSE, name = "", verbose = -1)
+  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, temperature, output = FALSE, name = "", verbose = -1)
   if (hergm_list$model > 0) cat("\nMCMC: mean-field methods generate candidates of block memberships.\n")
   # Metropolis-Hastings: finding scale factor
   if (verbose >= 0) 
@@ -77,7 +77,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
   while ((s$mh_accept[1] < min_accept) && (min(s$mh_accept[2:number]) < (min_accept / 2)) && (iteration <= 20))
     { 
     iteration <- iteration + 1
-    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, output = FALSE, name = "", verbose = -1)
+    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, temperature, output = FALSE, name = "", verbose = -1)
     for (i in 1:number) 
       {
       if (s$mh_accept[i] < min_accept) scalefactor[i] <- scalefactor[i] / 2

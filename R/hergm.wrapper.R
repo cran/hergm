@@ -20,6 +20,7 @@
 
 hergm.wrapper <- function(seed, hergm_list) 
 {
+
   if (!is.null(seed)) set.seed(seed)
   if (hergm_list$simulate == TRUE)
     {
@@ -53,12 +54,12 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$Clist$heads), as.integer(hergm_list$Clist$tails),
     as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$MCMCparams$MCMC.init.maxedges), as.integer(hergm_list$Clist$n),
     as.integer(hergm_list$Clist$dir), as.integer(hergm_list$Clist$bipartite),
-    as.integer(hergm_list$Clist$nterms),
-    as.character(hergm_list$Clist$fnamestring),
+    as.integer(hergm_list$Clist$nterms), 
+    as.character(hergm_list$Clist$fnamestring), 
     as.character(hergm_list$Clist$snamestring),
-    as.character(hergm_list$MHproposal$name), as.character(hergm_list$MHproposal$package),
-    as.double(hergm_list$Clist$inputs), 
-    as.double(hergm_list$Clist$inputs), 
+    as.character(hergm_list$MHproposal$name), as.character(hergm_list$MHproposal$pkgname),
+    as.double(hergm_list$Clist$inputs),
+    as.double(hergm_list$Clist$inputs),
     as.double(hergm_list$theta),
     as.integer(hergm_list$MCMCparams$samplesize),
     sample = as.double(t(hergm_list$MCMCparams$stats)),
@@ -109,12 +110,12 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$Clist$heads), as.integer(hergm_list$Clist$tails),
     as.integer(hergm_list$Clist$nedges), as.integer(hergm_list$MCMCparams$MCMC.init.maxedges), as.integer(hergm_list$Clist$n),
     as.integer(hergm_list$Clist$dir), as.integer(hergm_list$Clist$bipartite),
-    as.integer(hergm_list$Clist$nterms),
-    as.character(hergm_list$Clist$fnamestring),
+    as.integer(hergm_list$Clist$nterms), 
+    as.character(hergm_list$Clist$fnamestring), 
     as.character(hergm_list$Clist$snamestring),
-    as.character(hergm_list$MHproposal$name), as.character(hergm_list$MHproposal$package),
-    as.double(hergm_list$Clist$inputs), 
-    as.double(hergm_list$Clist$inputs), 
+    as.character(hergm_list$MHproposal$name), as.character(hergm_list$MHproposal$pkgname),
+    as.double(hergm_list$Clist$inputs),
+    as.double(hergm_list$Clist$inputs),
     as.double(hergm_list$theta),
     as.integer(hergm_list$MCMCparams$samplesize),
     sample = as.double(t(hergm_list$MCMCparams$stats)),
@@ -136,6 +137,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.double(hergm_list$q_i),
     as.integer(hergm_list$call_RNGstate),
     as.integer(hergm_list$parallel),
+    as.double(hergm_list$temperature),
     as.integer(hergm_list$hyper_prior),
     status = integer(1),
     PACKAGE="hergm")

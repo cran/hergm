@@ -1,4 +1,4 @@
-###########################################################################
+##########################################################################
 # Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
@@ -18,10 +18,10 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, simulate, parallel, output, name, verbose) # Michael
+hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, simulate, parallel, temperature, output, name, verbose) # Michael
 {
   if (is.null(verbose)) verbose <- -1 
-  terms <- Clist$nterms # Number of hergm terms	
+  terms <- Clist$nterms # Number of hergm terms
   hierarchical <- vector(mode = "integer", length = terms) # Indicator: hierarchical hergm term
   max_number <- Clist$n # Default: (maximum) number of categories
   min_size <- Clist$n # Structural parameters corresponding to categories with min_size..n nodes show up in hergm pmf
@@ -35,7 +35,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   edges <- 0
   edges_ij <- 0
   covariates <- 0
-  for (i in 1:terms) # For given hergm term... 
+  for (i in 1:terms) # For given hergm term...
     {
     if (model$terms[[i]]$name == "edges")
       {
@@ -388,7 +388,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   if ((edges + edges_ij > 0) && (model_type > 0)) model_type <- model_type
   else model_type <- 0
   if ((model_type == 0) && (covariates == 0)) model_type <- 3
-
+ 
   # Build object hergm_list
   hergm_list <- list()
   hergm_list$model_type <- model_type
@@ -437,7 +437,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$q_i <- q_i
   hergm_list$call_RNGstate <- call_RNGstate
   hergm_list$parallel <- parallel
-
+  hergm_list$temperature <- temperature
+  
   hergm_list
 }
 

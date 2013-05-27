@@ -37,6 +37,7 @@ hergm <- function(formula,
                  burnin = 1e+4, 
                  interval = 1e+2,
                  mh_scale = NULL,
+                 temperature = c(1,10),
                  output = TRUE,
                  verbose = -1, 
                  name = NULL,
@@ -79,9 +80,30 @@ hergm <- function(formula,
   MCMCparams=c(control,list(samplesize=MCMCsamplesize,burnin=burnin,interval=interval,maxit=1,Clist.miss=Clist.miss,mcmc.precision=control$MCMLE.mcmc.precision))
   MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=MCMCparams$samplesize)
   MCMCparams$target.stats <- Clist$target.stats
+  default <- c(0,10)
+  if (is.null(temperature))
+    {
+    temperature <- default
+    cat("\nWarning: minimum and maximum temperature are NULL and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+    }
+  else if (length(temperature) < 2)
+    {
+    temperature <- default
+    cat("\nWarning: either minimum or maximum temperature are unspecified and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+    }
+  temperature[1] <- abs(temperature[1])
+  temperature[2] <- abs(temperature[2])
+  if (temperature[1] > temperature[2])
+    {
+    min <- min(temperature)
+    max <- max(temperature)
+    temperature[1] <- min
+    temperature[2] <- max
+    }
+  cat("\nMinimum or maximum temperature: ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
   print(
     system.time(
-      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, output)
+      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, temperature, output)
     )
   )
   cat("\n")

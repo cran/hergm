@@ -1,12 +1,11 @@
-/*
- *  File ergm/src/netstats.c
- *  Part of the statnet package, http://statnet.org
+/*  File src/netstats.c in package ergm, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
  *
  *  This software is distributed under the GPL-3 license.  It is free,
- *  open source, and has the attribution requirements (GPL Section 7) in
- *    http://statnet.org/attribution
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
  *
- *  Copyright 2012 the statnet development team
+ *  Copyright 2003-2013 Statnet Commons
  */
 #include "netstats.h"
 /*****************
@@ -20,7 +19,7 @@
 
 /* *** don't forget tail-> head, so this fucntion now accepts tails before heads */
 
-void network_stats_wrapper(int *tails, int *heads, int *time, int *lasttoggle, int *dnedges, 
+void network_stats_wrapper(int *tails, int *heads, int *timings, int *time, int *lasttoggle, int *dnedges, 
 			   int *dn, int *dflag,  int *bipartite,
 			   int *nterms, char **funnames,
 			   char **sonames, double *inputs,  double *stats)
@@ -40,7 +39,7 @@ void network_stats_wrapper(int *tails, int *heads, int *time, int *lasttoggle, i
   
   m=ModelInitialize(*funnames, *sonames, &inputs, *nterms);
   nw[0]=NetworkInitialize(NULL, NULL, 0,
-                          n_nodes, directed_flag, bip, time?1:0, time?*time:0, lasttoggle);
+                          n_nodes, directed_flag, bip, *timings?1:0, *timings?*time:0, *timings?lasttoggle:NULL);
 
   /* Compute the change statistics and copy them to stats for return
      to R.  Note that stats already has the statistics of an empty
@@ -64,7 +63,7 @@ void network_stats_wrapper(int *tails, int *heads, int *time, int *lasttoggle, i
 void SummStats(Edge n_edges, Vertex *tails, Vertex *heads,
 Network *nwp, Model *m, double *stats){
   
-  GetRNGstate();  /* R function enabling uniform RNG */
+  /* GetRNGstate(); R function enabling uniform RNG */
   
   ShuffleEdges(tails,heads,n_edges); /* Shuffle edgelist. */
   
@@ -99,6 +98,6 @@ Network *nwp, Model *m, double *stats){
     }else statspos += mtp->nstats;
   }
   
-  PutRNGstate();
+  /* PutRNGstate(); */
 }
 

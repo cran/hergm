@@ -244,7 +244,7 @@ input: number of parameters, input parameters, parameters
 output: statistic, inner product <parameter, statistic>
 */
 {
-  int i, *lasttoggle, *time;
+  int i;
   double sum;
   /*
   Rprintf("\nMinus_Energy: number of edges = %i",*nedges);
@@ -253,9 +253,13 @@ output: statistic, inner product <parameter, statistic>
     {
     statistic[i] = 0.0;
     }
-  time = 0;
-  lasttoggle = 0; /* 666 */
-  network_stats_wrapper(tails,heads,time,lasttoggle,nedges,n,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute statistic given input */
+  int timings = 0, time = 0, lasttoggle = 0;
+  /*
+  Rprintf("\n\nh_ergm_interface.c:");
+  Rprintf("\ntimings=%p",&timings);
+  Rprintf("\ntimings=%i",timings);
+  */
+  network_stats_wrapper(tails,heads,&timings,&time,&lasttoggle,nedges,n,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute statistic given input */
   sum = 0.0;
   for (i = 0; i < d; i++)
     {

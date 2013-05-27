@@ -44,6 +44,7 @@ hergm(formula,
       burnin = 1e+4,
       interval = 1e+2,
       mh_scale = NULL,
+      temperature = c(1,10),
       output = TRUE,
       verbose = -1,
       name = NULL, 
@@ -85,6 +86,8 @@ hergm(formula,
 \item{interval}{if \code{simulate == TRUE}, number of proposals between sampled networks.}
 
 \item{mh_scale}{if \code{simulate == FALSE}, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
+
+\item{temperature}{minimum and maximum temperature; the temperature is used to melt down the proposal distributions of indicators, which are based on the full conditional distributions of indicators but can have low entropy, resulting in slow mixing of the Markov chain; the temperature is a function of the entropy of the full conditional distributions and is designed to increase the entropy of the proposal distributions, and the minimum and maximum temperature are user-defined lower and upper bounds on the temperature.}
 
 \item{output}{if \code{TRUE}, full output, otherwise limited output.}
 

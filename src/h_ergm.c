@@ -342,7 +342,7 @@ int Sample_Indicators_Dependence(int model, ergmstructure *ergm, latentstructure
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node, int *status)
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node, double *temperature, int *status)
 /*
 input: ergm structure, latent structure, prior
 output: indicators
@@ -374,7 +374,6 @@ output: indicators
 
 /*  if (proposal_distribution == 0) q_i = &ls->p[0]; /* General case: proposal distribution: ls->p */
 /*  else q_i = Candidate_Generating_Distribution_Indicators_Dependence(update_node,model,ls,ergm,heads,tails,input_present,dnedges,dn,directed,bipartite,nterms,funnames,sonames); /* Special case:  proposal distribution: exact or approximate full conditional distribution */
-
   /* 666 */
   proposal_distribution = 0; 
   q_i = (double*) calloc(ls->number,sizeof(double));
@@ -384,18 +383,16 @@ output: indicators
     q_i[k] = 1.0 / ls->number;
     }
   /* 666 */
-
   entropy = S(ls->number,q_i); /* Entropy of ls->p as indicator of how much the nodes are spread out across blocks */
   entropy = entropy / ln(ls->number);
   /*
   Rprintf("\nEntropy of ls->p: %8.4f",entropy);
   */
   /* Temperature: note that the entropy of the full conditional distribution may be strongly peaked, and high temperatures are required to unfreeze the algorithm */
-  if ((entropy > epsilon) && (entropy < maximum)) t = 1.0 / entropy;
-  else t = 10.0;
-
-  t = 1.0; /* 666 */
-
+  if ((entropy >= epsilon) && (entropy <= maximum)) t = 1.0 / entropy;
+  else t = 1.0;
+  if (t < temperature[0]) t = temperature[0]; 
+  else if (t > temperature[1]) t = temperature[1];
   if (t != 1.0) /* Melt down the full conditional distribution, since the dependence of the indicators implies that the full conditional distribution may have low entropy */
     {
     p = (double*) calloc(ls->number,sizeof(double));
@@ -1448,7 +1445,7 @@ output: simulated graph
 */
 {
   int null = 0;
-  int *lasttoggle, coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *time, *verbose;
+  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
   double *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
@@ -1516,7 +1513,7 @@ output: simulated graph
   /****************/
   /* Sample graph */
   /****************/
-  GetRNGstate();
+  if (*call_RNGstate == 1) GetRNGstate();
   ls->alpha = *alpha; /* Clustering parameter */
   for (i = 0; i < (ls->number - 1); i++)
     {
@@ -1632,9 +1629,13 @@ output: simulated graph
         mheads[i] = newnetworkheads[i+1];
         mtails[i] = newnetworktails[i+1];
         }
-      time = 0;
-      lasttoggle = 0; /* 666 */
-      network_stats_wrapper(mtails,mheads,time,lasttoggle,n_edges,dn,directed,bipartite,nterms,funnames,sonames,inputs,pp); /* Compute non-structural function of graph */
+      int timings = 0, time = 0, lasttoggle = 0;
+      /*
+      Rprintf("\n\nh_ergm.c:");
+      Rprintf("\ntimings=%p",&timings);
+      Rprintf("\ntimings=%i",timings);
+      */
+      network_stats_wrapper(mtails,mheads,&timings,&time,&lasttoggle,n_edges,dn,directed,bipartite,nterms,funnames,sonames,inputs,pp); /* Compute non-structural function of graph */
       if (print == 1)
         {
         degree = Degree_Sequence(ls->n,*directed,*n_edges,mheads,mtails);
@@ -1764,7 +1765,7 @@ output: simulated graph
       }
     if (print == 1) Rprintf("\n");
     }
-  PutRNGstate();
+  if (*call_RNGstate == 1) PutRNGstate();
   /************/
   /* Finalize */
   /************/
@@ -1824,7 +1825,7 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior, int *status)
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, double *temperature, int *hyperprior, int *status)
 /*
 input: R input
 output: MCMC sample of unknowns from posterior
@@ -1853,7 +1854,7 @@ output: MCMC sample of unknowns from posterior
     Rprintf("\n");
     }
   model = (int)*model_type;
-  terms = (int)*nterms; /* Number of ergm terms */
+  terms = (int)*nterms; 
   dim = (int)*d;
   dim1 = (int)*d1;
   dim2 = (int)*d2;
@@ -1931,6 +1932,11 @@ output: MCMC sample of unknowns from posterior
   if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); error("Error: out of memory"); }
   local_mh_accept = (double*) calloc(number_local_mh,sizeof(double));
   if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); error("Error: out of memory"); }
+  /*
+  Rprintf("\nnumber_local_mh = %i",number_local_mh);
+  Print_D(number_local_mh,scale_factor);
+  Print_D(number_local_mh,scalefactor);
+  */
   Set_D_D(number_local_mh,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
   if (ls->n < 20) sample_size_indicators = ls->n / 2;
   else if (ls->n < 50) sample_size_indicators = ls->n / 5;
@@ -1984,7 +1990,7 @@ output: MCMC sample of unknowns from posterior
                          heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
-                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node,status);
+                         maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node,temperature,status);
           }
         free(available);
         if (ergm->d1 > 0)

@@ -19,6 +19,7 @@
 /***************************************************************************/
 
 #include "h_ergm_mcmc.h"
+#include "signal.h"
 
 double Sample_Alpha(priorstructure_ls *prior_ls, latentstructure *ls);
 /*
@@ -87,7 +88,7 @@ int Sample_Indicators_Dependence(int model, ergmstructure *ergm, latentstructure
                         int *maxedges,
                         int *mheads, int *mtails, int *mdnedges,
                         double *input_present, int print,
-                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node, int *status);
+                        int *newnetworkheads, int *newnetworktails, double *scale_factor, int update_node, double *temperature, int *status);
 /*
 input: ergm structure, latent structure, prior
 output: indicators
@@ -264,7 +265,7 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, int *hyperprior, int *status);
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, double *temperature, int *hyperprior, int *status);
 /*
 input: R input
 output: MCMC sample of unknowns from posterior

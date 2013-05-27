@@ -205,17 +205,14 @@ input: input
 output: minus energy of node i on log scale, computed under the assumption of conditional edge-independence given latent structure
 */
 {
-  int zero = 0;
   int one = 1;
-  int i, j, edge, *lasttoggle, *number_edges, *pseudo_heads, *pseudo_tails, time;
+  int i, j, edge, *lasttoggle, *number_edges, *pseudo_heads, *pseudo_tails;
   double sign, change, log_p_i_k, *statistic;
   Network nw;
   number_edges = &one;
   statistic = (double*) calloc(d,sizeof(double));
   if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence_Node, statistic\n\n"); error("Error: out of memory"); }
-  time = 0;
-  lasttoggle = 0; /* 666 */
-  nw = NetworkInitialize(tails,heads,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite,zero,time,lasttoggle);
+  nw = NetworkInitialize(tails,heads,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite, 0, 0, NULL);
   if (nw.outedges == NULL) { Rprintf("\n\ncalloc failed: PMF_Independence_Node, nw\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
@@ -260,14 +257,12 @@ output: minus energy of node i on log scale, computed under the assumption of co
   int zero = 0;
   int one = 1;
   int two = 2;
-  int i, j, energy_0, energy_1, energy_2, energy_3, dyad, edge, *number_edges, *pseudo_heads, *pseudo_tails, *lasttoggle, time;
+  int i, j, energy_0, energy_1, energy_2, energy_3, dyad, edge, *number_edges, *pseudo_heads, *pseudo_tails;
   double change, log_p_i_k, *statistic;
   Network nw;
   statistic = (double*) calloc(d,sizeof(double));
   if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, statistic\n\n"); error("Error: out of memory"); }
-  time = 0;
-  lasttoggle = 0; /* 666 */
-  nw = NetworkInitialize(tails,heads,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite,zero,time,lasttoggle);
+  nw = NetworkInitialize(tails,heads,(Edge)*n_edges,(Vertex)*n,(int)*directed,(Vertex)*bipartite, 0, 0, NULL);
   if (nw.outedges == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, nw\n\n"); error("Error: out of memory"); }
   /* 
   Note 1: if undirected graph and i < j, undirected edge (i, j) should be stored as (i, j)
@@ -1639,7 +1634,7 @@ input: (maximum) number of categories, number of nodes, number of structural par
 output: one sample from posterior predictive distribution
 */
 {
-  int number_networks, *lasttoggle, *h, *t, i, *indicator, k, *nedges, s, *time;
+  int number_networks, *h, *t, i, *indicator, k, *nedges, s;
   double **parameter;
   s = 1; /* Sample one graph from posterior predictive distribution */
   for (i = 0; i < ergm_d; i++)
@@ -1692,9 +1687,13 @@ output: one sample from posterior predictive distribution
     h[i] = newnetworkheads[i+1];
     t[i] = newnetworktails[i+1];
     }
-  time = 0;
-  lasttoggle = 0; /* 666 */
-  network_stats_wrapper(t,h,time,lasttoggle,nedges,dn,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute non-structural function of graph */
+  int timings = 0, time = 0, lasttoggle = 0;
+  /*
+  Rprintf("\n\nh_ergm_mcmc.c:");
+  Rprintf("\ntimings=%p",&timings);
+  Rprintf("\ntimings=%i",timings);
+  */
+  network_stats_wrapper(t,h,&timings,&time,&lasttoggle,nedges,dn,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute non-structural function of graph */
   free(h);
   free(t);
   free(indicator);
