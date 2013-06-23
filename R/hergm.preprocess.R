@@ -361,13 +361,11 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   if (null$alpha) alpha <- 1
   if (null$eta) eta <- vector(mode = "numeric", length = d)
   if (null$indicator) indicator <- vector(mode = "numeric", length = Clist$n)
-
   max_iteration <- MCMCparams$samplesize
   number_terms <- length_mcmc(d1, d2, max_number, Clist$n)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
   else dimension <- min(MCMCparams$samplesize, 12000)
   mcmc <- vector(mode = "numeric", length = (dimension * number_terms))
-
   if (Clist$dir == FALSE) max_edges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else max_edges <- Clist$n * (Clist$n - 1) # Directed
   if ((simulate == TRUE) && (output == TRUE))
@@ -388,6 +386,30 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   if ((edges + edges_ij > 0) && (model_type > 0)) model_type <- model_type
   else model_type <- 0
   if ((model_type == 0) && (covariates == 0)) model_type <- 3
+  if ((simulate == FALSE) && (dependence > 0))
+    {
+    default <- c(0,10)
+    if (is.null(temperature))
+      {
+      temperature <- default
+      cat("\nWarning: minimum and maximum temperature are NULL and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+      }
+    else if (length(temperature) < 2)
+      {
+      temperature <- default
+      cat("\nWarning: either minimum or maximum temperature are unspecified and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+      }
+    temperature[1] <- abs(temperature[1])
+    temperature[2] <- abs(temperature[2])
+    if (temperature[1] > temperature[2])
+      {
+      min <- min(temperature)
+      max <- max(temperature)
+      temperature[1] <- min
+      temperature[2] <- max
+      }
+    cat("\nMinimum or maximum temperature: ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+    }
  
   # Build object hergm_list
   hergm_list <- list()

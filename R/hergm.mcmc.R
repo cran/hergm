@@ -74,6 +74,7 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
   output_list$d1 <- hergm_list$d1
   output_list$d2 <- hergm_list$d2
   output_list$parallel <- hergm_list$parallel
+  output_list$simulate <- hergm_list$simulate
   output_list$sample_size <- min(12000, hergm_list$MCMCparams$samplesize)
   if (simulate == TRUE) 
     {

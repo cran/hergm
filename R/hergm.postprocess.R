@@ -34,6 +34,7 @@ hergm.postprocess <- function(sample = NULL,
   d1 <- sample$d1
   d2 <- sample$d2
   parallel <- sample$parallel
+  simulate <- sample$simulate
   sample_size <- sample$sample_size
   mcmc <- sample$sample 
 
@@ -44,7 +45,7 @@ hergm.postprocess <- function(sample = NULL,
     error_message <- paste("number of burn-in iterations ", burnin, " exceeds number of recorded iterations ", sample_size, ".", sep = "")
     stop(error_message, call. = FALSE)
     }
-  if (d2 == 0) relabel <- FALSE
+  if ((d2 == 0) || (simulate == TRUE)) relabel <- FALSE
   if ((relabel == TRUE) && (max_number > 10)) cat("\nWarning: relabeling time-consuming.\n")
 
   # Preprocess MCMC sample: delete burn-in iterations and transform vector into matrix, where rows correspond to MCMC draws
