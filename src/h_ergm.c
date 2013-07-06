@@ -83,6 +83,56 @@ output: category probability vector
   return p;
 }
 
+double* Stick_Breaking_External(double *shape1, double *shape2, int number, int n)
+/*
+input: shape parameters of Beta distribution, latent structure
+output: category probability vector
+*/
+{
+  int i;
+  double *b, c, *p;
+  b = (double*) calloc(number,sizeof(double));
+  if (b == NULL) { Rprintf("\n\ncalloc failed: Stick_Breaking, b\n\n"); error("Error: out of memory"); }
+  p = (double*) calloc(number,sizeof(double));
+  if (p == NULL) { Rprintf("\n\ncalloc failed: Stick_Breaking, p\n\n"); error("Error: out of memory"); }
+  /* Sample beta random variates: */
+  /*
+  Rprintf("\nStick_Breaking");
+  */
+  for (i = 0; i < (number - 1); i++)
+    {
+    b[i] = rbeta(shape1[i],shape2[i]); 
+    /*
+    Rprintf("\nshape1[%i] = %f shape2[%i] = %f",i,shape1[i],i,shape2[i]);
+    */
+    }
+  b[number-1] = 1.0; /* Ensure that probabilities sum to one */
+  /* p as function of b: */
+  p[0] = b[0];
+  /*
+  Rprintf("\nb[%i] = %f, p[%i] = %f",0,b[0],0,p[0]);
+  */
+  c = 1.0;
+  for (i = 1; i < number; i++)
+    {
+    c = c * (1.0 - b[i-1]);
+    p[i] = b[i] * c; 
+    /*
+    Rprintf("\nb[%i] = %f c = %f p[%i] = %f",i,b[i],c,i,p[i]);
+    */
+    }
+  /*
+  c = 0;
+  for (i = 0; i < number; i++)
+    {
+    c = c + p[i];
+    }
+  Rprintf("\nlength of p = %f",c);
+  */
+  free(b);
+  return p;
+}
+
 double* Sample_P(latentstructure *ls)
 /*
 input: latent structure
@@ -1397,6 +1447,58 @@ output: graph sampled from PMF p and number of edges
   heads[0] = number_edges; /* heads[0] is supposed to contain the number of edges */
   tails[0] = number_edges; /* tails[0] is supposed to contain the number of edges */
   return number_edges;
+}
+
+void Dirichlet(int *n,
+               int *number,
+               double *alpha,
+               double *eta_mean,
+               double *eta_sd,
+               int *indicator,
+               double *eta)
+/*
+input: R input
+output: draw from truncated Dirichlet process prior:
+- indicator of block membership
+- parameters
+*/
+{ 
+  int i;
+  double *p, *shape1, *shape2;
+  /**************/
+  /* Initialize */
+  /**************/
+  epsilon = DBL_EPSILON;
+  maximum = DBL_MAX;
+  shape1 = (double*) calloc(*number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
+  if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Dirichlet, shape1\n\n"); error("Error: out of memory"); }
+  shape2 = (double*) calloc(*number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
+  if (shape2 == NULL) { Rprintf("\n\ncalloc failed: Dirichlet, shape2\n\n"); error("Error: out of memory"); }
+  /********************************************/
+  /* Sample truncated Dirichlet process prior */
+  /********************************************/
+  GetRNGstate();
+  for (i = 0; i < (*number - 1); i++)
+    {
+    shape1[i] = 1.0; /* First shape of Beta distribution */
+    shape2[i] = *alpha; /* Second shape of Beta distribution */
+    }
+  p = Stick_Breaking_External(shape1,shape2,*number,*n); /* Construct category probability vector by stick-breaking */ 
+  /*
+  Print_D(*number,p);
+  */
+  for (i = 0; i < *n; i++) indicator[i] = Sample_Discrete(p);
+  for (i = 0; i < *number; i++) eta[i] = *eta_mean + (*eta_sd*norm_rand());
+  /*
+  Print_I(*n,indicator);
+  Print_D(*number,eta);
+  */
+  PutRNGstate();
+  /************/
+  /* Finalize */
+  /************/
+  free(shape1);
+  free(shape2);
 }
 
 void Simulation(int *dyaddependence,

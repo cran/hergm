@@ -1,6 +1,7 @@
-111c5fe7f8df1c256123b2de1ddca92d *DESCRIPTION
+3de0473a41eee64e3114e45898ab44cc *DESCRIPTION
 d0db496617a16e90e2091d420ef5dc1f *NAMESPACE
-4b64597b2ad85a08296b60bd8ed53e52 *R/hergm.R
+d4df807061cf2e106dfb4f3dc5bd92e0 *R/hergm.R
+e912e2f40a714714ef698a35d24c81da *R/hergm.dirichlet.R
 ca3420d8d30108c89c185f8e4630ca61 *R/hergm.mcmc.R
 ed6dd64ecbcc48cbfb6062ee68240eb0 *R/hergm.misc.R
 94e417f900d127c413d3c45c998c8681 *R/hergm.permutation.wrapper.R
@@ -9,8 +10,8 @@ eed12896013d53a5f0e2c827357fff08 *R/hergm.preprocess.R
 aba8fb1ea65fd0c65c0149a19c6ad846 *R/hergm.relabel.R
 f8dc736a18c5497ccccc1ed8bf999594 *R/hergm.set.mcmc.R
 70b9259ee528de88558b4e80a3fc103c *R/hergm.terms.R
-7e9f8a828d79ac9ee7af36c469aae661 *R/hergm.wrapper.R
-37c2313b2703306a7a0f2aeab4cb94d6 *R/zzz.R
+e9ed2909d7360b4d8e102a50331a258a *R/hergm.wrapper.R
+6cf7fa93847751be45909b48cb6de1fe *R/zzz.R
 6b041a43bbf1a0d3f4ced8724c38a436 *data/example.RData
 bfd89f8541b3f80ade76ac4bb9e4cbc8 *demo/00Index
 c9fdd02ea12a54a0e1249cb1b4ea50d6 *demo/example.r
@@ -18,6 +19,7 @@ c9fdd02ea12a54a0e1249cb1b4ea50d6 *demo/example.r
 ec67a4756374f04f6a0bf49c5d66f463 *man/example.Rd
 cc2eed35827a79fb66f9c64174dedd61 *man/hergm-internal.Rd
 bc151f41907219d579e6c06d1fe29b78 *man/hergm.Rd
+724ba1503a3fed2019da522754c0ccdc *man/hergm.dirichlet.Rd
 72ad1ea09a41bb2a485e5ff6f37585ed *man/hergm.postprocess.Rd
 48ec554dd6c30b1f821748f07f3a9d10 *man/hergm.terms.Rd
 b95ffdf30cfa1510342010206ad505de *src/MCMC.c
@@ -34,8 +36,8 @@ f247187752392c1d691e42286a2535cb *src/MHproposals.h
 6c2f6fdf160b4f435f4a299aafb078b4 *src/edgelist.h
 abd98bc67a87895265e722f36ed5901b *src/edgetree.c
 815130706392cf7651f305b8721e05e5 *src/edgetree.h
-2832f093ac323fe7edab3461d13e130f *src/h_ergm.c
-811775e589a19917c539c929c86f803a *src/h_ergm.h
+4c813f1ed06e3b451626bc1587290e42 *src/h_ergm.c
+645b9ce09dde90abb8cc7592f639154a *src/h_ergm.h
 c2616499f8fb1e6f3c6efe0d35e12ea5 *src/h_ergm_basics.c
 efe351d614164b2c0c5cfc300fd5c5b7 *src/h_ergm_basics.h
 bc6b42fb9a65d9cb1db23bdb60fc2838 *src/h_ergm_bayes.c

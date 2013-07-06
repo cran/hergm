@@ -33,6 +33,12 @@ input: shape parameters of Beta distribution, latent structure
 output: category probability vector
 */
 
+double* Stick_Breaking_External(double *shape1, double *shape2, int number, int n);
+/*
+input: shape parameters of Beta distribution, latent structure
+output: category probability vector
+*/
+
 double* Sample_P(latentstructure *ls);
 /*
 input: latent structure
@@ -180,6 +186,20 @@ int Sample_Graph_Edge_Independence(latentstructure *ls, double *ln_p, int *heads
 /*
 input: latent structure; probability of edge between nodes i and j on log scale
 output: graph sampled from PMF p and number of edges
+*/
+
+void Dirichlet(int *n,
+               int *number,
+               double *alpha,
+               double *eta_mean,
+               double *eta_sd,
+               int *indicator,
+               double *eta);
+/*
+input: R input
+output: draw from truncated Dirichlet process prior:
+- indicator of block membership
+- parameters
 */
 
 void Simulation(int *dyaddependence,

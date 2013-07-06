@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,13 +18,20 @@
 #                                                                         # 
 ###########################################################################
 
-.onAttach <- function(lib, pkg){
-  info <- packageDescription("hergm")
-  packageStartupMessage(
-    paste('\nhergm: version ', info$Version, ', created on ', info$Date, '\n',
-          "Copyright (c) 2013, Michael Schweinberger, Rice University\n", 
-          "                    Mark S. Handcock, University of California-Los Angeles\n",
-          "To start hergm: enter help(package=\"hergm\")\n",
-          'For license and citation information type citation("hergm").\n', sep="")
- )
+hergm.dirichlet <- function(n, number, alpha, eta_mean, eta_sd) 
+# Note: works in one-dimensional case
+{
+  indicator <- vector(length=n)
+  eta <- vector(length=number)
+  output <- .C("Dirichlet",
+                     as.integer(n),
+                     as.integer(number),
+                     as.numeric(alpha),
+                     as.numeric(eta_mean),
+                     as.numeric(eta_sd),
+                     indicator = as.integer(indicator),
+                     eta = as.numeric(eta),
+                     PACKAGE="hergm")
+  output
 }
+

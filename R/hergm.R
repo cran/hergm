@@ -47,6 +47,7 @@ hergm <- function(formula,
   control <- control.ergm()
   options()
   nw <- ergm.getnetwork(formula)
+  if (sum(nw[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
   control$drop <- FALSE
   model <- ergm.getmodel(formula, nw, drop=control$drop, expanded=TRUE)
   MCMCsamplesize <- samplesize
