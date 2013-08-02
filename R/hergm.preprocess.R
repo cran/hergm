@@ -1,4 +1,4 @@
-##########################################################################
+###########################################################################
 # Copyright 2009 Nobody                                                   #
 #                                                                         #
 # This file is part of hergm.                                             #
@@ -43,13 +43,20 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       model_type <- 0
       edges <- 1
       }
-    if (model$terms[[i]]$name == "mutual")
+    else if (model$terms[[i]]$name == "mutual")
       {
       model_type <- 0
       hierarchical[i] <- 0
       dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
       }
-    if (model$terms[[i]]$name == "edges_i") # hergm term
+    else if (model$terms[[i]]$name %in% c("altkstar", "balance", "ctriple", "cycle", "cyclicalties", "cyclicalweights", "dsp", "esp", "gwdegree", "gwdsp", "gwdsp", "gwesp", "gwidegree", "gwnsp", "gwodegree", "intransitive", "istar", "kstar", "localtriangle", "mstar", "mutual", "nsp", "opentriad", "ostar", "simmelian", "simmelianties", "threepath", "transitive", "transitiveties", "transitiveweights", "triadcensus", "triangle", "tripercent", "ttriple", "twopath")) # ergm term
+      {
+      if (model_type > 0) model_type <- 0 # Drop
+      else model_type <- 2
+      hierarchical[i] <- 0
+      dependence <- 1
+      }
+    else if (model$terms[[i]]$name == "edges_i") # hergm term
       {
       model_type <- 0
       hierarchical[i] <- 1
@@ -188,6 +195,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       {
       model_type <- 0
       hierarchical[i] <- 0 # Indicator: non-hierarchical hergm term
+      if (is.null(model$terms[[i]]$dependence) || (model$terms[[i]]$dependence == 1)) dependence <- 1
       covariates <- 1
       }
     }
@@ -460,7 +468,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$call_RNGstate <- call_RNGstate
   hergm_list$parallel <- parallel
   hergm_list$temperature <- temperature
-  
+  hergm_list$model <- model
+
   hergm_list
 }
 

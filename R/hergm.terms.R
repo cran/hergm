@@ -464,3 +464,21 @@ InitErgm.twostar_ijk <- function(nw, m, arglist, ...) # Michael
   m
 }
 
+######################################################### 
+InitErgm.transedges <- function(nw, arglist, ...) 
+  {
+  a <- check.ErgmTerm(nw, 
+                      arglist,
+                      varnames = NULL,
+                      vartypes = NULL,
+                      defaultvalues = list(),
+                      required = NULL)
+  if (is.directed(nw) == FALSE) max <- network.dyadcount(nw,FALSE)
+  else max <- network.dyadcount(nw,TRUE)
+  list(name = "transedges", 
+       coef.names = "transedges", 
+       dependence = TRUE,
+       minval = 0, 
+       maxval = max)
+}
+

@@ -166,6 +166,7 @@ D_CHANGESTAT_FN(d_ttriple_ijk); /* Michael */
 D_CHANGESTAT_FN(d_ctriple_ijk); /* Michael */
 D_CHANGESTAT_FN(d_twostar_i); /* Michael */
 D_CHANGESTAT_FN(d_twostar_ijk); /* Michael */
+D_CHANGESTAT_FN(d_transedges); /* Michael */
 
 
 

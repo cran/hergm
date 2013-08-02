@@ -1578,8 +1578,6 @@ output: simulated graph
   minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   ergm = Initialize_Ergm(terms,hierarchical,dim,dim1,dim2,structural); /* Ergm structure and non-structural parameters */
   prior = Initialize_Prior(ergm->d1,ergm->d2,m2_mean,m2_precision,*p2_shape,*p2_rate,m1,m2,cf1,cf2,p1,p2); /* Prior: non-structural, structural parameters */
-  dyad_dependence = (int)*dyaddependence; /* Conditional PMF of graph given latent structure: dyad-dependent or not */
-  minimum_size = (int)*min_size; /* Minimum size of category so that structural parameters show up in ergm pmf */
   if (dyad_dependence == 0) threshold = n + 1; /* Minimum size of category so that structural parameters show up in ergm pmf */
   else 
     {

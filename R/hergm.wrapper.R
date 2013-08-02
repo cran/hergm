@@ -20,7 +20,7 @@
 
 hergm.wrapper <- function(seed, hergm_list) 
 {
-
+  # print(hergm_list)
   if (!is.null(seed)) set.seed(seed)
   if (hergm_list$simulate == TRUE)
     {

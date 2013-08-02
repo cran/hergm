@@ -2178,7 +2178,6 @@ D_CHANGESTAT_FN(d_esp) {
   int L2th, L2tu, L2uh;
   Vertex deg;
   Vertex tail, head, u, v;
-  
   /* *** don't forget tail -> head */    
   ZERO_ALL_CHANGESTATS(i);
   FOR_EACH_TOGGLE(i) {
@@ -2574,7 +2573,6 @@ D_CHANGESTAT_FN(d_gwesp) {
   CHANGE_STAT[0] = 0.0;
   alpha = INPUT_PARAM[0];
   oneexpa = 1.0-exp(-alpha);
-  
   /* *** don't forget tail -> head */    
   FOR_EACH_TOGGLE(i){
     cumchange=0.0;
@@ -6332,4 +6330,51 @@ D_CHANGESTAT_FN(d_twostar_ijk)
     }
   UNDO_PREVIOUS_TOGGLES(i);
 }
+
+/* Michael */
+/*****************
+ changestat: d_transedges
+note: counts the number of transitive edges
+warning: ad hoc function; was tested and worked, but inefficient
+*****************/
+D_CHANGESTAT_FN(d_transedges) {
+  Edge e;
+  Vertex tail, head, node2, node3;
+  double change, headtri, tailtri;
+  int edgeflag, i;
+  /* *** don't forget tail -> head */
+  ZERO_ALL_CHANGESTATS(i);
+  CHANGE_STAT[0] = 0.0;
+  FOR_EACH_TOGGLE(i) 
+    {
+    //Rprintf("\ni = %i",i);
+    head = heads[i];
+    tail = tails[i];
+    //Rprintf("\nhead = %i",head);
+    //Rprintf("\ntail = %i",tail);
+    edgeflag = (EdgetreeSearch(tail=TAIL(i), head=HEAD(i), nwp->outedges) == 0) ? 0 : 1;
+    //Rprintf("\nedgeflag = %i",edgeflag);
+    change = 0.0; /* Change should become the number of transitive triples a->b, b->c, a->c in which tail->head is found  */
+    STEP_THROUGH_OUTEDGES(tail, e, node3) {
+      tailtri += CountTriangles(tail, node3, 1, 1, nwp);
+    }
+    STEP_THROUGH_INEDGES(tail, e, node3) {
+      tailtri += CountTriangles(tail, node3, 1, 1, nwp);
+          }
+    STEP_THROUGH_OUTEDGES(head, e, node3) {
+      headtri += CountTriangles(head, node3, 1, 1, nwp);
+    }
+    STEP_THROUGH_INEDGES(head, e, node3) {
+      headtri += CountTriangles(head, node3, 1, 1, nwp);
+          }
+    change = headtri + tailtri;
+    //Rprintf("\nbefore change = %8.4f",change);
+    if (change > 0.0) change = 1.0;
+    //Rprintf("\nafter change = %8.4f",change);
+    CHANGE_STAT[0] += edgeflag ? -change : change;
+    TOGGLE_IF_MORE_TO_COME(i);
+    }
+  UNDO_PREVIOUS_TOGGLES(i);
+}
+
 
