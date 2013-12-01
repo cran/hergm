@@ -34,10 +34,10 @@ input: number of ergm terms, indicator of hierarchical ergm terms, number of nod
 output: input parameters
 */
 
-double* Set_Input_Block(int terms, int *hierarchical, int max_number, int n, int n_block, double *theta_block, double *input);
+double* Extract_Input_Blocks(int terms, int *hierarchical, int max_number, int n, int *indicator, double *input, int *block, double **theta);
 /*
-input: number of ergm terms, indicator of hierarchical ergm terms, number of nodes, node-bound category indicator, category-bound parameter
-output: input parameters
+input: number of terms, indicators of hierarchical terms, maximum number of blocks, number of nodes, indicators of block memberships, input, number and labels of included blocks, parameters
+output: input list of included blocks, which is a subvector of input
 */
 
 void Set_Input_Indicator(int terms, int *hierarchical, int max_number, int n, int node, int node_indicator, double *input);

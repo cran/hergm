@@ -82,35 +82,48 @@ output: input parameters
     }
 }
 
-double* Set_Input_Block(int terms, int *hierarchical, int max_number, int n, int n_block, double *theta_block, double *input)
+double* Extract_Input_Blocks(int terms, int *hierarchical, int max_number, int n, int *indicator, double *input, int *block, double **theta)
 /*
-input: number of ergm terms, indicator of hierarchical ergm terms, number of nodes, node-bound category indicator, category-bound parameter
-output: input parameters
+input: number of terms, indicators of hierarchical terms, maximum number of blocks, number of nodes, indicators of block memberships, input, number and labels of included blocks, parameters
+output: input list of included blocks, which is a subvector of input
 */
 {
-  int k_block, h, i, j, k, l, number, max_number_block;
+  int h, i, included, *indicator_block, k, k_block, l, number, number_blocks, number_nodes;
   double *input_block;
+  indicator_block = (int*) calloc(n,sizeof(int));
+  if (indicator_block == NULL) { Rprintf("\n\ncalloc failed: Set_Input_Blocks, indicator_block\n\n"); error("Error: out of memory"); }
+  number_blocks = block[0]; /* Number of blocks included; the labels of included blocks are stored in block[1], ..., block[number_blocks] */
+  number_nodes = 0; /* Number of nodes which are members of included blocks */
+  for (i = 0; i < n; i++)
+    {
+    included = 0;
+    k = 0;
+    while ((k < number_blocks) && (included == 0)) /* Check whether node is member of included blocks */
+      {
+      k = k + 1;
+      if (indicator[i] == block[k]) 
+        {
+        included = 1;
+        number_nodes = number_nodes + 1;
+        indicator_block[number_nodes-1] = block[k]; /* Conclusion: node is member of included blocks */
+        }
+      }
+    }
   input_block = NULL;
-  max_number_block = 1;
   h = -1; /* Hierarchical ergm term h */
   k = -1; /* Input parameter k */
-  k_block = -1;
+  k_block = -1; /* Block input parameter k_block */
   for (i = 0; i < terms; i++) /* For given ergm term... */
     {
-    if (hierarchical[i] == 0) /* ...if non-hierarchical, go to following ergm term */
+    if (hierarchical[i] == 0) /* ...if non-hierarchical, copy input parameters */
       {
-      k = k + 1; /* Copy element 1 */
-      k_block = k_block + 1;
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = input[k]; 
-      k = k + 1; /* Copy element 2 */
-      k_block = k_block + 1;
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = input[k]; 
-      k = k + 1; /* Copy element 3 */
-      k_block = k_block + 1;
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = input[k]; 
+      for (l = 0; l < 3; l++) /* Copy elements 1, 2, 3 */
+        {
+        k = k + 1;
+        k_block = k_block + 1;
+        input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
+        input_block[k_block] = input[k]; 
+        }
       number = trunc(input[k]); /* Element 3: total number of input parameters */
       for (l = 0; l < number; l++) /* If number > 0, copy elements 4, ..., 3 + number */
         {
@@ -120,42 +133,41 @@ output: input parameters
         input_block[k_block] = input[k]; 
         } 
       }
-    else /* ...if hierarchical, set input parameters */ 
+    else /* ...if hierarchical, copy input parameters and set block indicators */ 
       {
       h = h + 1; /* Hierarchical ergm term h */
+      for (l = 0; l < 2; l++) /* Copy elements 1, 2 */
+        {
+        k = k + 1; 
+        k_block = k_block + 1;
+        input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
+        input_block[k_block] = input[k];
+        }
       k = k + 1; 
       k_block = k_block + 1;
       input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = 0.0; /* Element 1 */
-      k = k + 1;
+      input_block[k_block] = 1.0 + number_nodes + (max_number + 1.0); /* Element 3: total number of input parameters: (maximum) number of categories, number_nodes block indicators, (max_number + 1) within- and between-block parameters */
+      k = k + 1; 
       k_block = k_block + 1;
       input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = 1.0; /* Element 2: one change statistic */
-      k = k + 1;
-      k_block = k_block + 1;
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = 1.0 + n_block + (max_number_block + 1.0); /* Element 3: total number of input parameters: (maximum) number of categories, n node-bound category indicators, (max_number + 1) category-bound parameters */
-      k = k + 1;
-      k_block = k_block + 1;
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = max_number_block; /* Elements 4: (maximum) number of categories */
-      k = k + n;
-      for (l = 0; l < n_block; l++)
+      input_block[k_block] = max_number; /* Element 4: (maximum) number of blocks */
+      k = k + n; /* Please note: k must be incremented by n rather than number_nodes */
+      for (l = 0; l < number_nodes; l++) /* Set elements 4 + 1 + number_nodes: block indicators */
         {
-        k_block = k_block + 1; /* Elements 4 + 1 + max_number: category indicators */
+        k_block = k_block + 1; 
         input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-        input_block[k_block] = 0.0;
+        input_block[k_block] = indicator_block[l]; /* Block indicator of member l of included blocks */
         }
-      k = k + max_number;  
-      k_block = k_block + max_number_block; /* Elements 4 + n + 1: within-category parameter */
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = theta_block[h]; 
-      k = k + 1;
-      k_block = k_block + 1; /* Elements 4 + n + 1 + 1: between-category parameter */
-      input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
-      input_block[k_block] = 0.0; 
+      for (l = 0; l < max_number + 1; l++) /* Copy elements 4 + number_nodes + max_number + 1: within- and between-block block parameters */
+        {
+        k = k + 1;
+        k_block = k_block + 1;
+        input_block = (double*) realloc(input_block,(k_block+1)*sizeof(double));
+        input_block[k_block] = theta[h][l];
+        }
       }
     }
+  free(indicator_block);
   return input_block;
 }
 

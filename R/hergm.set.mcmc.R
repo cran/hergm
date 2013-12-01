@@ -29,7 +29,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
 
   # Prepare II
   Clist <- ergm.Cprepare(nw, model)
-  maxedges <- max(50000, Clist$nedges)
+  maxedges <- max(10000, Clist$nedges)
   hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, temperature, output = FALSE, name = "", verbose = -1)
   if (hergm_list$dependence > 0) cat("\nMCMC: mean-field methods generate candidates of block memberships.\n")
   # Metropolis-Hastings: finding scale factor

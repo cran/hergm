@@ -22,8 +22,8 @@
   info <- packageDescription("hergm")
   packageStartupMessage(
     paste('\nhergm: version ', info$Version, ', created on ', info$Date, '\n',
-          "Copyright (c) 2013, Michael Schweinberger, Rice University\n", 
-          "                    Mark S. Handcock, University of California-Los Angeles\n",
+          "Copyright (c) 2009, Michael Schweinberger, Rice University\n", 
+          "                    Mark S. Handcock, University of California - Los Angeles\n",
           "To start hergm: enter help(package=\"hergm\")\n",
           'For license and citation information type citation("hergm").\n', sep="")
  )

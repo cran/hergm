@@ -31,34 +31,36 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     {
     q_i[i] <- 1 / Clist$n # Default: discrete uniform; depending on the model specification, default values may be overwritten
     }
-  model_type <- 0
   edges <- 0
+  edges_i <- 0
   edges_ij <- 0
-  covariates <- 0
+  mutual <- 0
+  mutual_i <- 0
+  mutual_ij <- 0
+  twostar_ijk <- 0
+  triangle_ijk <- 0
+  ttriple_ijk <- 0
   for (i in 1:terms) # For given hergm term...
     {
     if (model$terms[[i]]$name == "edges")
       {
       hierarchical[i] <- 0
-      model_type <- 0
       edges <- 1
       }
     else if (model$terms[[i]]$name == "mutual")
       {
-      model_type <- 0
+      mutual <- 1
       hierarchical[i] <- 0
       dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
       }
-    else if (model$terms[[i]]$name %in% c("altkstar", "balance", "ctriple", "cycle", "cyclicalties", "cyclicalweights", "dsp", "esp", "gwdegree", "gwdsp", "gwdsp", "gwesp", "gwidegree", "gwnsp", "gwodegree", "intransitive", "istar", "kstar", "localtriangle", "mstar", "mutual", "nsp", "opentriad", "ostar", "simmelian", "simmelianties", "threepath", "transitive", "transitiveties", "transitiveweights", "triadcensus", "triangle", "tripercent", "ttriple", "twopath")) # ergm term
+    else if (model$terms[[i]]$name %in% c("altkstar", "balance", "ctriple", "cycle", "cyclicalties", "cyclicalweights", "dsp", "esp", "gwdegree", "gwdsp", "gwdsp", "gwesp", "gwidegree", "gwnsp", "gwodegree", "intransitive", "istar", "kstar", "localtriangle", "mstar", "nsp", "opentriad", "ostar", "simmelian", "simmelianties", "threepath", "transitive", "transitiveties", "transitiveweights", "triadcensus", "triangle", "tripercent", "ttriple", "twopath")) # ergm term
       {
-      if (model_type > 0) model_type <- 0 # Drop
-      else model_type <- 2
       hierarchical[i] <- 0
       dependence <- 1
       }
     else if (model$terms[[i]]$name == "edges_i") # hergm term
       {
-      model_type <- 0
+      edges_i <- 1
       hierarchical[i] <- 1
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
@@ -92,7 +94,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }
     else if (model$terms[[i]]$name == "arcs_i") # hergm term
       {
-      model_type <- 0
       hierarchical[i] <- 1 
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
@@ -101,7 +102,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "arcs_j") # hergm term
       {
-      model_type <- 0
       hierarchical[i] <- 1 
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
@@ -110,7 +110,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "edges_ij") # hergm term
       {
-      model_type <- 0
       edges_ij <- 1
       hierarchical[i] <- 1 
       min_size_i <- 2
@@ -120,7 +119,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "mutual_i") # hergm term
       {
-      model_type <- 0
+      mutual_i <- 1
       hierarchical[i] <- 1 
       dependence <- 1
       min_size_i <- 2
@@ -130,7 +129,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "mutual_ij") # hergm term
       {
-      model_type <- 0
+      mutual_ij <- 1
       hierarchical[i] <- 1 
       dependence <- 1
       min_size_i <- 2
@@ -138,20 +137,9 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       if (max_number_i < max_number) max_number <- max_number_i
       }     
-    else if (model$terms[[i]]$name == "twostar_i") # hergm term
-      {
-      model_type <- 0
-      hierarchical[i] <- 1 
-      dependence <- 1
-      min_size_i <- 1
-      if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
-      if (max_number_i < max_number) max_number <- max_number_i
-      }     
     else if (model$terms[[i]]$name == "twostar_ijk") # hergm term
       {
-      if (model_type > 0) model_type <- 0 # Drop
-      else model_type <- 1
+      twostar_ijk <- 1
       hierarchical[i] <- 1 
       dependence <- 1
       min_size_i <- 3
@@ -161,8 +149,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "triangle_ijk") # hergm term
       {
-      if (model_type > 0) model_type <- 0 # Drop
-      else model_type <- 2
+      triangle_ijk <- 1
       hierarchical[i] <- 1 
       dependence <- 1
       min_size_i <- 3
@@ -172,8 +159,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "ttriple_ijk") # hergm term
       {
-      if (model_type > 0) model_type <- 0 # Drop
-      else model_type <- 2
+      ttriple_ijk <- 1
       hierarchical[i] <- 1 
       dependence <- 1
       min_size_i <- 3
@@ -183,7 +169,6 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else if (model$terms[[i]]$name == "ctriple_ijk") # hergm term
       {
-      model_type <- 0
       hierarchical[i] <- 1 
       dependence <- 1
       min_size_i <- 3
@@ -193,10 +178,18 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       }     
     else 
       {
-      model_type <- 0
       hierarchical[i] <- 0 # Indicator: non-hierarchical hergm term
       if (is.null(model$terms[[i]]$dependence) || (model$terms[[i]]$dependence == 1)) dependence <- 1
-      covariates <- 1
+      }
+    }
+  decomposable <- 1 # Indicator of whether the decomposition of "inputs" into dyadic "inputs" is trivial; 
+  # Note 1: the implementation is "lazy": "inputs" can be decomposed, but the current implementation is too "lazy" to try unless the decomposition is trivial
+  # Note 2: if "inputs" can be decomposed into dyadic "inputs", subgraph sampling and computations can be facilitated in hergm
+  for (i in 1:terms)
+    {
+    if (hierarchical[i] == 0) # non-hierarchical term
+      {
+      if (model$terms[[i]]$inputs[3] > 0) decomposable <- 0 # If the total number of input parameters and covariates is positive, decomposition is non-trivial; one such model term is sufficient to set decomposable to 0, meaning non-trivial
       }
     }
   d <- Clist$nstats # Number of parameters
@@ -247,6 +240,15 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
       else if (model$terms[[i]]$name == "mutual_ij") between[i] = 1
       }     
     }
+  if (edges + edges_i + edges_ij > 1) nonidentifiable <- FALSE
+  else if (mutual + mutual_i + mutual_ij > 1) nonidentifiable <- FALSE
+  else identifiable <- TRUE
+  if (identifiable == FALSE) 
+    {
+    cat("\n\n")
+    error_message <- paste("The model is non-identifiable: check model terms and drop some of them.")      
+    stop(error_message, call. = FALSE)
+    } 
   # Prior
   null <- list()
   null$alpha_shape <- is.null(alpha_shape)
@@ -260,7 +262,9 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   null$eta_precision <- is.null(eta_sd)
   null$eta <- is.null(eta)
   null$indicator <- is.null(indicator)
-  hyper_prior = (null$alpha_shape && null$alpha_rate && null$eta_mean_mean && null$eta_mean_precision && null$eta_precision_shape && null$eta_precision_rate);
+  hyper_prior <- ((null$alpha_shape==FALSE) && (null$alpha_rate==FALSE) && (null$eta_mean_mean==FALSE) && (null$eta_mean_precision==FALSE) && (null$eta_precision_shape==FALSE) && (null$eta_precision_rate==FALSE))
+  if (hyper_prior == TRUE) cat("\nHyper-prior is fully specified and will be used.\n")
+  else cat("\nHyper-prior is not fully specified and will not be used.\n")
   if (null$eta) eta <- matrix(data = 0, nrow = d2, ncol = max_number)
   if (null$alpha_shape) alpha_shape <- 1
   if (null$alpha_rate) alpha_rate <- 1
@@ -369,10 +373,12 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   if (null$alpha) alpha <- 1
   if (null$eta) eta <- vector(mode = "numeric", length = d)
   if (null$indicator) indicator <- vector(mode = "numeric", length = Clist$n)
+  if (min(indicator) < 0) indicator <- indicator - min(indicator) # Shift to 0
+  if (max(indicator) > (max_number - 1)) indicator <- indicator - (max(indicator) - (max_number - 1)) # Shift to max_number-1
   max_iteration <- MCMCparams$samplesize
   number_terms <- length_mcmc(d1, d2, max_number, Clist$n)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
-  else dimension <- min(MCMCparams$samplesize, 12000)
+  else dimension <- min(MCMCparams$samplesize, 10000)
   mcmc <- vector(mode = "numeric", length = (dimension * number_terms))
   if (Clist$dir == FALSE) max_edges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else max_edges <- Clist$n * (Clist$n - 1) # Directed
@@ -387,13 +393,8 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
     sample_tails <- 0
     }
   mh_accept <- vector(mode = "numeric", length = 2 + (Clist$n - min_size))
-  call_RNGstate <- 1
-  if ((d1 == 1) && (d2 == 1) && (edges == 1)) model_type <- model_type
-  else if ((d1 == 1) && (d2 == 2) && (edges == 1) && (edges_ij == 1)) model_type <- model_type
+  if ((terms == 2) && (edges + edges_ij > 0) && (twostar_ijk + triangle_ijk + ttriple_ijk > 0)) model_type <- 1 # Some algorithms, e.g., variational algorithms, are restricted to a subset of model specifications; the specificiations it works: hergms with two model terms, one ergm term (either edges or edges_ij) and one hierarchical term (either twostar_ijk or triangle_ijk or ttriple_ijk)
   else model_type <- 0
-  if ((edges + edges_ij > 0) && (model_type > 0)) model_type <- model_type
-  else model_type <- 0
-  if ((model_type == 0) && (covariates == 0)) model_type <- 3
   if ((simulate == FALSE) && (dependence > 0))
     {
     default <- c(0,10)
@@ -425,6 +426,7 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$hyper_prior <- hyper_prior
   hergm_list$dependence <- dependence
   hergm_list$hierarchical <- hierarchical
+  hergm_list$decomposable <- decomposable
   hergm_list$d <- d
   hergm_list$d1 <- d1
   hergm_list$d2 <- d2
@@ -452,23 +454,25 @@ hergm.preprocess <- function(nw, model, Clist, MHproposal, MCMCparams, maxedges,
   hergm_list$max_iteration <- max_iteration
   hergm_list$terms <- terms
   hergm_list$between <- between
-  hergm_list$mcmc <- as.vector(mcmc)
   hergm_list$output <- output
-  hergm_list$sample_heads <- as.vector(sample_heads)
-  hergm_list$sample_tails <- as.vector(sample_tails)
   hergm_list$name <- name
   hergm_list$verbose <- verbose
-  hergm_list$MCMCparams <- MCMCparams
   hergm_list$MHproposal <- MHproposal
   hergm_list$maxedges <- maxedges
   hergm_list$Clist <- Clist
   hergm_list$simulate <- simulate
   hergm_list$mh_accept <- mh_accept
   hergm_list$q_i <- q_i
-  hergm_list$call_RNGstate <- call_RNGstate
   hergm_list$parallel <- parallel
   hergm_list$temperature <- temperature
   hergm_list$model <- model
+
+  #print(hergm_list) # If you want to print hergm_list, print here, before the long vectors are added to hergm_list
+
+  hergm_list$MCMCparams <- MCMCparams
+  hergm_list$sample_heads <- as.vector(sample_heads)
+  hergm_list$sample_tails <- as.vector(sample_tails)
+  hergm_list$mcmc <- as.vector(mcmc)
 
   hergm_list
 }

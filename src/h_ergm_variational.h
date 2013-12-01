@@ -20,6 +20,12 @@
 
 #include "h_ergm_utils.h"
 
+/*
+Optimization algorithms based on evaluations of the objective function or its gradient:
+#include <math.h>
+#include <nlopt.h>
+*/
+
 double Expected_Density(int n, double **mu, int directed);
 /*
 input: number of nodes, expectations of edges under the assumption of independent edges, indicator of directed edges

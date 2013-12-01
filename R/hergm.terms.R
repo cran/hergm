@@ -403,37 +403,6 @@ InitErgm.ctriple_ijk <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.twostar_i <- function(nw, m, arglist, ...) # Michael 
-{
-  ergm.checkdirected("twostar_i", is.directed(nw), requirement = TRUE)
-  a <- ergm.checkargs("twostar_i", 
-    arglist,
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
-    required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.twostar_i")
-  n <- nw$gal$n # Number of nodes
-  #print(n)
-  indicator <- vector(mode = "numeric", length = n) # Category indicators  
-  for (i in 1:length(indicator)) indicator[i] <- 1
-  #print(indicator)
-  number <- a$number # (Maximum) number of categories
-  #print(number)
-  theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
-  #print(theta)
-  m$terms[[termnumber]] <- list(name = "twostar_i", 
-                                soname = "hergm",
-                                inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
-                                dependence = TRUE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "twostar_i")
-  m
-}
-
-######################################################### 
 InitErgm.twostar_ijk <- function(nw, m, arglist, ...) # Michael 
 {
   ergm.checkdirected("twostar_ijk", is.directed(nw), requirement = FALSE)
@@ -462,23 +431,5 @@ InitErgm.twostar_ijk <- function(nw, m, arglist, ...) # Michael
   #print(m$terms[[termnumber]])
   m$coef.names <- c(m$coef.names, "twostar_ijk")
   m
-}
-
-######################################################### 
-InitErgm.transedges <- function(nw, arglist, ...) 
-  {
-  a <- check.ErgmTerm(nw, 
-                      arglist,
-                      varnames = NULL,
-                      vartypes = NULL,
-                      defaultvalues = list(),
-                      required = NULL)
-  if (is.directed(nw) == FALSE) max <- network.dyadcount(nw,FALSE)
-  else max <- network.dyadcount(nw,TRUE)
-  list(name = "transedges", 
-       coef.names = "transedges", 
-       dependence = TRUE,
-       minval = 0, 
-       maxval = max)
 }
 

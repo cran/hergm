@@ -57,11 +57,7 @@
 
 \alias{InitErgm.triangle_ijk} 
 
-\alias{InitErgm.transedges} 
-
 \alias{InitErgm.ttriple_ijk}
-
-\alias{InitErgm.twostar_i} 
 
 \alias{InitErgm.twostar_ijk}
 

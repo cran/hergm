@@ -72,10 +72,10 @@ input: input
 output: minus energy of node i on log scale, computed under the assumption of conditional dyad-independence given latent structure
 */
 
-int** Edge_List_Block(latentstructure *ls, int block, int *number_edges, int *heads, int *tails);
+int** Edge_List_Blocks(latentstructure *ls, int *block, int *total_number_edges, int *total_heads, int *total_tails);
 /*
-input: latent structure, block, number of edges and edge list in terms of heads and tails
-output: number of edges of block, block-dependent edge list in terms of heads and tails
+input: latent structure, block, number of edges and edge list in terms of heads and tails, number of labels of included blocks
+output: number of edges and edge_list of members of included blocks
 */
 
 int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails);

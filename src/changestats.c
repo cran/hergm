@@ -2165,10 +2165,6 @@ D_CHANGESTAT_FN(d_edges) {
   UNDO_PREVIOUS_TOGGLES(i);
 }
 
-S_CHANGESTAT_FN(s_edges) {
-  CHANGE_STAT[0] = N_EDGES;
-}
-
 /*****************
  changestat: d_esp
 *****************/
@@ -5882,14 +5878,15 @@ D_CHANGESTAT_FN(d_edges_i)
   for (i = 0; i < (1 + N_NODES + INPUT_PARAM[0] + 1); i++) Rprintf("INPUT_PARAM[%i] = %f\n",i,INPUT_PARAM[i]);
   */
   ZERO_ALL_CHANGESTATS(i);
-  FOR_EACH_TOGGLE(i) {
-    tail = TAIL(i); /* Node tail of ordered pair of nodes i = (tail, head); note: tail in {1, ..., N_NODES} */
+  FOR_EACH_TOGGLE(i) 
+    {
     head = HEAD(i); /* Node head of ordered pair of nodes i = (tail, head); note: head in {1, ..., N_NODES} */
+    tail = TAIL(i); /* Node tail of ordered pair of nodes i = (tail, head); note: tail in {1, ..., N_NODES} */
     edgemult = IS_OUTEDGE(tail=tail, head=head) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
-    c_tail = INPUT_PARAM[tail]; /* Category of node tail: c in {0, ..., number-1} */
     c_head = INPUT_PARAM[head]; /* Category of node head: c in {0, ..., number-1} */
-    index_tail = N_NODES + (1 + c_tail); /* Get parameter corresponding to category of node tail; translate c_tail by 1 */
+    c_tail = INPUT_PARAM[tail]; /* Category of node tail: c in {0, ..., number-1} */
     index_head = N_NODES + (1 + c_head); /* Get parameter corresponding to category of node head; translate c_head by 1 */
+    index_tail = N_NODES + (1 + c_tail); /* Get parameter corresponding to category of node tail; translate c_tail by 1 */
     /* 
     Rprintf("\npair of nodes %i, %i with indicators %f, %f:",tail,head,INPUT_PARAM[tail],INPUT_PARAM[head]);
     Rprintf("\nc_tail = %i, c_head = %i, index_tail = %i, index_head = %i, INPUT_PARAM_tail[%i] = %f, INPUT_PARAM_head[%i] = %f",c_tail,c_head,index_tail,index_head,index_tail,INPUT_PARAM[index_tail],index_head,INPUT_PARAM[index_head]);
@@ -5921,10 +5918,10 @@ D_CHANGESTAT_FN(d_arcs_i)
   CHANGE_STAT[0] = 0.0;
   for (i = 0; i < ntoggles; i++)
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
-    c = INPUT_PARAM[h]; /* Category of node h: c in {0, ..., number-1} */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    c = INPUT_PARAM[t]; /* Category of node h: c in {0, ..., number-1} */
     index = N_NODES + (1 + c); /* Get parameter corresponding to category of node h; translate c_h by 1 */
     /*
     Rprintf("\nnode %i with indicator %f:",h,INPUT_PARAM[h]);
@@ -5957,10 +5954,10 @@ D_CHANGESTAT_FN(d_arcs_j)
   CHANGE_STAT[0] = 0.0;
   for (i = 0; i < ntoggles; i++)
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
-    c = INPUT_PARAM[t]; /* Category of node h: c in {0, ..., number-1} */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    c = INPUT_PARAM[h]; /* Category of node h: c in {0, ..., number-1} */
     index = N_NODES + (1 + c); /* Get parameter corresponding to category of node h; translate c_h by 1 */
     /*
     Rprintf("\nnode %i with indicator %f:",t,INPUT_PARAM[t]);
@@ -5994,9 +5991,12 @@ D_CHANGESTAT_FN(d_edges_ij)
   CHANGE_STAT[0] = 0.0;
   for (i = 0; i < ntoggles; i++)
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    /*
+    Rprintf("\npair of nodes %i and %i with edges %i and %i",h,t,IS_OUTEDGE(h, t),IS_OUTEDGE(t, h));
+    */
     if (INPUT_PARAM[h] == INPUT_PARAM[t]) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
     else c = INPUT_PARAM[0]; /* Not same category: c = number */
     index = N_NODES + 1 + c; /* Same category: c in {0, ..., number-1}, not same category: c = number */
@@ -6031,10 +6031,10 @@ D_CHANGESTAT_FN(d_mutual_i)
   CHANGE_STAT[0] = 0.0;
   for (i = 0; i < ntoggles; i++)
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    if (IS_OUTEDGE(t, h) == 0) edgemult = 0.0; /* If inedge does not exist, change in outedge is irrelevant */
-    else edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    if (IS_OUTEDGE(h, t) == 0) edgemult = 0.0; /* If inedge does not exist, change in outedge is irrelevant */
+    else edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
     c_h = INPUT_PARAM[h]; /* Category of node h: c in {0, ..., number-1} */
     c_t = INPUT_PARAM[t]; /* Category of node t: c in {0, ..., number-1} */
     index_h = N_NODES + (1 + c_h); /* Get parameter corresponding to category of node h; translate c_h by 1 */
@@ -6072,11 +6072,11 @@ D_CHANGESTAT_FN(d_mutual_ij)
   ZERO_ALL_CHANGESTATS(i);
   FOR_EACH_TOGGLE(i) 
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    if (IS_OUTEDGE(t, h)) 
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    if (IS_OUTEDGE(h, t)) 
       {
-      edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+      edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
       if (INPUT_PARAM[h] == INPUT_PARAM[t]) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
       else c = INPUT_PARAM[0]; /* Not same category: c = number */
       index = N_NODES + 1 + c; /* Same category: c in {0, ..., number-1}, not same category: c = number */
@@ -6114,11 +6114,11 @@ D_CHANGESTAT_FN(d_triangle_ijk)
   ZERO_ALL_CHANGESTATS(i);
   FOR_EACH_TOGGLE(i) 
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
     change = 0.0;
-    STEP_THROUGH_OUTEDGES(t, e, node3) /* Step through outedges of node t */
+    STEP_THROUGH_OUTEDGES(h, e, node3) /* Step through outedges of node t */
       { 
       if ((INPUT_PARAM[h] == INPUT_PARAM[t]) && (INPUT_PARAM[t] == INPUT_PARAM[node3])) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
       else c = INPUT_PARAM[0]; /* Not same category: c = number */
@@ -6127,10 +6127,10 @@ D_CHANGESTAT_FN(d_triangle_ijk)
       Rprintf("\ntriple of nodes %i, %i, %i:",h,t,node3);
       Rprintf("\nc = %i, index = %i, INPUT_PARAM[%i] = %f",c,index,index,INPUT_PARAM[index]);
       */
-      if (DIRECTED) change += INPUT_PARAM[index] * (IS_OUTEDGE(node3, h) + IS_INEDGE(node3, h));
-      else change += INPUT_PARAM[index] * IS_OUTEDGE(MIN(node3,h), MAX(node3,h));
+      if (DIRECTED) change += INPUT_PARAM[index] * (IS_OUTEDGE(node3, t) + IS_INEDGE(node3, t));
+      else change += INPUT_PARAM[index] * IS_UNDIRECTED_EDGE(node3, t);
       }
-    STEP_THROUGH_INEDGES(t, e, node3) /* Step through inedges of node t */ 
+    STEP_THROUGH_INEDGES(h, e, node3) /* Step through inedges of node t */ 
       { 
       if ((INPUT_PARAM[h] == INPUT_PARAM[t]) && (INPUT_PARAM[t] == INPUT_PARAM[node3])) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
       else c = INPUT_PARAM[0]; /* Not same category: c = number */
@@ -6139,8 +6139,8 @@ D_CHANGESTAT_FN(d_triangle_ijk)
       Rprintf("\ntriple of nodes %i, %i, %i:",h,t,node3);
       Rprintf("\nc = %i, index = %i, INPUT_PARAM[%i] = %f",c,index,index,INPUT_PARAM[index]);
       */
-      if (DIRECTED) change += INPUT_PARAM[index] * (IS_OUTEDGE(node3, h) + IS_INEDGE(node3, h));
-      else change += INPUT_PARAM[index] * IS_OUTEDGE(MIN(node3,h), MAX(node3,h));
+      if (DIRECTED) change += INPUT_PARAM[index] * (IS_OUTEDGE(node3, t) + IS_INEDGE(node3, t));
+      else change += INPUT_PARAM[index] * IS_UNDIRECTED_EDGE(node3, t);
       }
     CHANGE_STAT[0] += edgemult * change; /* Increment change statistic */
     TOGGLE_IF_MORE_TO_COME(i);
@@ -6170,11 +6170,11 @@ D_CHANGESTAT_FN(d_ttriple_ijk)
   ZERO_ALL_CHANGESTATS(i);
   FOR_EACH_TOGGLE(i) 
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
     change = 0.0;
-    STEP_THROUGH_OUTEDGES(t, e, node3) /* Step through outedges of node t */
+    STEP_THROUGH_OUTEDGES(h, e, node3) /* Step through outedges of node t */
       {
       if ((INPUT_PARAM[h] == INPUT_PARAM[t]) && (INPUT_PARAM[t] == INPUT_PARAM[node3])) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
       else c = INPUT_PARAM[0]; /* Not same category: c = number */
@@ -6183,14 +6183,14 @@ D_CHANGESTAT_FN(d_ttriple_ijk)
       Rprintf("\ntriple of nodes %i, %i, %i:",h,t,node3);
       Rprintf("\nc = %i, index = %i, INPUT_PARAM[%i] = %f",c,index,index,INPUT_PARAM[index]);
       */
-      change += INPUT_PARAM[index] * IS_INEDGE(node3, h);
+      change += INPUT_PARAM[index] * IS_INEDGE(node3, t);
       }
-    STEP_THROUGH_INEDGES(t, e, node3) /* Step through inedges of node t */
+    STEP_THROUGH_INEDGES(h, e, node3) /* Step through inedges of node t */
       {
       if ((INPUT_PARAM[h] == INPUT_PARAM[t]) && (INPUT_PARAM[t] == INPUT_PARAM[node3])) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
       else c = INPUT_PARAM[0]; /* Not same category: c = number */
       index = N_NODES + 1 + c; /* Same category: c in {0, ..., number-1}, not same category: c = number */
-      change += INPUT_PARAM[index] * (IS_OUTEDGE(node3, h) + IS_INEDGE(node3, h));
+      change += INPUT_PARAM[index] * (IS_OUTEDGE(node3, t) + IS_INEDGE(node3, t));
       }
     CHANGE_STAT[0] += edgemult * change; /* Increment change statistic */
     TOGGLE_IF_MORE_TO_COME(i);
@@ -6220,54 +6220,17 @@ D_CHANGESTAT_FN(d_ctriple_ijk)
   ZERO_ALL_CHANGESTATS(i);
   FOR_EACH_TOGGLE(i) 
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
     change = 0.0;
-    STEP_THROUGH_OUTEDGES(t, e, node3) /* Step through outedges of node t */
+    STEP_THROUGH_OUTEDGES(h, e, node3) /* Step through outedges of node t */
       {
       if ((INPUT_PARAM[h] == INPUT_PARAM[t]) && (INPUT_PARAM[t] == INPUT_PARAM[node3])) c = INPUT_PARAM[h]; /* Same category: c in {0, ..., number-1} */
       else c = INPUT_PARAM[0]; /* Not same category: c = number */
       index = N_NODES + 1 + c; /* Same category: c in {0, ..., number-1}, not same category: c = number */
-      change += INPUT_PARAM[index] * IS_OUTEDGE(node3, h);
+      change += INPUT_PARAM[index] * IS_OUTEDGE(node3, t);
       }
-    CHANGE_STAT[0] += edgemult * change; /* Increment change statistic */
-    TOGGLE_IF_MORE_TO_COME(i);
-    }
-  UNDO_PREVIOUS_TOGGLES(i);
-}
-
-/* Michael */
-/*****************
-changestat: d_twostar_i
-note: input parameters:
-0: (maximum) number of categories
-1..n: node-bound category indicators
-n+1..n+number: n+1 is category parameter of category 0, ..., n+number is category parameter of category number-1
-*****************/
-D_CHANGESTAT_FN(d_twostar_i) 
-{
-  Vertex h, t;
-  int constant, a_h, a_t, e, edgemult, i, index_h, index_t, z_h, z_t;   
-  double change;
-  /*
-  Rprintf("\n\nChange statistic twostar_i\n\n");
-  for (i = 0; i < (1 + N_NODES + INPUT_PARAM[0] + 1); i++) Rprintf("INPUT_PARAM[%i] = %f\n",i,INPUT_PARAM[i]);
-  */
-  CHANGE_STAT[0] = 0.0;
-  for (i = 0; i < ntoggles; i++)
-    {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if edge exists, negative, otherwise positive */
-    z_h = (int)INPUT_PARAM[h]; /* Category of node h: c in {0, ..., number-1} */
-    z_t = (int)INPUT_PARAM[t]; /* Category of node t: c in {0, ..., number-1} */
-    index_h = N_NODES + (1 + z_h); /* Index of INPUT_PARAM */ 
-    index_t = N_NODES + (1 + z_t); /* Index of INPUT_PARAM */
-    e = IS_OUTEDGE(h, t); 
-    a_h = OUT_DEG[h] + IN_DEG[h] - e; /* e is subtracted because, if edge exists, then deleting edge deletes degree - 1 two-stars */
-    a_t = OUT_DEG[t] + IN_DEG[t] - e; /* e is subtracted because, if edge exists, then deleting edge deletes degree - 1 two-stars */
-    change = (INPUT_PARAM[index_h] * a_h) + (INPUT_PARAM[index_t] * a_t); /* Number of two-stars added by adding edge between nodes h and t: degree(h) two-stars with center h and degree(t) two-stars with center t */
     CHANGE_STAT[0] += edgemult * change; /* Increment change statistic */
     TOGGLE_IF_MORE_TO_COME(i);
     }
@@ -6293,12 +6256,12 @@ D_CHANGESTAT_FN(d_twostar_ijk)
   Rprintf("\n\nChange statistic twostar_ijk\n\n");
   for (i = 0; i < (1 + N_NODES + INPUT_PARAM[0] + 1); i++) Rprintf("INPUT_PARAM[%i] = %f\n",i,INPUT_PARAM[i]);
   */  
-  ZERO_ALL_CHANGESTATS(i);
-  FOR_EACH_TOGGLE(i) 
+  CHANGE_STAT[0] = 0.0;
+  for (i = 0; i < ntoggles; i++)
     {
-    h = heads[i]; /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
-    t = tails[i]; /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
-    edgemult = IS_OUTEDGE(h, t) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
+    h = HEAD(i); /* Node h of ordered pair of nodes i = (h, t); note: h in {1, ..., N_NODES} */
+    t = TAIL(i); /* Node t of ordered pair of nodes i = (h, t); note: t in {1, ..., N_NODES} */
+    edgemult = IS_OUTEDGE(t, h) ? -1.0 : 1.0; /* Sign of change statistic: if outedge exists, negative, otherwise positive */
     change = 0.0;
     if (INPUT_PARAM[h] == INPUT_PARAM[t]) /* Nodes h, t members of same category */
       {
@@ -6330,51 +6293,4 @@ D_CHANGESTAT_FN(d_twostar_ijk)
     }
   UNDO_PREVIOUS_TOGGLES(i);
 }
-
-/* Michael */
-/*****************
- changestat: d_transedges
-note: counts the number of transitive edges
-warning: ad hoc function; was tested and worked, but inefficient
-*****************/
-D_CHANGESTAT_FN(d_transedges) {
-  Edge e;
-  Vertex tail, head, node2, node3;
-  double change, headtri, tailtri;
-  int edgeflag, i;
-  /* *** don't forget tail -> head */
-  ZERO_ALL_CHANGESTATS(i);
-  CHANGE_STAT[0] = 0.0;
-  FOR_EACH_TOGGLE(i) 
-    {
-    //Rprintf("\ni = %i",i);
-    head = heads[i];
-    tail = tails[i];
-    //Rprintf("\nhead = %i",head);
-    //Rprintf("\ntail = %i",tail);
-    edgeflag = (EdgetreeSearch(tail=TAIL(i), head=HEAD(i), nwp->outedges) == 0) ? 0 : 1;
-    //Rprintf("\nedgeflag = %i",edgeflag);
-    change = 0.0; /* Change should become the number of transitive triples a->b, b->c, a->c in which tail->head is found  */
-    STEP_THROUGH_OUTEDGES(tail, e, node3) {
-      tailtri += CountTriangles(tail, node3, 1, 1, nwp);
-    }
-    STEP_THROUGH_INEDGES(tail, e, node3) {
-      tailtri += CountTriangles(tail, node3, 1, 1, nwp);
-          }
-    STEP_THROUGH_OUTEDGES(head, e, node3) {
-      headtri += CountTriangles(head, node3, 1, 1, nwp);
-    }
-    STEP_THROUGH_INEDGES(head, e, node3) {
-      headtri += CountTriangles(head, node3, 1, 1, nwp);
-          }
-    change = headtri + tailtri;
-    //Rprintf("\nbefore change = %8.4f",change);
-    if (change > 0.0) change = 1.0;
-    //Rprintf("\nafter change = %8.4f",change);
-    CHANGE_STAT[0] += edgeflag ? -change : change;
-    TOGGLE_IF_MORE_TO_COME(i);
-    }
-  UNDO_PREVIOUS_TOGGLES(i);
-}
-
 

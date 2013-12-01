@@ -478,44 +478,53 @@ output: indicators
   free(sample);
 }
 
-int** Edge_List_Block(latentstructure *ls, int block, int *number_edges, int *heads, int *tails)
+int** Edge_List_Blocks(latentstructure *ls, int *block, int *total_number_edges, int *total_heads, int *total_tails)
 /*
-input: latent structure, block, number of edges and edge list in terms of heads and tails
-output: number of edges of block, block-dependent edge list in terms of heads and tails
+input: latent structure, block, number of edges and edge list in terms of heads and tails, number of labels of included blocks
+output: number of edges and edge_list of members of included blocks
 */
 {
-  int count, **edge_list_block, h, i, t, number_edges_block, *permutation;
-  permutation = (int*) calloc(ls->n,sizeof(int));
-  count = 0;
+  int number_nodes, **edge_list, head, i, k, tail, included, number_blocks, number_edges, *label;
+  label = (int*) calloc(ls->n,sizeof(int));
+  if (label == NULL) { Rprintf("\n\ncalloc failed: Edge_List_Blocks, label\n\n"); error("Error: out of memory"); }
+  number_blocks = block[0]; /* Number of blocks included; the labels of included blocks are stored in block[1], ..., block[number_blocks] */
+  number_nodes = 0; /* Number of nodes which are members of included blocks */
   for (i = 0; i < ls->n; i++)
     {
-    if (ls->indicator[i] == block)
+    included = 0; /* Indicator of whether node is member of included blocks */
+    k = 0; 
+    while ((k < number_blocks) && (included == 0)) /* Check whether node is member of included blocks */
+      { 
+      k = k + 1;
+      if (ls->indicator[i] == block[k]) included = 1; /* Conclusion: node is member of included blocks */ 
+      }
+    if (included == 1) /* If node is member of included blocks, then... */
       {
-      count = count + 1;
-      permutation[i] = count; /* Permute labels of nodes so that nodes belonging to block have labels 1..ls->size[block] */
+      number_nodes = number_nodes + 1; 
+      label[i] = number_nodes; /* ...change its label so that members of included blocks have labels 1..number_nodes */
       }
     }
-  edge_list_block = (int**) calloc(3,sizeof(int*));
-  edge_list_block[0] = (int*) calloc(1,sizeof(int));
-  edge_list_block[1] = NULL;
-  edge_list_block[2] = NULL;
-  number_edges_block = 0;
-  for (i = 0; i < *number_edges; i++)
+  edge_list = (int**) calloc(3,sizeof(int*)); /* Edge list of included blocks */
+  edge_list[0] = (int*) calloc(1,sizeof(int)); /* Stores number of included blocks */
+  edge_list[1] = NULL; /* Stores heads of edge_list of included blocks */
+  edge_list[2] = NULL; /* Stores tails of edge_list of included blocks */
+  number_edges = 0;
+  for (i = 0; i < *total_number_edges; i++) /* Go through edge_list and extract edges between members of included blocks */
     {
-    h = heads[i];
-    t = tails[i];
-    if ((ls->indicator[h-1] == block) && (ls->indicator[t-1] == block))
+    head = total_heads[i];
+    tail = total_tails[i];
+    if ((label[head-1] > 0) && (label[tail-1] > 0)) /* Labels of members of included blocks are positive, others are by default 0 */
       {
-      number_edges_block = number_edges_block + 1;
-      edge_list_block[1] = realloc(edge_list_block[1],number_edges_block*sizeof(int));
-      edge_list_block[2] = realloc(edge_list_block[2],number_edges_block*sizeof(int));
-      edge_list_block[1][number_edges_block-1] = permutation[h-1];
-      edge_list_block[2][number_edges_block-1] = permutation[t-1];
+      number_edges = number_edges + 1; /* Number of edges between members of included blocks */
+      edge_list[1] = realloc(edge_list[1],number_edges*sizeof(int));
+      edge_list[2] = realloc(edge_list[2],number_edges*sizeof(int));
+      edge_list[1][number_edges-1] = label[head-1]; /* Heads of edges between members of included blocks */
+      edge_list[2][number_edges-1] = label[tail-1]; /* Tails of edges between members of included blocks */
       }
     }
-  edge_list_block[0][0] = number_edges_block; 
-  free(permutation);
-  return edge_list_block;
+  edge_list[0][0] = number_edges; /* Number of edges between members of included blocks */
+  free(label);
+  return edge_list;
 }
 
 int* Degree_Sequence(int n, int directed, int n_edges, int *heads, int *tails)

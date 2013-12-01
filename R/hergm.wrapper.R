@@ -85,7 +85,6 @@ hergm.wrapper <- function(seed, hergm_list)
     mcmc = as.double(hergm_list$mcmc),
     sample_heads = as.integer(hergm_list$sample_heads),
     sample_tails = as.integer(hergm_list$sample_tails),
-    as.integer(hergm_list$call_RNGstate),
     as.integer(hergm_list$hyper_prior),
     status = integer(1), 
     PACKAGE="hergm")
@@ -96,6 +95,7 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$model_type),
     as.integer(hergm_list$dependence),
     as.integer(hergm_list$hierarchical),
+    as.integer(hergm_list$decomposable),
     as.integer(hergm_list$d),
     as.integer(hergm_list$d1),
     as.integer(hergm_list$d2),
@@ -153,7 +153,6 @@ hergm.wrapper <- function(seed, hergm_list)
     as.double(hergm_list$scalefactor),
     mh_accept = as.double(hergm_list$mh_accept),
     as.double(hergm_list$q_i),
-    as.integer(hergm_list$call_RNGstate),
     as.integer(hergm_list$parallel),
     as.double(hergm_list$temperature),
     as.integer(hergm_list$hyper_prior),

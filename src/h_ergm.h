@@ -20,6 +20,17 @@
 
 #include "h_ergm_mcmc.h"
 #include "signal.h"
+/*
+#include "memwatch.h"
+*/
+
+/*
+Optimization algorithms based on evaluations of the objective function or its gradient:
+#include <math.h>
+#include <nlopt.h>
+*/
+ 
+#define Min(a,b) ((a)<(b) ? (a) : (b))
 
 double Sample_Alpha(priorstructure_ls *prior_ls, latentstructure *ls);
 /*
@@ -241,7 +252,7 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior, int *status);
+             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *hyperprior, int *status);
 /*
 input: R input
 output: simulated graph
@@ -250,6 +261,7 @@ output: simulated graph
 void Inference(int *model_type,
              int *dyaddependence,
              int *hierarchical,
+             int *decomposable,
              int *d, 
              int *d1, 
              int *d2,
@@ -285,7 +297,7 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, double *temperature, int *hyperprior, int *status);
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *parallel, double *temperature, int *hyperprior, int *status);
 /*
 input: R input
 output: MCMC sample of unknowns from posterior

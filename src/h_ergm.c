@@ -268,7 +268,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   if (print == 1)
     {
     Rprintf("\nSample block parameters:");
-    Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
     Rprintf("\n- decision: %i",accept);
     }
   free(theta);
@@ -398,8 +398,8 @@ input: ergm structure, latent structure, prior
 output: indicators
 */
 {
-  int number_networks, accept, computation, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, *sample_i, sample_size;
-  double a_i, entropy, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *p, *q_i, present_a, proposal_a, present_energy, proposal_energy, sum, t, *theta, *statistic;
+  int burn_in, maxpossibleedges_block, *block, **edge_list_block, number_edges_block, *heads_block, *tails_block, size, number_networks, accept, mdnedges_block, *mheads_block, *mtails_block, auxiliary, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, *sample_i, sample_size;
+  double a_i, entropy, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *input_present_block, *input_proposal_block, *p, *q_i, present_a, proposal_a, present_energy, proposal_energy, sum, t, *theta, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
   if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, input_proposal\n\n"); error("Error: out of memory"); }
@@ -419,12 +419,22 @@ output: indicators
   - in general, proposal distribution is given by ls->p
   - in special cases, proposal distribution is approximated by full conditional distribution by using mean-field methods:
   there are two mean-field methods, one fast and one slow; both give rise to exact results when ls->size[k] == 2 and work well as long as ls->size[k] is not too large, but when ls->size[k] > 5, the slow method is much more accurate than the slow method */
-  if (model == 0) proposal_distribution = 0;
+  /*
+  if (model == 0) proposal_distribution = 0; 666 
   else proposal_distribution = 1;
-
-/*  if (proposal_distribution == 0) q_i = &ls->p[0]; /* General case: proposal distribution: ls->p */
-/*  else q_i = Candidate_Generating_Distribution_Indicators_Dependence(update_node,model,ls,ergm,heads,tails,input_present,dnedges,dn,directed,bipartite,nterms,funnames,sonames); /* Special case:  proposal distribution: exact or approximate full conditional distribution */
-  /* 666 */
+  */
+  proposal_distribution = 0;
+  if (proposal_distribution == 0) 
+    {
+    q_i = (double*) calloc(ls->number,sizeof(double));
+    if (q_i == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, q_i\n\n"); error("Error: out of memory"); }
+    for (k = 0; k < ls->number; k++) 
+      {
+      q_i[k] = 1.0 / ls->number;
+      }
+    }
+  else q_i = Candidate_Generating_Distribution_Indicators_Dependence(update_node,model,ls,ergm,heads,tails,input_present,dnedges,dn,directed,bipartite,nterms,funnames,sonames); /* Special case:  proposal distribution: exact or approximate full conditional distribution */
+  /* 666 
   proposal_distribution = 0; 
   q_i = (double*) calloc(ls->number,sizeof(double));
   if (q_i == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, q_i\n\n"); error("Error: out of memory"); }
@@ -432,7 +442,7 @@ output: indicators
     {
     q_i[k] = 1.0 / ls->number;
     }
-  /* 666 */
+  666 */
   entropy = S(ls->number,q_i); /* Entropy of ls->p as indicator of how much the nodes are spread out across blocks */
   entropy = entropy / ln(ls->number);
   /*
@@ -459,6 +469,8 @@ output: indicators
       {
       q_i[k] = e(q_i[k] - a_i);
       }
+    entropy = S(ls->number,q_i); /* Entropy of ls->p as indicator of how much the nodes are spread out across blocks */
+    entropy = entropy / ln(ls->number);
     }
   /* Generate proposal: */
   present_block = ls->indicator[update_node];
@@ -468,66 +480,47 @@ output: indicators
   ls_size[proposal_block] = ls_size[proposal_block] + 1;
   /* Compute log acceptance ratio : */    
   log_ratio = 0.0;
-  if (Max(ls->number,ls->size) < 5) large = 0;
+  if ((ls->size[present_block] < 5) && (ls->size[proposal_block] < 5)) large = 0; /* The "smaller than" implies that both present and proposed sizes of blocks will be at most 5, which is sufficiently small */
   else large = 1;
-  if (large == 0) /* Small blocks */
+  if (proposal_block == present_block) /* Special case: proposed == present block: log acceptance ratio vanishes */
     {
-    if (proposal_block == present_block) /* Special case: proposed == present block: log acceptance ratio vanishes */
-      {
-      computation = 0; 
-      log_ratio = 0.0;
-      }
-    else
-      {
-      /* General remarks:
+    auxiliary = 0; /* Metropolis-Hastings */ 
+    log_ratio = 0.0;
+    }
+  else if (large == 0) /* Small blocks */
+    {
+    /* General remarks:
 
-      Log likelihood ratio + log prior ratio
-      --------------------------------------
-      ln(p[proposal_block]) - ln(p[present_block]),
-      where 
-      - p[k] = ls->p[k] * e(energy_k - a_k),  
-      - e(energy_k - a_k) is the PMF of the observed graph given that the node is member of block k,
-      - energy_k is the energy of the observed graph,
-      - a_k is the log partition function of the PMF of the observed graph and is given by a_k = sum_block a_within_block + a_between;
-      if the proposed and present block are small before as well as after the proposed move, 
-      a_within_proposed_block and a_within_present_block before and after the proposed move can be computed by complete enumeration,
-      and because all other within-block partition functions cancel in the log likelihood ratio,
-      the log acceptance ratio can computed exactly;
-      note that the between-block partition functions can be computed as well
-  
-      Log likelihood ratio + log prior ratio + log proposal ratio
-      -----------------------------------------------------------
-      ln(p[proposal_block]) - ln(p[present_block]) + ln(q_i[present_block]) - ln(q_i[proposal_ratio])
-      where 
-      - p[k] is defined as above and q_i[k] is the propobability that block k is proposed,
-      - q_i[k] may be given by
-        * q_i[k] = p[k]: the log acceptance ratio vanishes;
-        * q_i[k] = function(p[k], temperature t): the log acceptance ratio does not vanish, but can readily and exactly be computed, since p[k] has already been computed
-        * q_i[k] = ls->p[k]: the log acceptance ratio does not vanish, but can exactly be computed
-  
-      */
-      computation = 0;
-      if (proposal_distribution == 1) /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by full conditional distribution, computed either exactly by complete enumeration or approximately by mean-field methods */
-        {
-        if (t == 1.0) log_ratio = 0.0; /* Proposal distribution: full conditional distribution */
-        else /* Proposal distribution: full conditional distribution at temperature t */
-          {
-          log_ratio = 0.0;
-          log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
-          /*
-          Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
-          */
-          log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
-          /*
-          Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
-          */
-          log_ratio = log_ratio + ln(p[proposal_block]) - ln(p[present_block]); /* Log likelihood ratio */
-          /*
-          Rprintf("\n- log ratio (log likelihood ratio) = %8.4f",log_ratio);  
-          */
-          }
-        }
-      else /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by ls->p */
+    Log likelihood ratio + log prior ratio
+    --------------------------------------
+    ln(p[proposal_block]) - ln(p[present_block]),
+    where 
+    - p[k] = ls->p[k] * e(energy_k - a_k),  
+    - e(energy_k - a_k) is the PMF of the observed graph given that the node is member of block k,
+    - energy_k is the energy of the observed graph,
+    - a_k is the log partition function of the PMF of the observed graph and is given by a_k = sum_block a_within_block + a_between;
+    if the proposed and present block are small before as well as after the proposed move, 
+    a_within_proposed_block and a_within_present_block before and after the proposed move can be computed by complete enumeration,
+    and because all other within-block partition functions cancel in the log likelihood ratio,
+    the log acceptance ratio can computed exactly;
+    note that the between-block partition functions can be computed as well
+
+    Log likelihood ratio + log prior ratio + log proposal ratio
+    -----------------------------------------------------------
+    ln(p[proposal_block]) - ln(p[present_block]) + ln(q_i[present_block]) - ln(q_i[proposal_ratio])
+    where 
+    - p[k] is defined as above and q_i[k] is the propobability that block k is proposed,
+    - q_i[k] may be given by
+      * q_i[k] = p[k]: the log acceptance ratio vanishes;
+      * q_i[k] = function(p[k], temperature t): the log acceptance ratio does not vanish, but can readily and exactly be computed, since p[k] has already been computed
+      * q_i[k] = ls->p[k]: the log acceptance ratio does not vanish, but can exactly be computed
+
+    */
+    auxiliary = 0; /* Metropolis-Hastings */
+    if (proposal_distribution == 1) /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by full conditional distribution, computed either exactly by complete enumeration or approximately by mean-field methods */
+      {
+      if (t == 1.0) log_ratio = 0.0; /* Proposal distribution: full conditional distribution */
+      else /* Proposal distribution: full conditional distribution at temperature t */
         {
         log_ratio = 0.0;
         log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
@@ -537,44 +530,216 @@ output: indicators
         log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
         /*
         Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
-       */
-        for (i = 0; i < n_input; i++) 
-          { 
-          input_proposal[i] = input_present[i];
-          }
-        Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
-        Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
-        theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
-        statistic = (double*) calloc(ergm->d,sizeof(double));
-        if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); error("Error: out of memory"); }
-        ls->indicator[update_node] = proposal_block; /* Set ls->indicator to proposed block */
-        ls->size[present_block] = ls->size[present_block] - 1;
-        ls->size[proposal_block] = ls->size[proposal_block] + 1;
-        proposal_energy = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
-        proposal_a = 0.0;
-        proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
-        proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
-        proposal_a = proposal_a + Between_Block_Partition_Function(ls,ergm,input_proposal,theta,dn,directed,bipartite,nterms,funnames,sonames);
-        log_proposal = proposal_energy - proposal_a;
-        ls->indicator[update_node] = present_block; /* Reset ls->indicator to present block */
-        ls->size[proposal_block] = ls->size[proposal_block] - 1;
-        ls->size[present_block] = ls->size[present_block] + 1;
-        present_energy = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
-        present_a = 0.0;
-        present_a = present_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
-        present_a = present_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
-        present_a = present_a + Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
-        log_present = present_energy - present_a;
-        log_ratio = log_ratio + (log_proposal - log_present);
+        */
+        log_ratio = log_ratio + ln(p[proposal_block]) - ln(p[present_block]); /* Log likelihood ratio */
         /*
-        Rprintf("\n- node %i: block %i > %i (block size %i > %i): log_ratio: %8.4f",update_node+1,ls->indicator[update_node]+1,ls_indicator[update_node]+1,ls->size[present_block],ls_size[proposal_block],log_ratio);
+        Rprintf("\n- log ratio (log likelihood ratio) = %8.4f",log_ratio);  
         */
         }
       }
+    else /* Special case: proposed != present block, both are small before as well as after the proposed move, proposal distribution is given by ls->p */
+      {
+      log_ratio = 0.0;
+      log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
+      /*
+      Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
+      */
+      log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
+      /*
+      Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
+      */
+      for (i = 0; i < n_input; i++) 
+        { 
+        input_proposal[i] = input_present[i];
+        }
+      Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
+      Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
+      theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
+      statistic = (double*) calloc(ergm->d,sizeof(double));
+      if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); error("Error: out of memory"); }
+      ls->indicator[update_node] = proposal_block; /* Set ls->indicator to proposed block */
+      ls->size[present_block] = ls->size[present_block] - 1;
+      ls->size[proposal_block] = ls->size[proposal_block] + 1;
+      proposal_energy = Minus_Energy(ergm->d,input_proposal,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+      proposal_a = 0.0;
+      proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+      proposal_a = proposal_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
+      proposal_a = proposal_a + Between_Block_Partition_Function(ls,ergm,input_proposal,theta,dn,directed,bipartite,nterms,funnames,sonames);
+      log_proposal = proposal_energy - proposal_a;
+      ls->indicator[update_node] = present_block; /* Reset ls->indicator to present block */
+      ls->size[proposal_block] = ls->size[proposal_block] - 1;
+      ls->size[present_block] = ls->size[present_block] + 1;
+      present_energy = Minus_Energy(ergm->d,input_present,theta,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
+      present_a = 0.0;
+      present_a = present_a + Within_Block_Partition_Function(model,ls,present_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+      present_a = present_a + Within_Block_Partition_Function(model,ls,proposal_block,ergm,heads,tails,input_present,dn,directed,nterms,funnames,sonames);
+      present_a = present_a + Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
+      log_present = present_energy - present_a;
+      log_ratio = log_ratio + (log_proposal - log_present);
+      /*
+      Rprintf("\n- node %i: block %i > %i (block size %i > %i): log_ratio: %8.4f",update_node+1,ls->indicator[update_node]+1,ls_indicator[update_node]+1,ls->size[present_block],ls_size[proposal_block],log_ratio);
+      */
+      }
+    }
+  else if (model > 0) /* Computation of PMF by complete enumeration infeasible: without covariates, generate local sample */
+    {
+    auxiliary = 1; /* Auxiliary-variable Metropolis-Hastings */
+    log_ratio = 0.0;
+    log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
+    /*
+    Rprintf("\n- log ratio (log proposal ratio) = %8.4f",log_ratio);  
+    */
+    log_ratio = log_ratio + ln(ls->p[proposal_block]) - ln(ls->p[present_block]); /* Log prior ratio */
+    /*
+    Rprintf("\n- log ratio (log prior ratio) = %8.4f",log_ratio);  
+    */
+    for (i = 0; i < n_input; i++)
+      {
+      input_proposal[i] = input_present[i];
+      }
+    Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,ls->theta,input_proposal); /* Set input given ls_indicator */
+    Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_present); /* Set input given ls->indicator */
+    theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm->theta is not used */
+    statistic = (double*) calloc(ergm->d,sizeof(double));
+    if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, statistic\n\n"); error("Error: out of memory"); }
+    size = ls->size[present_block] + ls->size[proposal_block];
+    if (*directed == 0) maxpossibleedges_block = size * (size - 1) / 2;
+    else maxpossibleedges_block = size * (size - 1);
+    /* Extract subgraph corresponding to nodes which are members of the block from observed graph: */
+    block = (int*) calloc(3,sizeof(int));
+    if (block == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, block\n\n"); error("Error: out of memory"); }
+    if (present_block == proposal_block) 
+      {
+      block[0] = 1; /* Number of blocks included; the labels of included blocks are stored in block[1], ..., block[number_blocks] */
+      block[1] = present_block;
+      }
+    else
+      {
+      block[0] = 2; /* Number of blocks included; the labels of included blocks are stored in block[1], ..., block[number_blocks] */
+      block[1] = present_block;
+      block[2] = proposal_block;
+      }
+    edge_list_block = Edge_List_Blocks(ls,block,dnedges,heads,tails);
+    number_edges_block = edge_list_block[0][0];
+    heads_block = &edge_list_block[1][0];
+    tails_block = &edge_list_block[2][0];
+    /* 
+    Rprintf("\nedge list of blocks %i and %i with %i and %i nodes, respectively, and %i edges",present_block,proposal_block,ls->size[present_block],ls->size[proposal_block],edge_list_block[0][0]);
+    Print_I(number_edges_block,heads_block);
+    Print_I(number_edges_block,tails_block);
+    */
+    input_present_block = Extract_Input_Blocks(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,input_present,block,ls->theta);
+    /*
+    Rprintf("\nUpdating blocks %i and %i with %i and %i nodes, respectively: present.",present_block,proposal_block,ls->size[present_block],ls->size[proposal_block]);
+    n_input = Number_Input(ergm->terms,input_present_block);
+    Print_D(n_input,input_present_block);
+    */
+    input_proposal_block = Extract_Input_Blocks(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls_indicator,input_proposal,block,ls->theta);
+    /* 
+    Rprintf("\nUpdating blocks %i and %i with %i and %i nodes, respectively: proposal.",present_block,proposal_block,ls->size[present_block],ls->size[proposal_block]);
+    n_input = Number_Input(ergm->terms,input_proposal_block);
+    Print_D(n_input,input_proposal_block);
+    */
+    free(block);
+    mdnedges_block = 0;
+    mheads_block = NULL;
+    mtails_block = NULL;
+    number_networks = 1;
+    sample_size = 1;
+    if (10 * maxpossibleedges_block < 100) burn_in = 100;
+    else burn_in = 10 * maxpossibleedges_block;
+    MCMC_wrapper(&number_networks,&number_edges_block,tails_block,heads_block,  /* Sample one subgraph from posterior predictive distribution given input and theta */
+                    &size,directed,bipartite, /* Number of nodes of the subgraph */ 
+                    nterms,funnames,
+                    sonames, 
+                    MHproposaltype,MHproposalpackage,
+                    input_proposal_block,theta,&sample_size,
+                    sample,&burn_in,interval,  
+                    newnetworkheads, 
+                    newnetworktails, 
+                    verbose, 
+                    attribs,maxout,maxin,minout,
+                    minin,condAllDegExact,attriblength, 
+                    maxedges,
+                    status);
+    /*
+    Rprintf("\n- maximum number of edges: %i",maxpossibleedges_block);
+    Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
+    Rprintf("\n- number of edges of auxiliary graph: %i",newnetworkheads[0]);
+    */
+    proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
+    proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
+    if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
+    proposal_tails = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed tails for auxiliary variable */
+    if (proposal_tails == NULL) { Rprintf("\n\ncalloc failed: Sample_Indicators_Dependence, proposal_tails\n\n"); error("Error: out of memory"); }
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      proposal_heads[i] = newnetworkheads[i+1]; /* Note: while heads corresponds to the list of observed heads, newnetworkheads contains the number of   simulated edges as well as the list of simulated heads: to use auxiliary->heads here, one must not store the number of simulated edges */
+      proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
+      }
+    /*
+    Rprintf("\n- heads and tails of auxiliary graph:\n");
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      Rprintf(" %i",proposal_heads[i]); 
+      }
+    Rprintf("\n");
+    for (i = 0; i < proposal_n_edges; i++)  
+      {
+      Rprintf(" %i",proposal_tails[i]); 
+      }
+    Rprintf("\n");
+    */
+    /* Ratio of proposal pmfs of auxiliary graph under proposal / present */
+    log_numerator = Minus_Energy(ergm->d,input_present_block,theta,
+                    proposal_heads,proposal_tails,&proposal_n_edges,&size,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n");
+    Rprintf("\n- function 1: log numerator = %8.4f",log_numerator);  
+    Rprintf("\n- statistic of auxiliary graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_denominator = Minus_Energy(ergm->d,input_proposal_block,theta,
+                      proposal_heads,proposal_tails,&proposal_n_edges,&size,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 2: log denominator = %8.4f",log_denominator);  
+    Rprintf("\n- statistic of auxiliary graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_ratio = log_ratio + (log_numerator - log_denominator);
+    /*
+    Rprintf("\n- log ratio (auxiliary graph) = %8.4f",log_ratio);  
+    */
+    /* Ratio of mass of observed graph under proposal / present */
+    log_present = Minus_Energy(ergm->d,input_present_block,theta,heads_block,tails_block,&number_edges_block,&size,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n");
+    Rprintf("\n- function 3: log present = %8.4f",log_present);  
+    Rprintf("\n- statistic of observed graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_proposal = Minus_Energy(ergm->d,input_proposal_block,theta,heads_block,tails_block,&number_edges_block,
+                   &size,directed,bipartite,nterms,funnames,sonames,statistic); 
+    /*
+    Rprintf("\n- function 4: log proposal = %8.4f",log_proposal);  
+    Rprintf("\n- statistic of observed graph:");
+    Print_D(ergm->d,statistic);
+    */
+    log_ratio = log_ratio + (log_proposal - log_present);
+    /*
+    Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
+    */
+    for (i = 0; i < 3; i++) 
+      {
+      free(edge_list_block[i]);
+      }
+    free(edge_list_block);
+    free(input_present_block);
+    free(input_proposal_block);
     }
   else /* Large blocks: introduce auxiliary variables */
     {
-    computation = 1; /* Log acceptance ratio computed exactly */
+    auxiliary = 1; /* Auxiliary-variable Metropolis-Hastings */
     log_ratio = 0.0;
     log_ratio = log_ratio + ln(q_i[present_block]) - ln(q_i[proposal_block]); /* Log proposal ratio */
     /*
@@ -680,8 +845,8 @@ output: indicators
       Rprintf("%7.4f",q_i[k]);
       }
     Rprintf("\n- proposal: %i > %i",present_block+1,proposal_block+1);      
-    if (computation == 0) Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
-    else Rprintf("\n- auxiliary-variable log ratio: %8.4f",log_ratio);  
+    if (auxiliary == 0) Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
+    else Rprintf("\n- auxiliary-variable M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
     Rprintf("\n- decision: %i",accept);
     }
   /* Free memory: */
@@ -689,7 +854,7 @@ output: indicators
   free(ls_size);
   free(q_i); /* 666 */
   if (t != 1.0) free(p);
-  if (computation > 0)
+  if (auxiliary > 0)
     {
     free(proposal_heads);
     free(proposal_tails);
@@ -809,7 +974,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   if (print == 1)
     {
     Rprintf("\nSample parameters:");
-    Rprintf("\n- auxiliary-variable log ratio: %8.4f",log_ratio); 
+    Rprintf("\n- auxiliary-variable M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0)); 
     Rprintf("\n- decision: %i",accept);
     }
   for (i = 0; i < ergm->d1; i++)
@@ -847,7 +1012,7 @@ input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int number_networks, accept, computation, count, **edge_list_block, h, i, j, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, t, update_size;
+  int burn_in, *block, number_networks, accept, auxiliary, count, **edge_list_block, h, i, j, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, t, update_size;
   double **cf, *present, *input_proposal, *input_present_block, *input_proposal_block, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal, *statistic, present_a, proposal_a, present_energy, proposal_energy;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
@@ -873,7 +1038,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   if (statistic == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, statistic\n\n"); error("Error: out of memory"); }
   update_size = ls->size[update_block];
   cf = Scale(ls->d,ls->d,prior->cf2,scale_factor[update_size-2]); /* Rescale Cholesky factor of Gaussian prior */ 
-  Get_Column(ls->d,present,ls->theta,update_block); /* Set mean to ls->theta[][i] */
+  Get_Column(ls->d,present,ls->theta,update_block); /* Set present to ls->theta[][i] */
   /* Generate candidate: */
   proposal = Sample_MVN(ls->d,present,cf); /* Random walk Metropolis-Hastings algorithm */
   Set_Column(ls->d,ls_theta,update_block,proposal); /* Set ls_theta[][i] to proposal */
@@ -895,7 +1060,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   theta_present = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm_theta is not used */
   if (ls->size[update_block] < ls->threshold) /* Computation of PMF by complete enumeration feasible */
     {
-    computation = 0;
+    auxiliary = 0; /* Metropolis-Hastings */
     proposal_energy = Minus_Energy(ergm->d,input_proposal,theta_proposal,heads,tails,dnedges,dn,directed,bipartite,nterms,funnames,sonames,statistic);
     Set_Column(ls->d,ls->theta,update_block,proposal); /* Set ls->theta to proposal */
     proposal_a = Within_Block_Partition_Function(model,ls,update_block,ergm,heads,tails,input_proposal,dn,directed,nterms,funnames,sonames);
@@ -911,54 +1076,66 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   else if (model > 0) /* Computation of PMF by complete enumeration infeasible: without covariates, generate local within-block sample */
     {
-    computation = 1;
-    sample_size = 1; /* One sample point is all that is required */
+    auxiliary = 1; /* Auxiliary-variable Metropolis-Hastings */
     if (*directed == 0) maxpossibleedges_block = ls->size[update_block] * (ls->size[update_block] - 1) / 2;
     else maxpossibleedges_block = ls->size[update_block] * (ls->size[update_block] - 1);
     /* Extract subgraph corresponding to nodes which are members of the block from observed graph: */
-    edge_list_block = Edge_List_Block(ls,update_block,dnedges,heads,tails);
+    block = (int*) calloc(2,sizeof(int));
+    if (block == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, block\n\n"); error("Error: out of memory"); }
+    block[0] = 1; /* Number of blocks included; the labels of included blocks are stored in block[1], ..., block[number_blocks] */
+    block[1] = update_block;
+    edge_list_block = Edge_List_Blocks(ls,block,dnedges,heads,tails);
     number_edges_block = edge_list_block[0][0];
     heads_block = &edge_list_block[1][0];
     tails_block = &edge_list_block[2][0];
     /*
+    Rprintf("\nedge list with %i nodes and %i edges",ls->n,*dnedges);
+    Print_I(*dnedges,heads);
+    Print_I(*dnedges,tails);
     Rprintf("\nedge list of block %i with %i nodes and %i edges",update_block,ls->size[update_block],edge_list_block[0][0]);
     Print_I(number_edges_block,heads_block);
     Print_I(number_edges_block,tails_block);
     */
-    input_present_block = Set_Input_Block(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->size[update_block],present,input_present);
-    /*
-    Rprintf("\n\n- block %i of size %i with %i edges",update_block,ls->size[update_block],number_edges_block);
-    Rprintf("\n- permutation of nodes :");
-    Print_I(ls->n,permutation);
-    Rprintf("\n- heads and tails of block:");
-    Print_I(number_edges_block,heads_block);
-    Print_I(number_edges_block,tails_block);
-    */
-    input_proposal_block = Set_Input_Block(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->size[update_block],proposal,input_present);
-    /*
-    Rprintf("\n");
-    Rprintf("\n- present and proposed ergm->theta:");
+    input_present_block = Extract_Input_Blocks(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,input_present,block,ls->theta);
+    /*    
+    Rprintf("\nupdating block %i with %i nodes.",update_block,ls->size[update_block]);
+    Rprintf("\n- present ergm->theta:");
     Print_D(ergm->d,theta_present);
-    Print_D(ergm->d,theta_proposal);
-    Rprintf("\n- present and proposed ls->theta:");
+    Rprintf("\n- present ls->theta:");
     Print_D(ls->d,present);
-    Print_D(ls->d,proposal);
-    Rprintf("\n- present and proposed input:");
+    Rprintf("\n- present input 2:");
     n_input = Number_Input(ergm->terms,input_present_block);
     Print_D(n_input,input_present_block);
+    */
+    input_proposal_block = Extract_Input_Blocks(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,input_proposal,block,ls_theta);
+    /* 
+    Rprintf("\nUpdating block %i with %i nodes.",update_block,ls->size[update_block]);
+    Rprintf("\n- proposed ergm->theta:");
+    Print_D(ergm->d,theta_proposal);
+    Rprintf("\n- proposed ls->theta:");
+    Print_D(ls->d,proposal);
+    Rprintf("\n- proposed input 2:");
+    n_input = Number_Input(ergm->terms,input_proposal_block);
     Print_D(n_input,input_proposal_block);
     */
+    free(block);
     mdnedges_block = 0;
     mheads_block = NULL;
     mtails_block = NULL;
     number_networks = 1;
+    sample_size = 1;
+    if (10 * maxpossibleedges_block < 100) burn_in = 100;
+    else burn_in = 10 * maxpossibleedges_block;
+    /*
+    if (print == 1) *verbose = 1; /* 1 short, >5 long
+    */
     MCMC_wrapper(&number_networks,&number_edges_block,tails_block,heads_block,  /* Sample one graph from posterior predictive distribution given input and theta */
                     &ls->size[update_block],directed,bipartite, 
                     nterms,funnames,
                     sonames, 
                     MHproposaltype,MHproposalpackage,
                     input_proposal_block,theta_proposal,&sample_size,
-                    sample,burnin,interval,  
+                    sample,&burn_in,interval,  
                     newnetworkheads, 
                     newnetworktails, 
                     verbose, 
@@ -967,9 +1144,7 @@ output: structural, non-structural parameters showing up in ergm pmf
                     maxedges,
                     status);
     /*
-    Rprintf("\n- maximum number of edges: %i",maxpossibleedges_block);
-    Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
-    Rprintf("\n- number of edges of auxiliary graph: %i",newnetworkheads[0]);
+    if (print == 1) *verbose = 0;
     */
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
@@ -982,6 +1157,11 @@ output: structural, non-structural parameters showing up in ergm pmf
       proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
       }
     /*
+    if (print == 1)
+      {
+      Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
+      Rprintf("\n- number of edges of auxiliary graph: %i",proposal_n_edges);
+      }
     Rprintf("\n- heads and tails of auxiliary graph:\n");
     for (i = 0; i < proposal_n_edges; i++)  
       {
@@ -1011,11 +1191,12 @@ output: structural, non-structural parameters showing up in ergm pmf
     Print_D(ergm->d,statistic);
     */
     log_ratio = log_ratio + (log_numerator - log_denominator);
-    /*
+    /* 
     Rprintf("\n- log ratio (auxiliary graph) = %8.4f",log_ratio);  
     */
     /* Ratio of mass of observed graph under proposal / present */
-    log_present = Minus_Energy(ergm->d,input_present_block,theta_present,heads_block,tails_block,&number_edges_block,&ls->size[update_block],directed,bipartite,nterms,funnames,sonames,statistic); 
+    log_present = Minus_Energy(ergm->d,input_present_block,theta_present,heads_block,tails_block,&number_edges_block,
+                  &ls->size[update_block],directed,bipartite,nterms,funnames,sonames,statistic); 
     /*
     Rprintf("\n");
     Rprintf("\n- function 3: log present = %8.4f",log_present);  
@@ -1045,7 +1226,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     }
   else /* Computation of PMF by complete enumeration infeasible: with covariates, generate global sample */
     {
-    computation = 1;
+    auxiliary = 1; /* Auxiliary-variable Metropolis-Hastings */
     sample_size = 1; /* One sample point is all that is required */
     number_networks = 1;
     MCMC_wrapper(&number_networks,dnedges,tails,heads,  /* Sample one graph from posterior predictive distribution given input and theta */
@@ -1111,8 +1292,8 @@ output: structural, non-structural parameters showing up in ergm pmf
   if (print == 1)
     {
     Rprintf("\nSample parameters of block %i of size %i:",update_block+1,ls->size[update_block]);
-    if (computation == 0) Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
-    else Rprintf("\n- auxiliary-variable log ratio: %8.4f",log_ratio);  
+    if (auxiliary == 0) Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
+    else Rprintf("\n- auxiliary-variable M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
     Rprintf("\n- decision: %i",accept);
     }
   free(present);
@@ -1233,7 +1414,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   if (print == 1)
     {
     Rprintf("\nSample between-block parameters:");
-    Rprintf("\n- exact log ratio: %8.4f",log_ratio);  
+    Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
     Rprintf("\n- decision: %i",accept);
     }
   for (i = 0; i < ls->d; i++)
@@ -1540,15 +1721,15 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *call_RNGstate, int *hyperprior, int *status)
+             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *hyperprior, int *status)
 /*
 input: R input
 output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose;
-  double *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum;	
+  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, call_RNGstate;
+  double between_edge_parameter, *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum, prob;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1610,10 +1791,11 @@ output: simulated graph
   if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); error("Error: out of memory"); }
   newnetworktails = (int*) calloc(*maxpossibleedges+1,sizeof(int));
   if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); error("Error: out of memory"); }
+  call_RNGstate = 1;
   /****************/
   /* Sample graph */
   /****************/
-  if (*call_RNGstate == 1) GetRNGstate();
+  if (call_RNGstate == 1) GetRNGstate();
   ls->alpha = *alpha; /* Clustering parameter */
   for (i = 0; i < (ls->number - 1); i++)
     {
@@ -1685,7 +1867,9 @@ output: simulated graph
         {
         if (between[i] == 1) 
           { 
-          ls->theta[i][ls->number] = -5.0 + norm_rand();
+          prob = 3.0 / (ls->n - 1.0); /* If a homogeneous Bernoulli model without covariates governs between-block relations and node i is in its own block and all n-1 other nodes are in other blocks, then the expected degree of node i is 3/(n-1) * (n-1) = 3; otherwise, it is less */
+          between_edge_parameter = log(prob / (1.0 - prob));
+          ls->theta[i][ls->number] = between_edge_parameter; /* + (0.25*norm_rand()); */
           /*
           ls->theta[i][ls->number] = (2 * prior->mean2[i]) + (prior->cf2[i][i] * norm_rand()); /* Ad hoc: must be changed 
           */
@@ -1865,7 +2049,7 @@ output: simulated graph
       }
     if (print == 1) Rprintf("\n");
     }
-  if (*call_RNGstate == 1) PutRNGstate();
+  if (call_RNGstate == 1) PutRNGstate();
   /************/
   /* Finalize */
   /************/
@@ -1890,6 +2074,7 @@ output: simulated graph
 void Inference(int *model_type,
              int *dyaddependence,
              int *hierarchical,
+             int *decomposable,
              int *d, 
              int *d1, 
              int *d2,
@@ -1925,14 +2110,14 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *call_RNGstate, int *parallel, double *temperature, int *hyperprior, int *status)
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *parallel, double *temperature, int *hyperprior, int *status)
 /*
 input: R input
 output: MCMC sample of unknowns from posterior
 */
 {
   int null = 0;
-  int *available, model, batch, n_batches, batch_size, coordinate, console, *degree, *degree_freq, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, n_input, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, update_block, update_indicator, update_node, update_size;
+  int *available, model, batch, n_batches, batch_size, coordinate, console, *degree, *degree_freq, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, n_input, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, update_block, update_indicator, update_node, update_size, call_RNGstate;
   long int n_indicator_permutations;
   double ls_alpha, accept, *block_degree_freq, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, *scale_factor, sample_size_indicators, u;	
   priorstructure_ls *prior_ls;
@@ -1961,8 +2146,8 @@ output: MCMC sample of unknowns from posterior
   number = (int)*max_number; /* Number of categories */
   n = (int)*dn; /* Number of nodes */
   max_iteration = *max_iterations; /* Number of draws from posterior */
-  if (max_iteration <= 12000) n_batches = max_iteration;
-  else n_batches = 12000;
+  if (max_iteration <= 10000) n_batches = max_iteration;
+  else n_batches = 10000;
   if (max_iteration == n_batches) batch_size = 1; 
   else batch_size = trunc(max_iteration / n_batches);
   mdnedges = &null;
@@ -1985,10 +2170,11 @@ output: MCMC sample of unknowns from posterior
   if (pp == NULL) { Rprintf("\n\ncalloc failed: Inference, pp\n\n"); error("Error: out of memory"); }
   scale_factor = (double*) calloc(2+ls->n-ls->minimum_size,sizeof(double));   
   if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); error("Error: out of memory"); }
+  call_RNGstate = 1;
   /*************************/
   /* MCMC sample posterior */
   /*************************/
-  if (*call_RNGstate == 1) GetRNGstate();
+  if (call_RNGstate == 1) GetRNGstate();
   if (console >= 1)
     {
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
@@ -2038,9 +2224,9 @@ output: MCMC sample of unknowns from posterior
   Print_D(number_local_mh,scalefactor);
   */
   Set_D_D(number_local_mh,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
-  if (ls->n < 20) sample_size_indicators = ls->n / 2;
-  else if (ls->n < 50) sample_size_indicators = ls->n / 5;
-  else sample_size_indicators = ls->n / 10;
+  if (ls->n < 20) sample_size_indicators = round(ls->n / 3);
+  else if (ls->n < 50) sample_size_indicators = round(ls->n / 6);
+  else sample_size_indicators = round(ls->n / 12);
   coordinate = -1;
   for (batch = 0; batch < n_batches; batch++) /* Batch */
     {
@@ -2266,7 +2452,7 @@ output: MCMC sample of unknowns from posterior
         }
       }
     }
-  if (*call_RNGstate == 1) PutRNGstate();
+  if (call_RNGstate == 1) PutRNGstate();
   /************/
   /* Finalize */
   /************/
