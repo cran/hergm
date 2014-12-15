@@ -21,7 +21,7 @@
 hergm.wrapper <- function(seed, hergm_list) 
 {
   # print(hergm_list)
-  if (!is.null(seed)) set.seed(seed)
+  if (is.null(seed) == FALSE) set.seed(seed)
   if (hergm_list$simulate == TRUE)
     {
     sample <- .C("Simulation",
@@ -81,11 +81,12 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$maxedges),
     as.integer(hergm_list$max_iteration),
     as.integer(hergm_list$between),
-    as.integer(hergm_list$output),
+    as.double(hergm_list$mean_between),
+    as.integer(hergm_list$predictions),
     mcmc = as.double(hergm_list$mcmc),
     sample_heads = as.integer(hergm_list$sample_heads),
     sample_tails = as.integer(hergm_list$sample_tails),
-    as.integer(hergm_list$hyper_prior),
+    as.integer(hergm_list$prior_assumptions),
     status = integer(1), 
     PACKAGE="hergm")
     }
@@ -148,14 +149,14 @@ hergm.wrapper <- function(seed, hergm_list)
     as.integer(hergm_list$maxedges),
     as.integer(hergm_list$max_iteration),
     as.integer(hergm_list$between),
-    as.integer(hergm_list$output),
+    as.integer(hergm_list$predictions),
     mcmc = as.double(hergm_list$mcmc),
     as.double(hergm_list$scalefactor),
     mh_accept = as.double(hergm_list$mh_accept),
     as.double(hergm_list$q_i),
     as.integer(hergm_list$parallel),
     as.double(hergm_list$temperature),
-    as.integer(hergm_list$hyper_prior),
+    as.integer(hergm_list$prior_assumptions),
     status = integer(1),
     PACKAGE="hergm")
     }

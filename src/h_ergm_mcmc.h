@@ -186,6 +186,14 @@ input: node i, latent structure, ergm structure
 output: candidate-generating distribution
 */
 
+void Gibbs_Indicators_Independence(latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input_proposal,
+		                       int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames, double *q_i);
+/*
+ * input: latent structure, ergm structure
+ * output: indicators
+ * note: function more efficient than sister function Gibbs_Indicators_Independence
+ * */
+
 double Ratio_Partition_Functions(int s, int d, double sum_observed, double *statistic_generating, double *statistic, double *theta_generating, double *theta);
 /*
 input: sample size, dimension, difference of inner products under alternative, data-generating parameter for observed graph, value of statistic under data-generating, alternative parameter, value of data-generating, alternative parameter

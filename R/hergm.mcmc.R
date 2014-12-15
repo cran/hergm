@@ -18,15 +18,14 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, temperature, output) 
+hergm.mcmc <- function(original.formula, max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, temperature, predictions, perturb) 
 {
-  
   # Prepare
-  if (simulate == FALSE) scalefactor <- hergm.set.mcmc(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, temperature, mh_scale) # The last argument is the initial value of the scale factor
-  Clist <- ergm.Cprepare(nw, model)
+  if (simulate == FALSE) scalefactor <- hergm.set.mcmc(max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, indicator, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, simulate, parallel, seeds, predictions, temperature, mh_scale, perturb) # The last argument is the initial value of the scale factor
+  Clist <- ergm.Cprepare(network, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else maxedges <- Clist$n * (Clist$n - 1) # Directed
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, simulate, parallel, temperature, output, name, verbose)
+  hergm_list <- hergm.preprocess(max_number, initialize=FALSE, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, temperature, predictions, verbose, perturb)
   if (simulate == FALSE) hergm_list$scalefactor <- scalefactor # Set scale factor
   else if (hergm_list$hyper_prior == 1)
     {
@@ -39,13 +38,12 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
     }
   flush.console() # Windows
 
-  #111 #666
   #print(model$term)
-  #ergm.getglobalstats(nw,model)
+  #ergm.getglobalstats(network,model)
   #model<-append.rhs.formula(model,list(as.name("edges")))
   #model<-append.rhs.formula(model,list(as.name("edges")))
   #print(model$term)
-  #hergm_list$Clist <- ergm.Cprepare(nw, model)
+  #hergm_list$Clist <- ergm.Cprepare(network, model)
   #print("done")
 
   # Run
@@ -53,9 +51,17 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
   if (parallel > 1) # Parallel computing
     {
     number <- parallel # Specify number of computing nodes on cluster
+    if (length(seeds) < number) 
+      {
+      cluster.seeds <- runif(number)
+      }
+    else 
+      {
+      cluster.seeds <- seeds
+      }
     cluster <- makePSOCKcluster(number)
     clusterEvalQ(cluster, library(hergm))
-    s <- clusterApplyLB(cluster, seeds[1:number], hergm.wrapper, hergm_list)
+    s <- clusterApplyLB(cluster, cluster.seeds[1:number], hergm.wrapper, hergm_list)
     stopCluster(cluster)
     mcmc <- append(s[[1]]$mcmc, s[[2]]$mcmc)
     if (number > 2) 
@@ -67,26 +73,37 @@ hergm.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, name, alpha_s
     }
   else sample <- hergm.wrapper(seeds[1], hergm_list) # Non-parallel computing
 
-  # Postprocess
-  output_list <- list() 
-  output_list$n <- Clist$n
-  output_list$max_number <- hergm_list$max_number
-  output_list$d1 <- hergm_list$d1
-  output_list$d2 <- hergm_list$d2
-  output_list$parallel <- hergm_list$parallel
-  output_list$simulate <- hergm_list$simulate
-  output_list$sample_size <- min(10000, hergm_list$MCMCparams$samplesize)
+  # Store
+  output <- list() 
+  output$network <- network
+  output$n <- Clist$n
+  output$model <- model
+  output$max_number <- hergm_list$max_number
+  output$d1 <- hergm_list$d1
+  output$d2 <- hergm_list$d2
+  output$parallel <- hergm_list$parallel
+  output$simulate <- hergm_list$simulate
+  output$sample_size <- min(10000, hergm_list$MCMCparams$samplesize)
   if (simulate == TRUE) 
     {
-    output_list$sample <- sample$sample
+    output$sample <- sample$sample
     number_edges <- sample$sample_heads[1]
-    sample$sample_heads <- sample$sample_heads[-1]
-    sample$sample_tails <- sample$sample_tails[-1]
-    output_list$heads <- sample$sample_heads[1:number_edges]
-    output_list$tails <- sample$sample_tails[1:number_edges]
+    if (number_edges == 0)
+      {
+      sample_heads <- NULL
+      sample_tails <- NULL
+      }
+    else
+      { 
+      sample$sample_heads <- sample$sample_heads[-1]
+      sample$sample_tails <- sample$sample_tails[-1]
+      output$heads <- sample$sample_heads[1:number_edges]
+      output$tails <- sample$sample_tails[1:number_edges]
+      }
     }
-  output_list$sample <- sample$mcmc 
+  output$predictions <- predictions
+  output$sample <- sample$mcmc 
 
-  output_list
+  output
 }
 

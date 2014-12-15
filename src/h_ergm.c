@@ -191,7 +191,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     {
     Set_D_D(ergm->d1,ergm->theta,ergm_theta);
     }
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample parameters:");
     Rprintf("\n- log ratio: %8.4f",log_ratio);  
@@ -265,7 +265,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     {
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
     }
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample block parameters:");
     Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
@@ -293,7 +293,7 @@ output: structural, non-structural parameters showing up in ergm pmf
 */
 {
   int accept, i;
-  double **cf, *present, *ergm_theta, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal;
+  double **cf, *present, *ergm_theta, log_present, log_proposal, log_ratio, **ls_theta, *proposal, *theta_present, *theta_proposal;
   /* Proposal:
   note 1: all ls->theta such that ls->size >= ls->minimum_size and all ergm->theta are updated by random walk Metropolis-Hastings algorithm
   note 2: ratio of proposal pdfs cancels under random walk Metropolis-Hastings algorithm */
@@ -357,7 +357,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     if (ergm->d1 > 0) Set_D_D(ergm->d1,ergm->theta,ergm_theta);
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
     }
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample parameters:");
     Rprintf("\n- log ratio: %8.4f",log_ratio);  
@@ -398,7 +398,7 @@ input: ergm structure, latent structure, prior
 output: indicators
 */
 {
-  int burn_in, maxpossibleedges_block, *block, **edge_list_block, number_edges_block, *heads_block, *tails_block, size, number_networks, accept, mdnedges_block, *mheads_block, *mtails_block, auxiliary, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, *sample_i, sample_size;
+  int burn_in, maxpossibleedges_block, *block, **edge_list_block, number_edges_block, *heads_block, *tails_block, size, number_networks, accept, mdnedges_block, *mheads_block, *mtails_block, auxiliary, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
   double a_i, entropy, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *input_present_block, *input_proposal_block, *p, *q_i, present_a, proposal_a, present_energy, proposal_energy, sum, t, *theta, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
@@ -423,7 +423,7 @@ output: indicators
   if (model == 0) proposal_distribution = 0; 666 
   else proposal_distribution = 1;
   */
-  proposal_distribution = 0;
+  proposal_distribution = 0; /* 666 666 666 */
   if (proposal_distribution == 0) 
     {
     q_i = (double*) calloc(ls->number,sizeof(double));
@@ -576,6 +576,8 @@ output: indicators
       present_a = present_a + Between_Block_Partition_Function(ls,ergm,input_present,theta,dn,directed,bipartite,nterms,funnames,sonames);
       log_present = present_energy - present_a;
       log_ratio = log_ratio + (log_proposal - log_present);
+      free(theta);
+      free(statistic);
       /*
       Rprintf("\n- node %i: block %i > %i (block size %i > %i): log_ratio: %8.4f",update_node+1,ls->indicator[update_node]+1,ls_indicator[update_node]+1,ls->size[present_block],ls_size[proposal_block],log_ratio);
       */
@@ -646,8 +648,8 @@ output: indicators
     mtails_block = NULL;
     number_networks = 1;
     sample_size = 1;
-    if (10 * maxpossibleedges_block < 100) burn_in = 100;
-    else burn_in = 10 * maxpossibleedges_block;
+    if (20 * maxpossibleedges_block < 100) burn_in = 100;
+    else burn_in = 20 * maxpossibleedges_block;
     MCMC_wrapper(&number_networks,&number_edges_block,tails_block,heads_block,  /* Sample one subgraph from posterior predictive distribution given input and theta */
                     &size,directed,bipartite, /* Number of nodes of the subgraph */ 
                     nterms,funnames,
@@ -662,6 +664,12 @@ output: indicators
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
+    if (print > 1)
+      {
+      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
+      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Indicators_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      }
     /*
     Rprintf("\n- maximum number of edges: %i",maxpossibleedges_block);
     Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
@@ -777,6 +785,12 @@ output: indicators
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
+    if (print > 1)
+      {
+      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
+      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Indicators_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      }
     /*
     Rprintf("\n\nafter: newnetworkheads[0]=%i",newnetworkheads[0]);
     */
@@ -833,7 +847,7 @@ output: indicators
     ls->size[proposal_block] = ls->size[proposal_block] + 1;
     }
   /* Console output: */
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample indicator of node %i:",update_node+1);
     entropy = S(ls->number,q_i);
@@ -850,6 +864,7 @@ output: indicators
     Rprintf("\n- decision: %i",accept);
     }
   /* Free memory: */
+  free(input_proposal);
   free(ls_indicator);
   free(ls_size);
   free(q_i); /* 666 */
@@ -885,8 +900,8 @@ input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int number_networks, accept, i, j, k, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
-  double **cf, *ergm_theta, *present, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *mean, *proposal, *theta_present, *theta_proposal, *statistic;
+  int number_networks, accept, i, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
+  double **cf, *ergm_theta, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *theta_present, *theta_proposal, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
   if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, input_proposal\n\n"); error("Error: out of memory"); }
@@ -911,6 +926,19 @@ output: structural, non-structural parameters showing up in ergm pmf
   theta_present = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter; note: if ergm->d1 == 0, ergm_theta is not used */
   sample_size = 1; /* One sample point is all that is required */
   number_networks = 1;
+  /*
+  Rprintf("\nburnin=%i interval=%i maxout=%i maxin=%i minout=%i minin=%i",*burnin,*interval,*maxout,*maxin,*minout,*minin);
+  Print_D(n_input,input_present);
+  Print_D(n_input,input_proposal);
+  Print_DD(ls->d,ls->number,ls->theta);
+  Print_I(ls->n,ls->indicator);
+  Print_D(ergm->d1,ergm->theta);
+  Print_D(ergm->d1,ergm_theta);
+  Print_D(ergm->d,theta_present);
+  Print_D(ergm->d,theta_proposal);
+  Print_I(*dnedges,heads);
+  Print_I(*dnedges,tails);
+  */
   MCMC_wrapper(&number_networks,dnedges,tails,heads,  /* Sample one graph from posterior predictive distribution given input and theta */
                   dn,directed,bipartite, 
                   nterms,funnames,
@@ -925,6 +953,12 @@ output: structural, non-structural parameters showing up in ergm pmf
                   minin,condAllDegExact,attriblength, 
                   maxedges,
                   status);
+  if (print > 1)
+    {
+    if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+    else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
+    if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Ergm_Theta_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+    }
   proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
   proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
   if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ergm_Theta_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
@@ -971,7 +1005,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     if (ergm->d1 > 0) Set_D_D(ergm->d1,ergm->theta,ergm_theta);
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls->theta);
     }
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample parameters:");
     Rprintf("\n- auxiliary-variable M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0)); 
@@ -1012,8 +1046,8 @@ input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int burn_in, *block, number_networks, accept, auxiliary, count, **edge_list_block, h, i, j, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, t, update_size;
-  double **cf, *present, *input_proposal, *input_present_block, *input_proposal_block, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *mean, *proposal, *theta_present, *theta_proposal, *statistic, present_a, proposal_a, present_energy, proposal_energy;
+  int burn_in, *block, number_networks, accept, auxiliary, **edge_list_block, i, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, update_size;
+  double **cf, *present, *input_proposal, *input_present_block, *input_proposal_block, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *proposal, *theta_present, *theta_proposal, *statistic, present_a, proposal_a, present_energy, proposal_energy;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
   if (input_proposal == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, input_proposal\n\n"); error("Error: out of memory"); }
@@ -1124,10 +1158,10 @@ output: structural, non-structural parameters showing up in ergm pmf
     mtails_block = NULL;
     number_networks = 1;
     sample_size = 1;
-    if (10 * maxpossibleedges_block < 100) burn_in = 100;
-    else burn_in = 10 * maxpossibleedges_block;
+    if (20 * maxpossibleedges_block < 100) burn_in = 100;
+    else burn_in = 20 * maxpossibleedges_block;
     /*
-    if (print == 1) *verbose = 1; /* 1 short, >5 long
+    if (print >= 1) *verbose = 5; 1 short, >5 long
     */
     MCMC_wrapper(&number_networks,&number_edges_block,tails_block,heads_block,  /* Sample one graph from posterior predictive distribution given input and theta */
                     &ls->size[update_block],directed,bipartite, 
@@ -1143,8 +1177,14 @@ output: structural, non-structural parameters showing up in ergm pmf
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
+    if (print > 1)
+      {
+      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
+      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Ls_Theta_Dependence block %i of size %i: MCMC_wrapper: number of edges %i is outside of (1,%i).",update_block,ls->size[update_block]+1,newnetworkheads[0],*maxedges);
+      }
     /*
-    if (print == 1) *verbose = 0;
+    if (print >= 1) *verbose = 0;
     */
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
@@ -1157,7 +1197,7 @@ output: structural, non-structural parameters showing up in ergm pmf
       proposal_tails[i] = newnetworktails[i+1]; /* Note: while tails corresponds to the list of observed tails, newnetworktails contains the number of   simulated edges as well as the list of simulated tails: to use auxiliary->tails here, one must not store the number of simulated edges */
       }
     /*
-    if (print == 1)
+    if (print >= 1)
       {
       Rprintf("\n- number of edges of observed graph: %i",number_edges_block);
       Rprintf("\n- number of edges of auxiliary graph: %i",proposal_n_edges);
@@ -1243,6 +1283,12 @@ output: structural, non-structural parameters showing up in ergm pmf
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
+    if (print > 1)
+      {
+      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
+      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Ls_Theta_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      }
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
     if (proposal_heads == NULL) { Rprintf("\n\ncalloc failed: Sample_Ls_Theta_Dependence, proposal_heads\n\n"); error("Error: out of memory"); }
@@ -1289,7 +1335,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     {
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
     }
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample parameters of block %i of size %i:",update_block+1,ls->size[update_block]);
     if (auxiliary == 0) Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
@@ -1307,6 +1353,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     free(ls_theta[i]);
     }
   free(ls_theta);
+  free(input_proposal);
   free(proposal);
   free(statistic);
   free(theta_present);
@@ -1411,7 +1458,7 @@ output: structural, non-structural parameters showing up in ergm pmf
       ls->theta[i][ls->number] = proposal[i];
       } 
     }
-  if (print == 1)
+  if (print >= 1)
     {
     Rprintf("\nSample between-block parameters:");
     Rprintf("\n- M-H acceptance probability: %8.4f",Min(e(log_ratio),1.0));  
@@ -1422,6 +1469,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     free(cf[i]);
     }
   free(cf);
+  free(input_proposal);
   free(present);
   free(proposal);
   free(statistic);
@@ -1484,6 +1532,44 @@ output: means of parameters
   return sample;
 }
 
+double* Gibbs_Parameters_Means_Conditional(priorstructure *prior, latentstructure *ls)
+/*
+input: prior structure, latent structure
+output: means of parameters
+*/
+{
+  int i, k;
+  /* PLEASE NOTE: FUNCTION NOT THOROUGHLY TESTED AND CURRENTLY NOT USED */
+  double sum, mean, numerator, denominator, precision, *sample, std, tau;
+  sample = (double*) calloc(ls->d,sizeof(double));
+  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Means_Conditional, sample\n\n"); error("Error: out of memory"); }
+  tau = 1.0; /* Must match Gibbs_Parameters_Precisions_Marginal */
+  for (i = 0; i < ls->d; i++)
+    {
+    sum = 0.0;
+    for (k = 0; k < ls->number; k++) 
+      {
+      sum = sum + ls->theta[i][k];
+      }
+    numerator = (prior->mean2_precision[i] * prior->mean2_mean[i]) + sum;
+    denominator = prior->mean2_precision[i] + ls->number;
+    mean = numerator / denominator;
+    precision = (prior->mean2_precision[i] + ls->number) * prior->precision2[i][i];
+    std = sqrt(1.0 / precision);
+    sample[i] = mean + (norm_rand() * std); 
+    /*
+    Rprintf("\nprior->mean2_precision[%i] * prior->mean2_mean[%i] = %-8.4f",i,i,prior->mean2_precision[i] * prior->mean2_mean[i]);
+    Rprintf("\nprior->precision2[%i][%i] * sum = %-8.4f",i,i,prior->precision2[i][i] * sum);
+    Rprintf("\nnumerator = %-8.4f",numerator);
+    Rprintf("\ndenominator = %-8.4f",denominator);
+    Rprintf("\nmean of full conditional Gaussian of prior->mean2[%i] = %-8.4f",i,mean);
+    Rprintf("\nprecision of full conditional Gaussian of prior->mean2[%i] = %-8.4f",i,precision);
+    Rprintf("\ndraw from full conditional Gaussian of prior->mean2[%i] = %-8.4f",i,sample[i]);
+    */
+    }
+  return sample;
+}
+
 double* Gibbs_Parameters_Precisions(priorstructure *prior, latentstructure *ls)
 /*
 input: prior structure, latent structure
@@ -1516,13 +1602,59 @@ output: precisions of parameters
   return sample;
 }
 
+double* Gibbs_Parameters_Precisions_Marginal(priorstructure *prior, latentstructure *ls)
+/*
+input: prior structure, latent structure
+output: precisions of parameters
+*/
+{
+  int i, k;
+  double d, m, rate, s, shape, *sample, t, tau, numerator, denominator;
+  /* PLEASE NOTE: FUNCTION NOT THOROUGHLY TESTED AND CURRENTLY NOT USED */
+  sample = (double*) calloc(ls->d,sizeof(double)); 
+  if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Precisions_Marginal, sample\n\n"); error("Error: out of memory"); }
+  tau = 1.0; /* Must match Gibbs_Parameters_Means_Conditional */
+  tau = 1.0;
+  for (i = 0; i < ls->d; i++)
+    {
+    shape = prior->precision2_shape + (ls->number / 2.0);
+    m = 0.0;
+    for (k = 0; k < ls->number; k++)
+      {
+      m = m + ls->theta[i][k];
+      }
+    m = m / ls->number;
+    s = 0.0;
+    for (k = 0; k < ls->number; k++)
+      {
+      d = ls->theta[i][k] - m;
+      s = s + (d * d);
+      }
+    s = s / 2.0;
+    d = m - prior->mean2[i];
+    numerator = tau * ls->number * (d * d);
+    denominator = 2.0 * (tau + ls->number);
+    t = numerator / denominator;
+    rate = prior->precision2_rate + s + t;
+    sample[i] = rgamma(shape,1.0/rate); 
+    /*
+    Rprintf("\nshape of full conditional Gamma of prior->precision[%i] = %-8.4f",i,shape);
+    Rprintf("\nrate of full conditional Gamma of prior->precision[%i] = %-8.4f",i,rate);
+    Rprintf("\nmean of full conditional Gamma of prior->precision[%i] = %-8.4f",i,shape / rate);
+    Rprintf("\nvariance of full conditional Gamma of prior->precision[%i] = %-8.4f",i,shape / (rate * rate));  
+    Rprintf("\ndraw from full conditional Gaussian of prior->precision[%i] = %-8.4f",i,sample[i]);
+    */
+    } 
+  return sample;
+}
+
 void Initial_State(int *parallel, double *alpha, int *indicator, priorstructure_ls *prior_ls, priorstructure *prior, latentstructure *ls, ergmstructure *ergm, double *theta, double *scale_factor)
 /* 
 input: clustering parameter, priors, latent structure, ergm structure, user-specified initial value of non-structural parameters
 */
 {  
   int i, k;
-  double *sample, *shape1, *shape2, sum;
+  double *sample, *shape1, *shape2;
   if (*parallel == 1) ls->alpha = *alpha; /* Clustering parameter */
   else ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
   shape1 = (double*) calloc(ls->number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
@@ -1541,8 +1673,7 @@ input: clustering parameter, priors, latent structure, ergm structure, user-spec
   free(shape2);
   for (i = 0; i < ls->n; i++) /* For each node i, sample category k */
     {
-    k = Sample_Discrete(ls->p);
-    ls->indicator[i] = k; 
+    k = ls->indicator[i]; 
     ls->size[k] = ls->size[k] + 1; /* ls-size was set to 0 by calloc */
     }
   if (ergm->d1 > 0)
@@ -1649,6 +1780,7 @@ output: draw from truncated Dirichlet process prior:
   /**************/
   /* Initialize */
   /**************/
+  GetRNGstate();
   epsilon = DBL_EPSILON;
   maximum = DBL_MAX;
   shape1 = (double*) calloc(*number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
@@ -1658,7 +1790,6 @@ output: draw from truncated Dirichlet process prior:
   /********************************************/
   /* Sample truncated Dirichlet process prior */
   /********************************************/
-  GetRNGstate();
   for (i = 0; i < (*number - 1); i++)
     {
     shape1[i] = 1.0; /* First shape of Beta distribution */
@@ -1674,12 +1805,12 @@ output: draw from truncated Dirichlet process prior:
   Print_I(*n,indicator);
   Print_D(*number,eta);
   */
-  PutRNGstate();
   /************/
   /* Finalize */
   /************/
   free(shape1);
   free(shape2);
+  PutRNGstate();
 }
 
 void Simulation(int *dyaddependence,
@@ -1721,15 +1852,15 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *hyperprior, int *status)
+             int *max_iterations, int *between, double *mean_between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *prior_assumptions, int *status)
 /*
 input: R input
 output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, *degree, *degree_freq, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, call_RNGstate;
-  double between_edge_parameter, *draw, *p, **parameter, *pp, progress, *shape1, *shape2, sum, prob;	
+  int coordinate, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, parametric, hyper_prior;
+  double between_edge_parameter, *draw, *p, **parameter, *pp, progress, *shape1, *shape2, prob_between;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1737,6 +1868,7 @@ output: simulated graph
   /**************/
   /* Initialize */
   /**************/
+  GetRNGstate();
   print = *v; /* Console: no print; 0: short print; 1: long print */
   verbose = &null;
   epsilon = DBL_EPSILON;
@@ -1765,7 +1897,7 @@ output: simulated graph
     if (*directed == 0) threshold = 8;
     else threshold = 6;
     }
-  ls = Initialize_Latentstructure(number,n,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
+  ls = Initialize_Latentstructure(number,n,indicator,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
   prior_ls = Initialize_Prior_ls(*alpha_shape,*alpha_rate); /* Prior: clustering parameter */
   mdnedges = &null;
   mheads = NULL;
@@ -1791,59 +1923,51 @@ output: simulated graph
   if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); error("Error: out of memory"); }
   newnetworktails = (int*) calloc(*maxpossibleedges+1,sizeof(int));
   if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); error("Error: out of memory"); }
-  call_RNGstate = 1;
+  hyper_prior = prior_assumptions[0]; /* If 1, hierarchical prior, otherwise non-hierarchical prior */
+  parametric = prior_assumptions[1]; /* If 1, parametric prior */
   /****************/
   /* Sample graph */
   /****************/
-  if (call_RNGstate == 1) GetRNGstate();
-  ls->alpha = *alpha; /* Clustering parameter */
-  for (i = 0; i < (ls->number - 1); i++)
-    {
-    shape1[i] = 1.0; /* First shape of Beta distribution */
-    shape2[i] = ls->alpha; /* Second shape of Beta distribution */
-    }
   k = -1;
   for (i = 0; i < ergm->d1; i++)
     {
     k = k + 1;
     ergm->theta[i] = eta[k];
+    /*
+    Rprintf("\nergm->theta[%i] = %8.4f",i,ergm->theta[i]);
+    */
     }
   for (i = 0; i < ls->d; i++)
     {
-    for (j = 0; j < ls->number; j++)
+    for (j = 0; j < (ls->number + 1); j++)
       {
       k = k + 1;
       ls->theta[i][j] = eta[k];
+      /*
+      Rprintf("\neta[%i] = %8.4f",k,eta[k]);
+      Rprintf("\nls->theta[%i][%i] = %8.4f",i,j,ls->theta[i][j]);
+      */
       }
     }
-  Set_I_I(ls->n,ls->indicator,indicator);
   coordinate = -1;
   element = -1;
   for (iteration = 0; iteration < max_iteration; iteration++)
     {
     progress = (iteration * 100.0) / max_iteration;
-    if (print == 1) Rprintf("\nProgress: %5.2f%%",progress);
-    if (*null_alpha == 1) ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
-    /*
-    Sample_Dirichlet(ls->number,ls->alpha,ls->p);
-    */
-    ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */ 
-    for (k = 0; k < ls->number; k++)
-      {
-      ls->size[k] = 0;
-      }
-    if (*null_indicator == 1) 
-      {
+    if (print >= 1) Rprintf("\nProgress: %5.2f%%",progress);
+    if (ls->number_fixed < ls->n)
+      {	    
+      if (*null_alpha == 1) ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
+      if (parametric == 0) ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */ 
+      else Sample_Dirichlet(ls->number,ls->alpha,ls->p); /* Category probability vector */
       for (i = 0; i < ls->n; i++)
         {
-        k = Sample_Discrete(ls->p);
-        ls->indicator[i] = k;
+        if (ls->fixed[i] == 0) /* If block membership is not specified by user, sample block membership */
+	  {
+	  k = Sample_Discrete(ls->p);
+          ls->indicator[i] = k;
+	  } 
         }
-      }
-    for (i = 0; i < ls->n; i++)
-      {
-      k = ls->indicator[i];
-      ls->size[k] = ls->size[k] + 1;
       }
     if (*null_eta == 1)
       {
@@ -1855,10 +1979,6 @@ output: simulated graph
         }
       for (i = 0; i < ls->number; i++) 
         {
-        /*
-        ls->theta[0][i] = -5.0 * unif_rand();
-        ls->theta[1][i] = 5.0 * unif_rand();
-        */
         draw = Sample_MVN(ls->d,prior->mean2,prior->cf2);
         Set_Column(ls->d,ls->theta,i,draw); /* Set ls_theta[][i] to proposal */ 
         free(draw);
@@ -1867,14 +1987,20 @@ output: simulated graph
         {
         if (between[i] == 1) 
           { 
-          prob = 3.0 / (ls->n - 1.0); /* If a homogeneous Bernoulli model without covariates governs between-block relations and node i is in its own block and all n-1 other nodes are in other blocks, then the expected degree of node i is 3/(n-1) * (n-1) = 3; otherwise, it is less */
-          between_edge_parameter = log(prob / (1.0 - prob));
-          ls->theta[i][ls->number] = between_edge_parameter; /* + (0.25*norm_rand()); */
-          /*
-          ls->theta[i][ls->number] = (2 * prior->mean2[i]) + (prior->cf2[i][i] * norm_rand()); /* Ad hoc: must be changed 
-          */
+          prob_between = *mean_between; /* Between-block probability of an edge as specified in hergm.preprocess() either by using user input or by using the expected number of edges <= 3 rule outline above*/ 
+	  between_edge_parameter = log(prob_between / (1.0 - prob_between)); 
+          ls->theta[i][ls->number] = between_edge_parameter; 
           } 
         }
+      }
+    for (k = 0; k < ls->number; k++)
+      {
+      ls->size[k] = 0;
+      }
+    for (i = 0; i < ls->n; i++)
+      {
+      k = ls->indicator[i];
+      ls->size[k] = ls->size[k] + 1;
       }
     Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,inputs);
     Set_Parameter(ergm->d,ergm->structural,ergm->theta,theta); 
@@ -1920,11 +2046,6 @@ output: simulated graph
       Rprintf("\ntimings=%i",timings);
       */
       network_stats_wrapper(mtails,mheads,&timings,&time,&lasttoggle,n_edges,dn,directed,bipartite,nterms,funnames,sonames,inputs,pp); /* Compute non-structural function of graph */
-      if (print == 1)
-        {
-        degree = Degree_Sequence(ls->n,*directed,*n_edges,mheads,mtails);
-        degree_freq = Degree_Freq(ls->n,degree);
-        }
       free(mheads);
       free(mtails);
       }
@@ -1934,103 +2055,88 @@ output: simulated graph
                          sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                          attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,status);
+    if (print > 1)
+      {
+      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+      else if (*status == 2) Rprintf("\nWarning: Simulation: MCMC_wrapper: M-H proposal failed.");
+      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      }
     if (ergm->d1 > 0)
       {
-      if (print == 1) Rprintf("\nparameters:");
+      if (print >= 1) Rprintf("\nparameters:");
       for (i = 0; i < ergm->d1; i++) /* Non-structural parameters */
         {
-        if (print == 1) Rprintf(" %8.4f",ergm->theta[i]);
+        if (print >= 1) Rprintf(" %8.4f",ergm->theta[i]);
         coordinate = coordinate + 1;
         mcmc[coordinate] = ergm->theta[i];
         }  
       }
-    if (print == 1) Rprintf("\nmeans of block parameters:");
-    for (i = 0; i < ls->d; i++) /* Structural parameters */
+    if (ls->number > 1)
       {
-      if (print == 1) Rprintf(" %8.4f",prior->mean2[i]);
-      coordinate = coordinate + 1;	
-      mcmc[coordinate] = prior->mean2[i];
-      }
-    if (print == 1) Rprintf("\nprecisions of block parameters:");
-    for (i = 0; i < ls->d; i++) /* Structural parameters */
-      {
-      if (print == 1) Rprintf(" %8.4f",prior->precision2[i][i]);
-      coordinate = coordinate + 1;	
-      mcmc[coordinate] = prior->precision2[i][i];
-      }
-    if (print == 1) 
-      {
-      Rprintf("\nblock parameters:");
-      if (ergm->d2 > 1) Rprintf("\n");
-      }
-    for (h = 0; h < ls->d; h++) /* Structural parameters */
-      {
-      for (i = 0; i < ls->number; i++) 
+      if ((print >= 1) && (*null_eta == 1)) Rprintf("\nmeans of block parameters:");
+      for (i = 0; i < ls->d; i++) /* Structural parameters */
         {
-        if (print == 1) Rprintf(" %8.4f",ls->theta[h][i]);
+        if ((print >= 1) && (*null_eta == 1))  Rprintf(" %8.4f",prior->mean2[i]);
         coordinate = coordinate + 1;	
-        mcmc[coordinate] = ls->theta[h][i];
+        mcmc[coordinate] = prior->mean2[i];
         }
-      if ((print == 1) && (ls->number_between > 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
-      coordinate = coordinate + 1;	
-      mcmc[coordinate] = ls->theta[h][ls->number];
-      if (print == 1) Rprintf("\n");
-      }
-    if (print == 1) Rprintf("block indicators:");
-    for (i = 0; i < ls->n; i++) /* Category indicators */
-      {
-      if (print == 1) 
+      if ((print >= 1) && (*null_eta == 1))  Rprintf("\nprecisions of block parameters:");
+      for (i = 0; i < ls->d; i++) /* Structural parameters */
         {
-        Rprintf(" %i",ls->indicator[i]+1);
+        if ((print >= 1) && (*null_eta == 1))  Rprintf(" %8.4f",prior->precision2[i][i]);
+        coordinate = coordinate + 1;	
+        mcmc[coordinate] = prior->precision2[i][i];
         }
+      if (print >= 1) 
+        {
+        Rprintf("\nblock parameters:");
+        if (ergm->d2 > 1) Rprintf("\n");
+        }
+      for (h = 0; h < ls->d; h++) /* Structural parameters */
+        {
+        for (i = 0; i < ls->number; i++) 
+          {
+          if (print >= 1) Rprintf(" %8.4f",ls->theta[h][i]);
+          coordinate = coordinate + 1;	
+          mcmc[coordinate] = ls->theta[h][i];
+          }
+        if ((print >= 1) && (ls->number_between > 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
+        coordinate = coordinate + 1;	
+        mcmc[coordinate] = ls->theta[h][ls->number];
+        if (print >= 1) Rprintf("\n");
+        }
+      if (print >= 1) Rprintf("block indicators:");
+      for (i = 0; i < ls->n; i++) /* Category indicators */
+        {
+        if (print >= 1) 
+          {
+          Rprintf(" %i",ls->indicator[i]+1);
+          }
+        coordinate = coordinate + 1;
+        mcmc[coordinate] = ls->indicator[i];
+        }
+      if (print >= 1) Rprintf("\nblock sizes:");  
+      for (i = 0; i < ls->number; i++)
+        {
+        if (print >= 1) Rprintf(" %3i",ls->size[i]);
+        coordinate = coordinate + 1;
+        mcmc[coordinate] = ls->size[i];
+        } 
+      if ((print >= 1) && (ls->number_fixed < ls->n)) Rprintf("\nblock probabilities:");
+      for (i = 0; i < ls->number; i++) /* Category probability vector */
+        {
+        if ((print >= 1) && (ls->number_fixed < ls->n))Rprintf(" %6.4f",ls->p[i]);
+        coordinate = coordinate + 1;
+        mcmc[coordinate] = ls->p[i];
+        }
+      if ((print >= 1) && (ls->number_fixed < ls->n)) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
       coordinate = coordinate + 1;
-      mcmc[coordinate] = ls->indicator[i];
-      }
-    if (print == 1) Rprintf("\nblock sizes:");  
-    for (i = 0; i < ls->number; i++)
-      {
-      if (print == 1) Rprintf(" %3i",ls->size[i]);
-      coordinate = coordinate + 1;
-      mcmc[coordinate] = ls->size[i];
+      mcmc[coordinate] = ls->alpha;
       } 
-    if (print == 1) Rprintf("\nblock probabilities:");
-    for (i = 0; i < ls->number; i++) /* Category probability vector */
-      {
-      if (print == 1) Rprintf(" %6.4f",ls->p[i]);
-      coordinate = coordinate + 1;
-      mcmc[coordinate] = ls->p[i];
-      }
-    if (print == 1) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
-    coordinate = coordinate + 1;
-    mcmc[coordinate] = ls->alpha;
-    if ((*dyaddependence == 0) && (*directed == 0) && (print == 1)) 
-      {
-      Rprintf("\ndegree distribution:\n");
-      for (k = 0; k < ls->n; k++)
-        {
-        if (degree_freq[k] > 0) 
-          {
-          Rprintf("%4i",k);
-          }
-        } 
-      Rprintf("\n");
-      i = 0;
-      for (k = 0; k < ls->n; k++)
-        {
-        if (degree_freq[k] > 0) 
-          {
-          i = i + 1;
-          Rprintf("%4i",degree_freq[k]);
-          }
-        } 
-      Rprintf("\n%i of %i possible values",i,ls->n);
-      free(degree);
-      free(degree_freq);
-      }
-    if (print == 1) Rprintf("\nstatistics:");
+    if (print >= 1) Rprintf("\nstatistics:");
     for (i = 0; i < ergm->d; i++) /* Statistics */
       {
-      if (print == 1) Rprintf(" %6.0f",pp[i]);
+      if (print >= 1) Rprintf(" %6.0f",pp[i]);
       coordinate = coordinate + 1;
       mcmc[coordinate] = pp[i];
       }
@@ -2047,9 +2153,8 @@ output: simulated graph
         sample_tails[element] = newnetworktails[i+1];
         }
       }
-    if (print == 1) Rprintf("\n");
+    if (print >= 1) Rprintf("\n");
     }
-  if (call_RNGstate == 1) PutRNGstate();
   /************/
   /* Finalize */
   /************/
@@ -2069,6 +2174,7 @@ output: simulated graph
   Finalize_Latentstructure(ls,dim2);
   Finalize_Prior_ls(prior_ls);
   Finalize_Priorstructure(prior,dim1,dim2);
+  PutRNGstate();
 }
 
 void Inference(int *model_type,
@@ -2081,7 +2187,7 @@ void Inference(int *model_type,
              int *structural,
              int *min_size,
              int *max_number,
-             double *alpha,
+	     double *alpha,
              double *alpha_shape,
              double *alpha_rate,
              double *m1,
@@ -2110,16 +2216,15 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *parallel, double *temperature, int *hyperprior, int *status)
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *parallel, double *temperature, int *prior_assumptions, int *status)
 /*
 input: R input
 output: MCMC sample of unknowns from posterior
 */
 {
   int null = 0;
-  int *available, model, batch, n_batches, batch_size, coordinate, console, *degree, *degree_freq, dyad_dependence, dim, dim1, dim2, h, i, j, k, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, n_input, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, update_block, update_indicator, update_node, update_size, call_RNGstate;
-  long int n_indicator_permutations;
-  double ls_alpha, accept, *block_degree_freq, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, rate, shape, *scale_factor, sample_size_indicators, u;	
+  int *available, model, batch, n_batches, batch_size, coordinate, console, dyad_dependence, dim, dim1, dim2, h, i, parametric, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, update_block, update_node, update_size;
+  double ls_alpha, accept, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, *scale_factor, sample_size_indicators;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -2127,6 +2232,7 @@ output: MCMC sample of unknowns from posterior
   /**************/
   /* Initialize */
   /**************/
+  GetRNGstate();
   console = *v; /* Console: -1: no print; 0: short print; 1: long print */
   verbose = &null;
   epsilon = DBL_EPSILON;
@@ -2161,20 +2267,19 @@ output: MCMC sample of unknowns from posterior
     if (*directed == 0) threshold = 6;
     else threshold = 5;
     }
-  ls = Initialize_Latentstructure(number,n,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
+  ls = Initialize_Latentstructure(number,n,indicator,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
   prior_ls = Initialize_Prior_ls(*alpha_shape,*alpha_rate); /* Prior: clustering parameter */
-  hyper_prior = (int)*hyperprior; /* Means and precisions of Gaussian baseline distribution have non-degenerate prior */
+  hyper_prior = prior_assumptions[0]; /* If 1, hierarchical prior, otherwise non-hierarchical prior */
+  parametric = prior_assumptions[1]; /* If 1, parametric prior */
   mheads = NULL;
   mtails = NULL;
   pp = (double*) calloc(ergm->d,sizeof(double));
   if (pp == NULL) { Rprintf("\n\ncalloc failed: Inference, pp\n\n"); error("Error: out of memory"); }
   scale_factor = (double*) calloc(2+ls->n-ls->minimum_size,sizeof(double));   
   if (scale_factor == NULL) { Rprintf("\n\ncalloc failed: Inference, scale_factor\n\n"); error("Error: out of memory"); }
-  call_RNGstate = 1;
   /*************************/
   /* MCMC sample posterior */
   /*************************/
-  if (call_RNGstate == 1) GetRNGstate();
   if (console >= 1)
     {
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
@@ -2182,51 +2287,25 @@ output: MCMC sample of unknowns from posterior
     Rprintf("\nSize of batches: %i",batch_size);
     Rprintf("\n");
     }
-  if ((dyad_dependence == 0) && (console == 1)) 
-    {
-    degree = Degree_Sequence(ls->n,*directed,*dnedges,heads,tails);
-    degree_freq = Degree_Freq(ls->n,degree);
-    Rprintf("\nObserved degree distribution:\n");
-    i = 0;
-    for (k = 0; k < ls->n; k++)
-      {
-      if (degree_freq[k] > 0) 
-        {
-        i = i + 1;
-        Rprintf("%4i",k);
-        }
-      } 
-    Rprintf("\n");
-    for (k = 0; k < ls->n; k++)
-      {
-      if (degree_freq[k] > 0) Rprintf("%4i",degree_freq[k]);
-      } 
-    Rprintf("\n%i of %i possible values observed\n",i,ls->n);
-    }
-  Initial_State(parallel,alpha,indicator,prior_ls,prior,ls,ergm,theta,scale_factor);
   if (ls->number == 1) 
     {
-    hyper_prior = 0;
     for (i = 0; i < ls->n; i++)
       {
       ls->indicator[i] = 0;
       }
     ls->size[0] = ls->n;
     }
+  else Initial_State(parallel,alpha,ls->indicator,prior_ls,prior,ls,ergm,theta,scale_factor);
   number_local_mh = 2 + (ls->n - ls->minimum_size);
   local_mh = (double*) calloc(number_local_mh,sizeof(double));
   if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); error("Error: out of memory"); }
   local_mh_accept = (double*) calloc(number_local_mh,sizeof(double));
   if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); error("Error: out of memory"); }
-  /*
-  Rprintf("\nnumber_local_mh = %i",number_local_mh);
-  Print_D(number_local_mh,scale_factor);
-  Print_D(number_local_mh,scalefactor);
-  */
   Set_D_D(number_local_mh,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
   if (ls->n < 20) sample_size_indicators = round(ls->n / 3);
   else if (ls->n < 50) sample_size_indicators = round(ls->n / 6);
   else sample_size_indicators = round(ls->n / 12);
+  if (sample_size_indicators > (ls->n - ls->number_fixed)) sample_size_indicators = ls->n - ls->number_fixed;
   coordinate = -1;
   for (batch = 0; batch < n_batches; batch++) /* Batch */
     {
@@ -2265,20 +2344,24 @@ output: MCMC sample of unknowns from posterior
         }
       else /* Dyad-dependence conditional on latent structure */
         {
-        available = (int*) calloc(ls->n,sizeof(int));
-        if (available == NULL) { Rprintf("\n\ncalloc failed: Inference, available\n\n"); error("Error: out of memory"); }
-        for (i = 0; i < sample_size_indicators; i++)
+        if ((ls->number > 1) && (ls->n - ls->number_fixed > 0)) /* More than one block and not all block memberships are fixed */
           {
-          do update_node = trunc(unif_rand() * ls->n); /* Sample indicator of node to be updated */
-          while (available[update_node] == 1);
-          available[update_node] = 1;
-          Sample_Indicators_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
+	  available = (int*) calloc(ls->n,sizeof(int));
+          if (available == NULL) { Rprintf("\n\ncalloc failed: Inference, available\n\n"); error("Error: out of memory"); }
+          Set_I_I(ls->n,available,ls->fixed); /* The fixed elements of ls->indicator are not available for updating, so that ls->fixed[i] = 1 implies available[i] = 1 */
+	  for (i = 0; i < sample_size_indicators; i++)
+            {
+            do update_node = trunc(unif_rand() * ls->n); /* Sample indicator of node to be updated */
+            while (available[update_node] == 1);
+            available[update_node] = 1;
+            Sample_Indicators_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
                          heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node,temperature,status);
-          }
-        free(available);
+            }
+          free(available);
+	  }
         if (ergm->d1 > 0)
           {
           local_mh[0] = local_mh[0] + 1; 
@@ -2288,46 +2371,59 @@ output: MCMC sample of unknowns from posterior
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,status);
           }
-        for (i = 0; i < ls->number; i++)
-          {
-          if (ls->size[i] >= ls->minimum_size) 
-            { 
-            update_block = i; /* Parameter vector of block to be updated */
-            update_size = ls->size[update_block];
-            local_mh[update_size-ls->minimum_size+1] = local_mh[update_size-ls->minimum_size+1] + 1; 
-            local_mh_accept[update_size-ls->minimum_size+1] = local_mh_accept[update_size-ls->minimum_size+1] + Sample_Ls_Theta_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
+        if (ls->number > 1)
+	  {
+	  for (i = 0; i < ls->number; i++)
+            {
+            if (ls->size[i] >= ls->minimum_size) 
+              { 
+              update_block = i; /* Parameter vector of block to be updated */
+              update_size = ls->size[update_block];
+              local_mh[update_size-ls->minimum_size+1] = local_mh[update_size-ls->minimum_size+1] + 1; 
+              local_mh_accept[update_size-ls->minimum_size+1] = local_mh_accept[update_size-ls->minimum_size+1] + Sample_Ls_Theta_Dependence(model,ergm,ls,prior, /* Auxiliary-variable M-H */
                          heads,tails,dnedges,maxpossibleedges,dn,directed,bipartite,nterms,funnames,
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_block,status);
+              }
             }
-          }
-        }
-       if (ls->number_between > 0) 
+          if (ls->number_between > 0) 
+            {
+            local_mh[0] = local_mh[0] + 1;
+            local_mh_accept[0] = local_mh_accept[0] + Sample_Ls_Theta_Between(ergm,ls,prior,
+                                heads,tails,dnedges,dn,directed,bipartite, 
+                                nterms,funnames,sonames,inputs,print,scale_factor);
+            }
+          Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
+	  }
+	}
+      if (parametric == 0)
          {
-         local_mh[0] = local_mh[0] + 1;
-         local_mh_accept[0] = local_mh_accept[0] + Sample_Ls_Theta_Between(ergm,ls,prior,
-                              heads,tails,dnedges,dn,directed,bipartite, 
-                              nterms,funnames,sonames,inputs,print,scale_factor);
+         ls_p = Sample_P(ls); /* Category probability vector */
+	 Set_D_D(ls->number,ls->p,ls_p);
+         free(ls_p);
          }
-      Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
-      ls_p = Sample_P(ls); /* Category probability vector */ 
-      Set_D_D(ls->number,ls->p,ls_p);
-      free(ls_p);
-      ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
-      ls->alpha = ls_alpha;
+      else Sample_Dirichlet(ls->number,ls->alpha,ls->p); /* Category probability vector */ 
       if (hyper_prior == 1) /* Hyper prior: mean and precisions of Gaussian baseline distribution have non-degenerate prior */
         {
-        prior_mean2 = Gibbs_Parameters_Means(prior,ls); /* Sample means of parameters */
+        ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
+        ls->alpha = ls_alpha;
+        /*
+        prior_mean2 = Gibbs_Parameters_Means_Conditional(prior,ls); 
+        */
+        prior_mean2 = Gibbs_Parameters_Means(prior,ls);  
         Set_D_D(ls->d,prior->mean2,prior_mean2);
-        prior_precision2 = Gibbs_Parameters_Precisions(prior,ls); /* Sample precisions of parameters */
+        /*
+        prior_precision2 = Gibbs_Parameters_Precisions_Marginal(prior,ls); 
+        */
+        prior_precision2 = Gibbs_Parameters_Precisions(prior,ls); 
         for (i = 0; i < ls->d; i++)
           {
           prior->precision2[i][i] = prior_precision2[i];
           }
         free(prior_mean2);
         free(prior_precision2); 
-        } 
+        }
       /* Internal storage and console output: */
       if (store == 1) 
         {
@@ -2351,95 +2447,91 @@ output: MCMC sample of unknowns from posterior
                            sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                            attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                            maxedges,mheads,mtails,mdnedges,status);
-         }
+          }
         /* Store and output MCMC sample: */ 
         if (ergm->d1 > 0)
           {
-          if (print == 1) Rprintf("\nparameters:");
+          if (print >= 1) Rprintf("\nparameters:");
           for (i = 0; i < ergm->d1; i++) /* Non-structural parameters */
             {
-            if (print == 1) Rprintf(" %8.4f",ergm->theta[i]);
+            if (print >= 1) Rprintf(" %8.4f",ergm->theta[i]);
             coordinate = coordinate + 1;
             mcmc[coordinate] = ergm->theta[i];
             }  
           }
-        if (print == 1) Rprintf("\nmeans of block parameters:");
-        for (i = 0; i < ls->d; i++) /* Structural parameters */
+        if (ls->number > 1)
           {
-          if (print == 1) Rprintf(" %8.4f",prior->mean2[i]);
-          coordinate = coordinate + 1;	
-          mcmc[coordinate] = prior->mean2[i];
-          }
-        if (print == 1) Rprintf("\nprecisions of block parameters:");
-        for (i = 0; i < ls->d; i++) /* Structural parameters */
-          {
-          if (print == 1) Rprintf(" %8.4f",prior->precision2[i][i]);
-          coordinate = coordinate + 1;	
-          mcmc[coordinate] = prior->precision2[i][i];
-          }
-        if (print == 1) 
-          {
-          Rprintf("\nblock parameters:");
-          if (ergm->d2 > 1) Rprintf("\n");
-          }
-        for (h = 0; h < ls->d; h++) /* Structural parameters */
-          {
-          for (i = 0; i < ls->number; i++) 
+          if (print >= 1) Rprintf("\nmeans of block parameters:");
+          for (i = 0; i < ls->d; i++) /* Structural parameters */
             {
-            if (print == 1) Rprintf(" %8.4f",ls->theta[h][i]);
+            if (print >= 1) Rprintf(" %8.4f",prior->mean2[i]);
             coordinate = coordinate + 1;	
-            mcmc[coordinate] = ls->theta[h][i];
+            mcmc[coordinate] = prior->mean2[i];
             }
-          if ((print == 1) && (ls->number_between > 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
-          coordinate = coordinate + 1;	
-          mcmc[coordinate] = 0.0;
-          if (print == 1) Rprintf("\n");
-          }
-        if (print == 1) Rprintf("block indicators:");
-        for (i = 0; i < ls->n; i++) /* Category indicators */
-          {
-          if (print == 1) 
+          if (print >= 1) Rprintf("\nprecisions of block parameters:");
+          for (i = 0; i < ls->d; i++) /* Structural parameters */
             {
-            Rprintf(" %i",ls->indicator[i]+1);
+            if (print >= 1) Rprintf(" %8.4f",prior->precision2[i][i]);
+            coordinate = coordinate + 1;	
+            mcmc[coordinate] = prior->precision2[i][i];
             }
-          coordinate = coordinate + 1;
-          mcmc[coordinate] = ls->indicator[i];
-          }
-        if (print == 1) Rprintf("\nblock sizes:");  
-        for (i = 0; i < ls->number; i++)
-          {
-          if (print == 1) Rprintf(" %3i",ls->size[i]);
-          coordinate = coordinate + 1;
-          mcmc[coordinate] = ls->size[i];
-          } 
-        if (print == 1) Rprintf("\nblock probabilities:");
-        for (i = 0; i < ls->number; i++) /* Category probability vector */
-          {
-          if (print == 1) Rprintf(" %6.4f",ls->p[i]);
-          coordinate = coordinate + 1;
-          mcmc[coordinate] = ls->p[i];
-          }
-        if (print == 1) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
-        coordinate = coordinate + 1;
-        mcmc[coordinate] = ls->alpha;
-        if ((dyad_dependence == 0) && (print == 1))
-          {
-          block_degree_freq = Block_Degree_Freq(ls->n,degree,ls->number,ls->size,ls->indicator);
-          Rprintf("\nobserved degree by block:");
+          if (print >= 1) 
+            {
+            Rprintf("\nblock parameters:");
+            if (ergm->d2 > 1) Rprintf("\n");
+            }
+          for (h = 0; h < ls->d; h++) /* Structural parameters */
+            {
+            for (i = 0; i < ls->number; i++) 
+              {
+              if (print >= 1) Rprintf(" %8.4f",ls->theta[h][i]);
+              coordinate = coordinate + 1;	
+              mcmc[coordinate] = ls->theta[h][i];
+              }
+            if ((print >= 1) && (ls->number_between > 0)) Rprintf(" %8.4f",ls->theta[h][ls->number]); /* Second condition ensures that between-category parameters are not written to screen when model without between-category parameters */
+            coordinate = coordinate + 1;	
+            mcmc[coordinate] = ls->theta[h][ls->number];
+            if (print >= 1) Rprintf("\n");
+            }
+          if (print >= 1) Rprintf("block indicators:");
+          for (i = 0; i < ls->n; i++) /* Category indicators */
+            {
+            if (print >= 1) 
+              {
+              Rprintf(" %i",ls->indicator[i]+1);
+              }
+            coordinate = coordinate + 1;
+            mcmc[coordinate] = ls->indicator[i];
+            }
+          if (print >= 1) Rprintf("\nblock sizes:");  
           for (i = 0; i < ls->number; i++)
             {
-            Rprintf(" %6.4f",block_degree_freq[i]);
+            if (print >= 1) Rprintf(" %3i",ls->size[i]);
+            coordinate = coordinate + 1;
+            mcmc[coordinate] = ls->size[i];
+            } 
+          if (print >= 1) Rprintf("\nblock probabilities:");
+          for (i = 0; i < ls->number; i++) /* Category probability vector */
+            {
+            if (print >= 1) Rprintf(" %6.4f",ls->p[i]);
+            coordinate = coordinate + 1;
+            mcmc[coordinate] = ls->p[i];
             }
-          free(block_degree_freq); 
-          }
-        if ((*output == 1) && (print == 1)) Rprintf("\nposterior prediction of statistics:");
-        for (i = 0; i < ergm->d; i++) /* Posterior prediction of statistics */
-          {
-          if ((*output == 1) && (print == 1)) Rprintf(" %6.0f",pp[i]);
+          if (print >= 1) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
           coordinate = coordinate + 1;
-          mcmc[coordinate] = pp[i];
+          mcmc[coordinate] = ls->alpha;
           }
-        if (print == 1) Rprintf("\n");
+  	if (*output == 1)
+	  {	
+          if (print >= 1) Rprintf("\nposterior prediction of statistics:");
+          for (i = 0; i < ergm->d; i++) /* Posterior prediction of statistics */
+            {
+            if (print >= 1) Rprintf(" %6.0f",pp[i]);
+            coordinate = coordinate + 1;
+            mcmc[coordinate] = pp[i];
+            }
+	  }
+        if (print >= 1) Rprintf("\n");
         else if (print == 0) 
           {
           for (i = 0; i < ls->number; i++) Rprintf("%4i",ls->size[i]);
@@ -2452,7 +2544,6 @@ output: MCMC sample of unknowns from posterior
         }
       }
     }
-  if (call_RNGstate == 1) PutRNGstate();
   /************/
   /* Finalize */
   /************/
@@ -2468,19 +2559,16 @@ output: MCMC sample of unknowns from posterior
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
     Rprintf("\nThinning: every %i-th draw recorded",batch_size);
     }
+  free(scale_factor);
   free(local_mh_accept);
   free(local_mh);
   free(pp);
   free(mheads);
   free(mtails);
-  if ((dyad_dependence == 0) && (print == 1))     
-    {
-    free(degree);
-    free(degree_freq);
-    }
   Finalize_Ergm(ergm);
   Finalize_Latentstructure(ls,dim2);
   Finalize_Prior_ls(prior_ls);
   Finalize_Priorstructure(prior,dim1,dim2);
+  PutRNGstate();
 }
 

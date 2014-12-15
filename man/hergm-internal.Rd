@@ -7,18 +7,30 @@
 
 \alias{length_mcmc}
 
+\alias{hergm.seeds}
+
 \alias{number_clusters}
 
 \alias{bernoulli_map_mean_to_natural}
+
+\alias{hergm.initialize}
 
 \alias{hergm.loss}
 
 \alias{hergm.mcmc}
 
-\alias{hergm.min_loss} 
+\alias{hergm.min_loss_1} 
+
+\alias{hergm.min_loss_2} 
 
 \alias{hergm.p}
 
+\alias{hergm.relabel_1}
+
+\alias{hergm.relabel_2}
+
+\alias{hergm.dirichlet}
+ 
 \alias{hergm.permute} 
 
 \alias{hergm.permute_indicator}
@@ -63,7 +75,7 @@
 
 \description{
 
-  Internal hergm function.
+Internal hergm function.
 
 }
 

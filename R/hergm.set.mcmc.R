@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, parallel, seeds, output, temperature, mh_scale)
+hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, indicator, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, mean_between, simulate, parallel, seeds, predictions, temperature, mh_scale, perturb)
 {
 
   # Prepare I
@@ -28,13 +28,14 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
   else if (MCMCparams$samplesize > 1000) MCMCparams$samplesize <- 1000
 
   # Prepare II
-  Clist <- ergm.Cprepare(nw, model)
-  maxedges <- max(10000, Clist$nedges)
-  hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, temperature, output = FALSE, name = "", verbose = -1)
-  if (hergm_list$dependence > 0) cat("\nMCMC: mean-field methods generate candidates of block memberships.\n")
+  Clist <- ergm.Cprepare(network, model)
+  if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
+  else maxedges <- Clist$n * (Clist$n - 1) # Directed
+  hergm_list <- hergm.preprocess(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel = 1, temperature, predictions = FALSE, verbose = -1, perturb)
   # Metropolis-Hastings: finding scale factor
   if (verbose >= 0) 
     {
+    #if (hergm_list$dependence > 0) cat("\nMCMC: mean-field methods generate candidates of block memberships.\n")
     cat("\nMetropolis-Hastings algorithm:")
     cat("\n   ", formatC("ergm", digits = 0, width = 16, format = "f", mode = "character"), sep = "")
     }
@@ -77,7 +78,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
   while ((s$mh_accept[1] < min_accept) && (min(s$mh_accept[2:number]) < (min_accept / 2)) && (iteration <= 20))
     { 
     iteration <- iteration + 1
-    hergm_list <- hergm.preprocess(nw, model, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator = NULL, simulate = FALSE, parallel = 1, temperature, output = FALSE, name = "", verbose = -1)
+    hergm_list <- hergm.preprocess(number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel = 1, temperature, predictions = FALSE, verbose = -1, perturb)
     for (i in 1:number) 
       {
       if (s$mh_accept[i] < min_accept) scalefactor[i] <- scalefactor[i] / 2
@@ -104,7 +105,7 @@ hergm.set.mcmc <- function(nw, model, MHproposal, MCMCparams, verbose, alpha_sha
       }
     }
 
-  cat("\n")
+  if (verbose >= 0) cat("\n")
 
   MCMCparams$samplesize <- cp_samplesize # Reset
 

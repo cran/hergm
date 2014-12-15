@@ -180,22 +180,15 @@ hergm.step_2 <- function(n_sample, n_nodes, n_categories, n_permutations, permut
   step_2
 }
 
-hergm.min_loss <- function(n_categories, indicator, n_burnin, stop_criterion)
+hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion)
 # Minimize posterior expected loss
 # input: number of categories, convergence criterion, stop criterion
 # output: minimizing permutations, classification probabilities, relabeled MCMC output of categories of nodes
 {
-  cat("\n\nRelabeling algorithm")
-  cat("\n--------------------")
+  cat("\nRelabeling algorithm 1")
+  cat("\n----------------------")
   n_permutations <- factorial(n_categories)
   permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels
-  if (n_burnin >= 1)
-    {
-    for (i in 1:n_burnin) # Category indicators: discard burn-in iterations
-      { 
-      indicator <- indicator[-1,] 
-      }
-    }
   if (min(indicator) == 0) # Category indicators: if category labels are 0..n_categories-1, then translate by 1 to obtain category labels 1..n_categories
     {
     indicator <- indicator + 1 
@@ -241,12 +234,68 @@ hergm.min_loss <- function(n_categories, indicator, n_burnin, stop_criterion)
   indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)
   cat("\n\nMCMC sample relabeled\n")
   minimizer <- list()
-  minimizer$loss <- last_loss
+  minimizer$loss <- last_loss 
   minimizer$min_permutations <- min_permutations
   minimizer$p <- p
   minimizer$indicator <- indicator
   minimizer
 }	
+
+hergm.min_loss_2 <- function(n_categories, indicator)
+# Minimize posterior expected loss
+# input: number of categories, convergence criterion, stop criterion
+# output: minimizing permutations, classification probabilities, relabeled MCMC output of categories of nodes
+{
+  cat("\nRelabeling algorithm 2")
+  cat("\n----------------------")
+  n_permutations <- factorial(n_categories)
+  permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels
+  if (min(indicator) == 0) # Category indicators: if category labels are 0..n_categories-1, then translate by 1 to obtain category labels 1..n_categories
+    {
+    indicator <- indicator + 1
+    # cat("\nInputted category indicators translated by 1")
+    }
+  n_sample <- nrow(indicator) # MCMC sample size
+  n_nodes <- ncol(indicator) # Number of nodes
+  p <- matrix(data = 0, nrow = n_nodes, ncol = n_categories) # Classification probabilities
+  min_permutations <- matrix(data = 0, nrow = n_sample, ncol = n_categories)
+  #print("Indicators:")
+  #print(indicator)
+  for (s in 1:n_sample)
+    {
+    n_unique <- 0
+    for (i in 1:n_nodes) 
+      {
+      k <- indicator[s,i] # Label of block of node i 
+      if (min_permutations[s,k] == 0) # Check whether block label has not shown up. If block label has not shown up, increment number of unique block labels and relabel block
+        { 
+        n_unique <- n_unique + 1 
+        min_permutations[s,k] <- n_unique 
+        indicator[s,i] <- min_permutations[s,k]
+        } 
+      else indicator[s,i] <- min_permutations[s,k] # Otherwise, relabel block by retrieving permuted block label from min_permutations
+      }
+    }
+  #print("Relabeled indicators:")
+  #print(indicator)
+  for (i in 1:n_nodes)
+    {
+    z <- indicator[,i] # Column i is vector of relabeled block memberships of node i
+    for (k in 1:n_categories)
+      {
+      p[i,k] <- sum(z==k) / n_sample # Estimated posterior classification probabilities based on relabeled MCMC sample    
+      }
+    }
+  #print("Estimated posterior classification probabilities based on relabeled MCMC sample:")
+  #print(p)
+  cat("\n\nMCMC sample relabeled\n")
+  minimizer <- list()
+  minimizer$loss <- NULL
+  minimizer$min_permutations <- min_permutations
+  minimizer$p <- p
+  minimizer$indicator <- indicator
+  minimizer
+}
 
 hergm.permute_mcmc <- function(mcmc, n_categories, min_permutations)
 # Relabel MCMC sample

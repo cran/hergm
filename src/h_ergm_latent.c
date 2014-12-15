@@ -20,7 +20,7 @@
 
 #include "h_ergm_latent.h"
 
-latentstructure* Initialize_Latentstructure(int number, int n, int minimum_size, int threshold, int d, int *between)
+latentstructure* Initialize_Latentstructure(int number, int n, int *indicator, int minimum_size, int threshold, int d, int *between)
 /*
 input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters, indicators of wether between-category parameters are restricted to 0
 ouput: latent structure
@@ -41,6 +41,22 @@ ouput: latent structure
   if (ls->size == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->size\n\n"); error("Error: out of memory"); }
   ls->indicator = (int*) calloc(n,sizeof(int)); /* Node-bound variable: category to which node belongs */
   if (ls->indicator == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->indicator\n\n"); error("Error: out of memory"); }
+  ls->fixed = (int*) calloc(ls->n,sizeof(int));
+  if (ls->fixed == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->fixed\n\n"); error("Error: out of memory"); }
+  ls->number_fixed = 0;
+  for (i = 0; i < ls->n; i++)
+    {
+    if (indicator[i] <= 0)
+      {
+      ls->number_fixed = ls->number_fixed + 1;
+      ls->fixed[i] = 1;
+      ls->indicator[i] = -indicator[i];
+      }	
+    else ls->indicator[i] = 0;    
+    /*
+    Rprintf("\ni=%i indicator[i]=%i ls->number_fixed=%i ls->fixed[i]=%i ls->indicator[i]=%i",i,indicator[i],ls->number_fixed,ls->fixed[i],ls->indicator[i]);
+    */    
+    }
   /* Law generating data: */
   ls->minimum_size = minimum_size; /* Minimum number of nodes so that structural parameters show up in PMF */
   ls->threshold = threshold; /* Category-bound PMF tractable as long as number of nodes in category is smaller than threshold */
@@ -64,9 +80,11 @@ ouput: latent structure
         } 
       }
     }
-  ls->theta = (double**) calloc(d,sizeof(double*));
+  if (d == 0) k = 1; 
+  else k = d;
+  ls->theta = (double**) calloc(k,sizeof(double*));
   if (ls->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta\n\n"); error("Error: out of memory"); }
-  for (i = 0; i < d; i++)
+  for (i = 0; i < k; i++)
     {
     ls->theta[i] = (double*) calloc(number+1,sizeof(double)); /* Category-bound parameters */
     if (ls->theta[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta[%i]\n\n",i); error("Error: out of memory"); }
@@ -108,6 +126,7 @@ ouput: latent structure
   free(ls->p);
   free(ls->size);
   free(ls->indicator);
+  free(ls->fixed);
   if (ls->number_between > 0) free(ls->between);
   for (i = 0; i < d; i++)
     {

@@ -26,7 +26,7 @@ input: number of rows of matrix
 output: pointer to lower half of n x n matrix
 */ 
 {
-  int i, j;
+  int i;
   double **x;
   x = (double**) calloc(n+1,sizeof(double*)); /* Allocate memory for n rows 0..n (row 0 is redundant) */
   if (x == NULL) 
@@ -246,14 +246,15 @@ output: permutation which follows given permutation in lexigraphical order
 
 void Permutations(long int *n_elements, long int *n_permutations, int *permutation)
 /*
-input: number of elements, number of permutations of elements, elements in increasing order stored in first row of permutations
-output: all possible permutations of elements in lexigraphical order
+* input: number of elements, number of permutations of elements, elements in increasing order stored in first row of permutations
+* output: all possible permutations of elements in lexigraphical order
 */
 {
-  long int i, index, n;
+  long int i, index, n, N;
   n = (int)*n_elements;
+  N = (int)*n_permutations;
   index = 0;
-  for (i = 1; i < *n_permutations; i++)
+  for (i = 1; i < N; i++)
     {
     index = index + n;
     Get_Permutation(n,index,permutation);

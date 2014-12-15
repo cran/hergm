@@ -39,11 +39,11 @@
 #
 # An example:  If drop=TRUE is passed from inside the program,
 # then the statement
-#     ergm(nw ~ triangle + kstar (2:4) + nodematch("sex"))
+#     ergm(network ~ triangle + kstar (2:4) + nodematch("sex"))
 # results in the following function calls:
-#     InitErgm.triangle (nw, model, list(), drop=TRUE)
-#     InitErgm.kstar (nw, model, list(2:4), drop=TRUE)
-#     InitErgm.nodematch (nw, model, list("sex"), drop=TRUE)
+#     InitErgm.triangle (network, model, list(), drop=TRUE)
+#     InitErgm.kstar (network, model, list(2:4), drop=TRUE)
+#     InitErgm.nodematch (network, model, list("sex"), drop=TRUE)
 #
 # Each InitErgm.[name] function should check its argument list for errors, 
 # then set termnumber to 1+length(model$terms).
@@ -109,7 +109,7 @@
 #                If theta has length p and eta has length q, then gradient
 #                should return a p by q matrix.
 #                This function takes two args:  theta and length(eta).
-#  emptynwstats: Vector of values (if nonzero) for the statistics evaluated
+#  emptynetworkstats: Vector of values (if nonzero) for the statistics evaluated
 #                on the empty network.  If all are zero for this term, this
 #                argument may be omitted.  Example:  If the degree0 term is
 #                among the statistics, this argument is necessary because
@@ -117,18 +117,18 @@
 
 
 ######################################################### 
-InitErgm.edges_i <- function(nw, m, arglist, ...) # Michael 
+InitErgm.edges_i <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("edges_i", is.directed(nw), requirement = FALSE)
+  ergm.checkdirected("edges_i", is.directed(network), requirement = FALSE)
   a <- ergm.checkargs("edges_i", 
     arglist,
     varnames = c("number", "indicator", "theta"),
     vartypes = c("numeric", "numeric", "numeric"),
-    defaultvalues = list(nw$gal$n, NULL, NULL),
+    defaultvalues = list(network$gal$n, NULL, NULL),
     required = c(FALSE, FALSE, FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.edges_i")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   number <- a$number # (Maximum) number of categories
   #print(number)
@@ -156,18 +156,18 @@ InitErgm.edges_i <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.arcs_i <- function(nw, m, arglist, ...) # Michael 
+InitErgm.arcs_i <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("arcs_i", is.directed(nw), requirement = TRUE)
+  ergm.checkdirected("arcs_i", is.directed(network), requirement = TRUE)
   a <- ergm.checkargs("arcs_i", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.arcs_i")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -187,18 +187,18 @@ InitErgm.arcs_i <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.arcs_j <- function(nw, m, arglist, ...) # Michael 
+InitErgm.arcs_j <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("arcs_j", is.directed(nw), requirement = TRUE)
+  ergm.checkdirected("arcs_j", is.directed(network), requirement = TRUE)
   a <- ergm.checkargs("arcs_j", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.arcs_j")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -218,17 +218,17 @@ InitErgm.arcs_j <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.edges_ij <- function(nw, m, arglist, ...) # Michael 
+InitErgm.edges_ij <- function(network, m, arglist, ...) # Michael 
 {
   a <- ergm.checkargs("edges_ij",
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE))
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.edges_ij")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -248,18 +248,18 @@ InitErgm.edges_ij <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.mutual_i <- function(nw, m, arglist, ...) # Michael 
+InitErgm.mutual_i <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("mutual_i", is.directed(nw), requirement = TRUE)
+  ergm.checkdirected("mutual_i", is.directed(network), requirement = TRUE)
   a <- ergm.checkargs("mutual_i", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.mutual_i")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -279,18 +279,18 @@ InitErgm.mutual_i <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.mutual_ij <- function(nw, m, arglist, ...) # Michael 
+InitErgm.mutual_ij <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("mutual_ij", is.directed(nw), requirement = TRUE)
+  ergm.checkdirected("mutual_ij", is.directed(network), requirement = TRUE)
   a <- ergm.checkargs("mutual_ij", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.mutual_ij")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -310,18 +310,18 @@ InitErgm.mutual_ij <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.triangle_ijk <- function(nw, m, arglist, ...) # Michael 
+InitErgm.triangle_ijk <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("triangle_ijk", is.directed(nw), requirement = FALSE)
+  ergm.checkdirected("triangle_ijk", is.directed(network), requirement = FALSE)
   a <- ergm.checkargs("triangle_ijk", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.triangle_ijk")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -341,18 +341,18 @@ InitErgm.triangle_ijk <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.ttriple_ijk <- function(nw, m, arglist, ...) # Michael 
+InitErgm.ttriple_ijk <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("ttriple_ijk", is.directed(nw), requirement = TRUE)
+  ergm.checkdirected("ttriple_ijk", is.directed(network), requirement = TRUE)
   a <- ergm.checkargs("ttriple_ijk", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.ttriple_ijk")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -372,18 +372,18 @@ InitErgm.ttriple_ijk <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.ctriple_ijk <- function(nw, m, arglist, ...) # Michael 
+InitErgm.ctriple_ijk <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("ctriple_ijk", is.directed(nw), requirement = TRUE)
+  ergm.checkdirected("ctriple_ijk", is.directed(network), requirement = TRUE)
   a <- ergm.checkargs("ctriple_ijk", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.ctriple_ijk")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
@@ -403,18 +403,18 @@ InitErgm.ctriple_ijk <- function(nw, m, arglist, ...) # Michael
 }
 
 ######################################################### 
-InitErgm.twostar_ijk <- function(nw, m, arglist, ...) # Michael 
+InitErgm.twostar_ijk <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("twostar_ijk", is.directed(nw), requirement = FALSE)
+  ergm.checkdirected("twostar_ijk", is.directed(network), requirement = FALSE)
   a <- ergm.checkargs("twostar_ijk", 
     arglist,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(nw$gal$n),
+    defaultvalues = list(network$gal$n),
     required = c(FALSE)) 
   termnumber <- 1 + length(m$terms)
   #print("InitErgm.twostar_ijk")
-  n <- nw$gal$n # Number of nodes
+  n <- network$gal$n # Number of nodes
   #print(n)
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1

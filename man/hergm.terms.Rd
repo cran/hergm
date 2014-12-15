@@ -31,24 +31,17 @@
 
 \docType{methods}
 
-\title{Hierarchical Exponential-Family Random Graph Models: Terms}
+\title{Model terms}
 
-\description{Hierarchical Exponential-Family Random Graph Models can be specified by calling the function \code{hergm(formula)},
-  where formula is a formula of the form \code{network ~ terms}.
+\description{
 
-  By using suitable terms, it is possible to specify 
-
-- the p_1 model for directed networks of Holland and Leinhardt (1981) and its extension to undirected random graph models with Dirichlet process priors (see arcs_i, arcs_j, mutual_i, and edges_i).
-While the p_1 model for undirected and directed networks with parametric priors contains O(n) parameters (n = number of nodes) and therefore is not parsimonious,
-the non-parametric Dirichlet process prior encourages a small number of unique parameters and therefore represents an elegant alternative to parametric priors.
-
-- the stochastic block model of Snijders and Nowicki (1997) and Nowicki and Snijders (2001) with natural parameterization (restricted between-block parameters) and Dirichlet process priors (see edges_ij).
-
-- hierarchical exponential-family models with stick-breaking priors (see mutual_ij, twostar_ijk, triangle_ijk, ttriple_ijk, ctriple_ijk).
-Hierarchical exponential-family models replace the strong dependence of simple exponential-family models by weak dependence with an eye to solving the near-degeneracy problem of simple exponential-family model.
-
+Hierarchical exponential-family random graph models with local dependence can be specified by calling the function \code{hergm(formula)},
+where formula is a formula of the form \code{network ~ terms}.
+By specifying suitable terms, 
+it is possible to specify a wide range of models: see \code{hergm}.
 \code{hergm.terms} can be found here.
-Additional terms, e.g. covariate-dependent terms, can be found in \code{ergm.terms}.
+In addition, \code{ergm.terms} can be used to include covariates.
+
 }
 
 \arguments{
@@ -100,50 +93,50 @@ the optional argument \code{k} is the maximum number of blocks (default: the num
 
 \references{
 
-Holland, P. W. and S. Leinhardt (1981). An exponential family of probability distributions for directed graphs. Journal of the American Statistical
-  Association 76 (373), 33--65.
+Handcock, M. S. (2003). Assessing degeneracy in statistical models of social networks. Technical report, Center for Statistics and the Social Sciences, University of Washington, Seattle, http://www.csss.washington.edu/Papers.
 
-Nowicki, K. and T. A. B. Snijders (2001). Estimation and prediction for
-  stochastic blockstructures. Journal of the American Statistical Association 96 (455), 1077--1087.
+Holland, P. W. and S. Leinhardt (1981). An exponential family of probability distributions for directed graphs. Journal of the American Statistical Association, Theory \& Methods, 76, 33--65.
 
-Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for
-  stochastic blockmodels for graphs with latent block structure. Journal of
-  Classification 14, 75--100.
+Nowicki, K. and T. A. B. Snijders (2001). Estimation and prediction for stochastic blockstructures. Journal of the American Statistical Association, Theory \& Methods, 96, 1077--1087.
+
+Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochastic blockmodels for graphs with latent block structure. Journal of Classification 14, 75--100.
+
+Schweinberger, M. (2011). Instability, sensitivity, and degeneracy of discrete exponential families. Journal of the American Statistical Association, Theory & Methods, 106, 1361--1370.
+
+Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical Inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 1-30, in press.
+
+Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response on September 11, 2001 through the lens of statistical network analysis. Social Networks, 37, 42--55.
+
+Vu, D. Q., Hunter, D. R. and M. Schweinberger (2013). Model-based clustering of large networks. Annals of Applied Statistics, 7, 1010--1039.
 
 }
 
-\seealso{network, hergm, ergm.terms, hergm.postprocess}
+\seealso{network, hergm, ergm.terms}
 
-\examples{\dontrun{# Load undirected network with 15 nodes (see ?example)
+\examples{
+\dontrun{
 data(example)
-# p_1 model for undirected network with Dirichlet process prior
+# p_1 model: undirected network
 hergm(d ~ edges_i)
 
-# Load directed network with 18 nodes (see ?sampson)
 data(sampson) 
-# p_1 model for directed network with Dirichlet process prior
+# p_1 model: directed network
 hergm(samplike ~ arcs_i + arcs_j + mutual)
 
-# Load undirected network with 15 nodes (see ?example)
 data(example)
-# Stochastic block model for undirected network 
-# with natural parameterization and Dirichlet process prior
+# Stochastic block model: undirected network 
 hergm(d ~ edges_ij)
 
-# Load directed network with 18 nodes (see ?sampson)
 data(sampson) 
-# Stochastic block model for directed network 
-# with natural parameterization and Dirichlet process prior
+# Stochastic block model: directed network 
 hergm(samplike ~ edges_ij + mutual)
 
-# Load undirected network with 15 nodes (see ?example)
 data(example)
-# Hierarchical exponential-family model with stick-breaking prior
-hergm(d ~ edges + mutual + ttriple_ijk)
+# Exponential-family random graph model with local dependence: undirected network
+hergm(d ~ edges_ij + triangle_ijk)
 
-# Load directed network with 18 nodes (see ?sampson)
 data(sampson) 
-# Hierarchical exponential-family model with stick-breaking prior
+# Exponential-family random graph model with local dependence: directed network
 hergm(samplike ~ edges + mutual + ttriple_ijk)
 }
 }

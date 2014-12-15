@@ -1,12 +1,3 @@
-/*  File src/edgelist.c in package ergm, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
- *
- *  This software is distributed under the GPL-3 license.  It is free,
- *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
- *
- *  Copyright 2003-2013 Statnet Commons
- */
 #include "edgelist.h"
 /*********************
  unsigned int dEdgeListSearch
@@ -19,19 +10,18 @@
 
 unsigned int dEdgeListSearch(Vertex tail, Vertex head, double *el){
   unsigned int nedges=el[0];
-  unsigned int u=nedges,l=1,m;
+  unsigned int u=nedges,l=1;
+  double *tails = el, *heads = el+nedges;
 
   if(nedges==0) return(0);
 
-  do{
-    m = l + (u-l)/2;
-    if(tail==el[m] && head==el[nedges+m]) break;
-    if(tail>el[m] || (tail==el[m] && head>el[nedges+m])) l = m+1;
-    else u = m-1;
-  }while(l<=u);
+  while(l<u){
+    unsigned int m = l + (u-l)/2;
+    if(tail>tails[m] || (tail==tails[m] && head>heads[m])) l = m+1;
+    else u = m;
+  }
 
-  if(l>u) return(0);
-  else return(m);
+  if((u==l) && tail==tails[l] && head==heads[l]) return(l); else return(0);
 }
 
 /*********************
@@ -45,16 +35,16 @@ unsigned int dEdgeListSearch(Vertex tail, Vertex head, double *el){
 
 unsigned int iEdgeListSearch(Vertex tail, Vertex head, int *el){
   unsigned int nedges=el[0];
-  unsigned int u=nedges,l=1,m;
+  unsigned int u=nedges,l=1;
+  int *tails = el, *heads = el+nedges;
 
   if(nedges==0) return(0);
 
-  do{
-    m = l + (u-l)/2;
-    if(tail>el[m] || (tail==el[m] && head>el[nedges+m])) l = m+1;
-    else u = m-1;
-  }while(!(tail==el[m] && head==el[nedges+m]) && l<=u);
+  while(l<u){
+    unsigned int m = l + (u-l)/2;
+    if(tail>tails[m] || (tail==tails[m] && head>heads[m])) l = m+1;
+    else u = m;
+  }
 
-  if(l>u) return(0);
-  else return(m);
+  if((u==l) && tail==tails[l] && head==heads[l]) return(l); else return(0);
 }

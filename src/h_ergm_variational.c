@@ -154,6 +154,7 @@ output: expectation of inner product of vector of parameters and vector of stati
 {
   double expected_energy, expected_statistic_0, expected_statistic_1;
   expected_statistic_0 = Expected_Density(n,mu,directed);
+  expected_statistic_1 = 0.0;
   if (model == 1) expected_statistic_1 = Expected_Stars(n,mu);
   else if (model == 2) expected_statistic_1 = Expected_Transitivity(n,mu,directed);
   expected_energy = (eta[0] * expected_statistic_0) + (eta[1] * expected_statistic_1);
@@ -180,6 +181,7 @@ output: updated expectations of edges under the assumption of independent edges
 */
 {
   double d_expected_statistic, log_odds, expectation;
+  d_expected_statistic = 0.0;
   if (model == 1) d_expected_statistic = D_Expected_Stars(n,i,j,mu);
   else if (model == 2) d_expected_statistic = D_Expected_Transitivity(n,i,j,mu,directed); 
   log_odds = eta[0] + (eta[1] * d_expected_statistic);

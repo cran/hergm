@@ -1,12 +1,3 @@
-/*  File src/changestats.c in package ergm, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
- *
- *  This software is distributed under the GPL-3 license.  It is free,
- *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
- *
- *  Copyright 2003-2013 Statnet Commons
- */
 #include "changestats.h"
 
 /********************  changestats:  A    ***********/
@@ -62,6 +53,45 @@ D_CHANGESTAT_FN(d_absdiffcat) {
     TOGGLE_IF_MORE_TO_COME(i); /* Needed in case of multiple toggles */
   }
   UNDO_PREVIOUS_TOGGLES(i); /* Needed on exit in case of multiple toggles */
+}
+
+/*****************
+ changestat: d_adegcor
+*****************/
+D_CHANGESTAT_FN(d_adegcor) { 
+  int i;
+  double current;
+
+  (*(mtp->s_func))(mtp, nwp);  /* Call s_??? function */
+  current = mtp->dstats[0];
+  FOR_EACH_TOGGLE(i) { TOGGLE(TAIL(i),HEAD(i)); }
+  (*(mtp->s_func))(mtp, nwp);  /* Call s_??? function */
+//  CHANGE_STAT[0] = mtp->dstats[0] - current;
+//   Rprintf("c %f p %f",current,mtp->dstats[0]);
+  mtp->dstats[0] -= current;
+//   Rprintf(" p-c %f\n",mtp->dstats[0]);
+FOR_EACH_TOGGLE(i) { TOGGLE(TAIL(i), HEAD(i)); }
+}
+S_CHANGESTAT_FN(s_adegcor) { 
+  Vertex tail, head, taildeg, headdeg;
+  Edge e;
+  double mu, mu2, sigma2, cross;
+
+  mu = 0.0;
+  mu2 = 0.0;
+  cross = 0.0;
+  for(tail=1; tail <= N_NODES; tail++) {
+   STEP_THROUGH_OUTEDGES(tail, e, head) { /* step through outedges of tail */
+    taildeg = OUT_DEG[tail] + IN_DEG[tail];
+    headdeg = OUT_DEG[head] + IN_DEG[head];
+    mu  += (double)(taildeg + headdeg);
+    mu2 += (double)(taildeg*taildeg + headdeg*headdeg);
+    cross += 2.0*taildeg*headdeg;
+   }
+  }
+  mu = mu / (2.0*N_EDGES);
+  sigma2 = mu2/(2.0*N_EDGES) -  mu*mu;
+  CHANGE_STAT[0] = (cross / (2.0*N_EDGES) -  mu*mu) / sigma2;
 }
 
 /*****************
@@ -2165,6 +2195,10 @@ D_CHANGESTAT_FN(d_edges) {
   UNDO_PREVIOUS_TOGGLES(i);
 }
 
+S_CHANGESTAT_FN(s_edges) {
+  CHANGE_STAT[0] = N_EDGES;
+}
+
 /*****************
  changestat: d_esp
 *****************/
@@ -2174,6 +2208,7 @@ D_CHANGESTAT_FN(d_esp) {
   int L2th, L2tu, L2uh;
   Vertex deg;
   Vertex tail, head, u, v;
+  
   /* *** don't forget tail -> head */    
   ZERO_ALL_CHANGESTATS(i);
   FOR_EACH_TOGGLE(i) {
@@ -2569,6 +2604,7 @@ D_CHANGESTAT_FN(d_gwesp) {
   CHANGE_STAT[0] = 0.0;
   alpha = INPUT_PARAM[0];
   oneexpa = 1.0-exp(-alpha);
+  
   /* *** don't forget tail -> head */    
   FOR_EACH_TOGGLE(i){
     cumchange=0.0;
@@ -4606,7 +4642,108 @@ D_CHANGESTAT_FN(d_odegreepopularity) {
   UNDO_PREVIOUS_TOGGLES(i);
 }
 
+/********************  changestats:  P    ***********/
+/*****************
+ changestat: d_pdegcor
+*****************/
+D_CHANGESTAT_FN(d_pdegcor) { 
+  int i;
+  double current;
+
+  (*(mtp->s_func))(mtp, nwp);  /* Call s_??? function */
+  current = mtp->dstats[0];
+  FOR_EACH_TOGGLE(i) { TOGGLE(TAIL(i), HEAD(i)); }
+  (*(mtp->s_func))(mtp, nwp);  /* Call s_??? function */
+  mtp->dstats[0] -= current;
+  FOR_EACH_TOGGLE(i) { TOGGLE(TAIL(i), HEAD(i)); }
+}
+S_CHANGESTAT_FN(s_pdegcor) { 
+  Vertex tail, head, taildeg, headdeg;
+  Edge e;
+  double mu, mu2, mutail, mutail2, sigma2, sigmatail2, cross;
+
+  mu = 0.0;
+  mu2 = 0.0;
+  mutail = 0.0;
+  mutail2 = 0.0;
+  cross = 0.0;
+  for(tail=1; tail <= N_NODES; tail++) {
+   STEP_THROUGH_OUTEDGES(tail, e, head) { /* step through outedges of tail */
+    taildeg = OUT_DEG[tail];
+    headdeg = IN_DEG[head];
+    mu   += (double)(headdeg);
+    mutail  += (double)(taildeg);
+    mu2 += (double)(headdeg*headdeg);
+    mutail2 += (double)(taildeg*taildeg);
+    cross += taildeg*headdeg;
+   }
+  }
+  mu = mu / (N_EDGES);
+  mutail = mutail / (N_EDGES);
+  sigma2 = mu2/(N_EDGES) -  mu*mu;
+  sigmatail2 = mutail2/(N_EDGES) -  mutail*mutail;
+  CHANGE_STAT[0] = (cross / (N_EDGES) -  mutail*mu) / sqrt(sigma2*sigmatail2);
+}
+
 /********************  changestats:  R    ***********/
+/*****************
+ changestat: d_rdegcor
+*****************/
+D_CHANGESTAT_FN(d_rdegcor) { 
+  int i;
+  double current;
+
+  (*(mtp->s_func))(mtp, nwp);  /* Call s_??? function */
+  current = mtp->dstats[0];
+  FOR_EACH_TOGGLE(i) { TOGGLE(TAIL(i), HEAD(i)); }
+  (*(mtp->s_func))(mtp, nwp);  /* Call s_??? function */
+//  CHANGE_STAT[0] = mtp->dstats[0] - current;
+//   Rprintf("c %f p %f",current,mtp->dstats[0]);
+  mtp->dstats[0] -= current;
+//   Rprintf(" p-c %f\n",mtp->dstats[0]);
+  FOR_EACH_TOGGLE(i) { TOGGLE(TAIL(i), HEAD(i)); }
+}
+S_CHANGESTAT_FN(s_rdegcor) { 
+  Vertex tail, head, taildeg, headdeg;
+  Edge e;
+  double mu, mu2, sigma2, cross;
+  Vertex tailrank, headrank;
+  Vertex *ndeg=malloc(sizeof(Vertex)*(N_NODES+1));
+
+  for(tail=0; tail <= N_NODES; tail++) { ndeg[tail]=0; }
+  for(tail=0; tail < N_NODES; tail++) {
+   STEP_THROUGH_OUTEDGES(tail, e, head) { /* step through outedges of tail */
+    taildeg = OUT_DEG[tail] + IN_DEG[tail];
+    headdeg = OUT_DEG[head] + IN_DEG[head];
+    ndeg[taildeg+1]++;
+    ndeg[headdeg+1]++;
+   }
+  }
+for(tail=1; tail <= N_NODES; tail++) {
+    ndeg[tail] += ndeg[tail-1];
+}
+// Rprintf("tail  %d taildeg[tail] %d \n",tail,ndeg[tail]);}
+
+  mu = 0.0;
+  mu2 = 0.0;
+  cross = 0.0;
+  for(tail=1; tail <= N_NODES; tail++) {
+   STEP_THROUGH_OUTEDGES(tail, e, head) { /* step through outedges of tail */
+    taildeg = OUT_DEG[tail] + IN_DEG[tail];
+    headdeg = OUT_DEG[head] + IN_DEG[head];
+    tailrank = (ndeg[taildeg+1]+ndeg[taildeg+2]+1)*0.5;
+    headrank = (ndeg[headdeg+1]+ndeg[headdeg+2]+1)*0.5;
+    mu  += (double)(tailrank + headrank);
+    mu2 += (double)(tailrank*tailrank + headrank*headrank);
+    cross += 2.0*tailrank*headrank;
+   }
+  }
+  mu = mu / (2.0*N_EDGES);
+  sigma2 = mu2/(2.0*N_EDGES) -  mu*mu;
+  CHANGE_STAT[0] = (cross / (2.0*N_EDGES) -  mu*mu) / sigma2;
+  free(ndeg);
+}
+
 /*****************
  changestat: d_receiver
 *****************/
@@ -5860,7 +5997,6 @@ D_CHANGESTAT_FN(d_ttriple) {
   UNDO_PREVIOUS_TOGGLES(i);
 }
 
-/* Michael */
 /*****************
  changestat: d_edges_i
 note: input parameters:
@@ -6062,7 +6198,7 @@ n+number+1: between-category parameter
 *****************/
 D_CHANGESTAT_FN(d_mutual_ij) 
 { 
-  int c, edgemult, i, index, j;
+  int c, edgemult, i, index;
   Vertex h, t;
   double change;
   /*
@@ -6161,7 +6297,7 @@ D_CHANGESTAT_FN(d_ttriple_ijk)
 { 
   Edge e;
   Vertex h, t, node3;
-  int c, i, j, index;
+  int c, i, index;
   double change, edgemult;
   /*
   Rprintf("\n\nChange statistic ttriple_ijk\n\n");
@@ -6211,7 +6347,7 @@ D_CHANGESTAT_FN(d_ctriple_ijk)
 { 
   Edge e;
   Vertex h, t, node3;
-  int c, i, j, index;
+  int c, i, index;
   double change, edgemult;
   /*
   Rprintf("\n\nChange statistic ctriple_ijk\n\n");
@@ -6250,7 +6386,7 @@ D_CHANGESTAT_FN(d_twostar_ijk)
 { 
   Edge e;
   Vertex h, t, node3;
-  int a, b, c, degree_h, degree_t, i, j, index;
+  int a, b, degree_h, degree_t, i, index;
   double change, edgemult;
   /*
   Rprintf("\n\nChange statistic twostar_ijk\n\n");

@@ -29,12 +29,11 @@ Studies in Conflict and Terrorism, 29, 559--575.
 
 }
 
-\examples{\dontrun{# Load undirected network with 17 nodes
+\examples{
+\dontrun{
 data(bali)
 
-# Hierarchical exponential-family model with stick-breaking prior
-hergm(bali ~ edges_ij(5) + triangle_ijk(5))
-
+hergm(bali ~ edges_ij + triangle_ijk)
 }
 }
 

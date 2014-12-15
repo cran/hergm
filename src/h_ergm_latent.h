@@ -36,6 +36,8 @@ Structure and structural parameters:
   /* Structure: */
   int *size; /* Category-bound variable: number of nodes belonging to category */
   int *indicator; /* Node-bound variable: category to which node belongs */
+  int *fixed; /* Node-bound variable: indicator of whether indicator is fixed */
+  int number_fixed; /* Number of fixed indicators */
   /* Law generating data: */
   int minimum_size; /* Minimum number of nodes so that structural parameters show up in PMF */
   int threshold; /* Category-bound within-block PMF tractable as long as numbers of nodes smaller than threshold */
@@ -61,7 +63,7 @@ Non-structural parameters of law generating data
 }
   ergmstructure;
 
-latentstructure* Initialize_Latentstructure(int number, int n, int minimum_size, int threshold, int d, int *between);
+latentstructure* Initialize_Latentstructure(int number, int n, int *indicator, int minimum_size, int threshold, int d, int *between);
 /*
 input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters, indicators of wether between-category parameters are restricted to 0
 ouput: latent structure

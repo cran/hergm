@@ -18,12 +18,13 @@
 #                                                                         # 
 ###########################################################################
 
-length_mcmc <- function(d1, d2, k, n)
+length_mcmc <- function(d1, d2, k, n, predictions)
 # input: number of ergm terms d1, number of hergm terms d2, number of blocks k, number of nodes n
 # output: number of elements stored on iteration of MCMC algorithm
 {
-  d <- d1 + d2
-  terms <- d1 + (2 * d2) + (d2 * (k + 1)) + n + k + k + 1 + d 
+  terms <- d1 + (2 * d2) + (d2 * (k + 1)) 
+  if (k > 1) terms <- terms + n + k + k + 1 
+  if (predictions == TRUE) terms <- terms + d1 + d2
   #terms <- d1 # Number of ergm terms
   #       + (2 * d2) # Number of mean and precision parameters of Gaussian baseline distribution of Dirichlet / stick-breaking prior
   #       + ((d2 + 1) * k) # Number of hergm terms
@@ -31,7 +32,7 @@ length_mcmc <- function(d1, d2, k, n)
   #       + k # Number of category sizes 
   #       + k # Number of category probabilities
   #       + 1 # Clustering parameter
-  #       + d # Number of posterior predictions
+  #       + d1 + d2 # Number of posterior predictions
   #print("terms")
   #print(terms)
   terms

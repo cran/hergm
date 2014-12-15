@@ -19,75 +19,63 @@
 ###########################################################################
 
 hergm <- function(formula, 
-                 alpha = NULL,
-                 alpha_shape = NULL, 
-                 alpha_rate = NULL, 
-                 eta = NULL,
-                 eta_mean = NULL, 
-                 eta_sd = NULL,
-                 eta_mean_mean = NULL,
-                 eta_mean_sd = NULL,
-                 eta_precision_shape = NULL,
-                 eta_precision_rate = NULL,
-                 indicator = NULL,
-                 parallel = 1, 
-                 simulate = FALSE, 
-                 seeds = NULL, 
-                 samplesize = 1e+5, 
-                 burnin = 1e+4, 
-                 interval = 1e+2,
-                 mh_scale = NULL,
-                 temperature = c(1,10),
-                 output = TRUE,
-                 verbose = -1, 
-                 name = NULL,
-                 ...) 
+                  max_number = NULL,
+                  hierarchical = TRUE,
+                  parametric = FALSE,
+                  initialize = FALSE,
+                  perturb = TRUE,
+                  alpha = NULL,
+                  alpha_shape = NULL, 
+                  alpha_rate = NULL, 
+                  eta = NULL,
+                  eta_mean = NULL, 
+                  eta_sd = NULL,
+                  eta_mean_mean = NULL,
+                  eta_mean_sd = NULL,
+                  eta_precision_shape = NULL,
+                  eta_precision_rate = NULL,
+                  mean_between = NULL,
+                  indicator = NULL,
+                  parallel = 1, 
+                  simulate = FALSE, 
+                  seeds = NULL, 
+                  samplesize = 1e+5, 
+                  burnin = NULL, 
+                  interval = 1e+2,
+                  mh_scale = 0.25,
+                  temperature = c(1,10),
+                  predictions = FALSE,
+                  verbose = 1, 
+                  ...) 
 {
+  original.formula <- formula
   options(warn = -1)
   control <- control.ergm()
   options()
-  nw <- ergm.getnetwork(formula)
-  if (sum(nw[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
-  control$drop <- FALSE
-  model <- ergm.getmodel(formula, nw, drop=control$drop, expanded=TRUE)
-  MCMCsamplesize <- samplesize
-  Clist <- ergm.Cprepare(nw, model)
-  Clist.miss <- ergm.design(nw, model, verbose=verbose)
-  if (verbose >= 2)
+  network <- ergm.getnetwork(formula)
+  if (sum(network[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
+  if (is.null(burnin))
     {
-    for (i in 1:Clist$nterms)
-      {
-      if (model$terms[[i]]$name == "edges_i") 
-        { 
-        cat("\n\n")
-        print(summary(nw ~ degree(0:(Clist$n-1)), drop = TRUE))
-        }
-      else if (model$terms[[i]]$name == "arcs_i") 
-        {
-        cat("\n\n")
-        print(summary(nw ~ odegree(0:(Clist$n-1)), drop = TRUE))
-        }
-      else if (model$terms[[i]]$name == "arcs_j") 
-        {
-        cat("\n\n")
-        print(summary(nw ~ idegree(0:(Clist$n-1)), drop = TRUE))
-        }
-      }
+    n <- network.size(network)
+    if (is.directed(network)) burnin <- 10*choose(n,2)*2
+    else burnin <- 10*choose(n,2)
     }
-  d <- Clist$nstats
+  control$drop <- FALSE
+  model <- ergm.getmodel(formula, network, drop=control$drop, expanded=TRUE)
+  MCMCsamplesize <- samplesize
+  Clist <- ergm.Cprepare(network, model)
+  Clist.miss <- ergm.design(network, model, verbose=verbose)
   constraints <- ~.
-  MHproposal <- MHproposal(constraints, weights=control$MCMC.prop.weights, control$MCMC.prop.args, nw, class="c")
-# MHproposal.miss <- MHproposal("randomtoggleNonObserved",arguments=control$MCMC.prop.args, nw=nw,reference=~Bernoulli)
+  MHproposal <- MHproposal(constraints, weights=control$MCMC.prop.weights, control$MCMC.prop.args, network, class="c")
   MCMCparams=c(control,list(samplesize=MCMCsamplesize,burnin=burnin,interval=interval,maxit=1,Clist.miss=Clist.miss,mcmc.precision=control$MCMLE.mcmc.precision))
-  MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=MCMCparams$samplesize)
+  s <- min(MCMCparams$samplesize, 10000)
+  MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=s)
   MCMCparams$target.stats <- Clist$target.stats
   print(
     system.time(
-      sample <- hergm.mcmc(nw, model, MHproposal, MCMCparams, verbose, name, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, indicator, parallel, simulate, seeds, mh_scale, temperature, output)
+      sample <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, temperature, predictions, perturb)
     )
   )
-  cat("\n")
   sample
 }
-
 

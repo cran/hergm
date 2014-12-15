@@ -20,9 +20,6 @@
 
 #include "h_ergm_mcmc.h"
 #include "signal.h"
-/*
-#include "memwatch.h"
-*/
 
 /*
 Optimization algorithms based on evaluations of the objective function or its gradient:
@@ -54,14 +51,6 @@ double* Sample_P(latentstructure *ls);
 /*
 input: latent structure
 output: category probability vector
-*/
-
-void Gibbs_Indicators_Independence(latentstructure *ls, ergmstructure *ergm, int *heads, int *tails, double *input_proposal, 
-                       int *n_edges, int *n, int *directed, int *bipartite, int *nterms, char **funnames, char **sonames, double *q_i);
-/*
-input: latent structure, ergm structure
-output: indicators
-note: function more efficient than sister function Gibbs_Indicators_Independence
 */
 
 int Sample_Ergm_Theta_Independence(ergmstructure *ergm, latentstructure *ls, priorstructure *prior,
@@ -176,7 +165,19 @@ input: prior structure, latent structure
 output: means of parameters
 */
 
+double* Gibbs_Parameters_Means_Conditional(priorstructure *prior, latentstructure *ls);
+/*
+input: prior structure, latent structure
+output: means of parameters
+*/
+
 double* Gibbs_Parameters_Precisions(priorstructure *prior, latentstructure *ls);
+/*
+input: prior structure, latent structure
+output: precisions of parameters
+*/
+
+double* Gibbs_Parameters_Precisions_Marginal(priorstructure *prior, latentstructure *ls);
 /*
 input: prior structure, latent structure
 output: precisions of parameters
@@ -252,7 +253,7 @@ void Simulation(int *dyaddependence,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *hyperprior, int *status);
+             int *max_iterations, int *between, double *mean_between, int *output, double *mcmc, int *sample_heads, int *sample_tails, int *prior_assumption, int *status);
 /*
 input: R input
 output: simulated graph
@@ -268,7 +269,7 @@ void Inference(int *model_type,
              int *structural,
              int *min_size,
              int *max_number,
-             double *alpha,
+	     double *alpha,
              double *alpha_shape,
              double *alpha_rate,
              double *m1,
@@ -297,7 +298,7 @@ void Inference(int *model_type,
              int *attribs, int *maxout, int *maxin, int *minout,
              int *minin, int *condAllDegExact, int *attriblength, 
              int *maxedges,
-             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *parallel, double *temperature, int *hyperprior, int *status);
+             int *max_iterations, int *between, int *output, double *mcmc, double *scalefactor, double *mh_accept, double *q_i, int *parallel, double *temperature, int *prior_assumptions, int *status);
 /*
 input: R input
 output: MCMC sample of unknowns from posterior

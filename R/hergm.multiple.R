@@ -18,17 +18,34 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.permutation.wrapper <- function(number) 
+hergm.relabel_1 <- function(max_number, indicator, number_runs)
+# Relabeling algorithm, which aims to minimize posterior expected loss
+# input: number of categories, indicators, number of runs
+# output: minimum and minimizer of posterior expected loss 
 {
-  number_permutations <- factorial(number)
-  permutations <- vector(length=number_permutations*number)
-  for (i in 1:number) permutations[i] = i
-  output <- .C("Permutations",
-                     as.integer(number),
-                     as.integer(number_permutations),
-                     permutations = as.integer(permutations),
-                     PACKAGE="hergm")
-  permutations <- matrix(output$permutations, nrow = number_permutations, ncol = number, byrow = TRUE)
-  permutations
+  loss <- vector(length = number_runs)
+  minimum_loss <- Inf
+  for (i in 1:number_runs)
+    {
+    if (number_runs > 1) cat("\n------\n------\nRun ",i,"\n", "------\n------\n", sep="")
+    output <- hergm.min_loss_1(max_number, indicator, 100) # Loss function of Schweinberger and Handcock (2015)
+    loss[i] <- output$loss
+    if (output$loss < minimum_loss)
+      {
+      minimum_loss <- output$loss
+      min_output <- output
+      }
+    }
+  if (number_runs > 1) cat("\n", "Minimum loss: ", min_output$loss, "\n", sep="")
+  min_output
 }
 
+hergm.relabel_2 <- function(max_number, indicator)
+# Relabeling algorithm, which aims to minimize posterior expected loss
+# input: number of categories, indicators
+# output: minimum and minimizer of posterior expected loss 
+{
+  min_output <- hergm.min_loss_2(max_number, indicator) # Loss function of Peng and Carvalho (2015); note: the algorithm converges to the same minimum in each run, therefore multiple runs are not necessary
+  min_output
+}
+ 

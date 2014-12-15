@@ -184,7 +184,7 @@ output: conditional PMF of graph given latent structure
   k = ls->indicator[i]; /* Store indicator */
   ls->indicator[i] = l; /* Set indicator */
   /*
-  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_proposal); /* Set input given indicator
+  Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,input_proposal); Set input given indicator
   */
   Set_Input_Indicator(ergm->terms,ergm->hierarchical,ls->number,ls->n,i,l,input_proposal); /* Set input given indicator; reset in Gibbs_Indicators_Independence */
   theta = Get_Parameter(ergm->d,ergm->structural,ergm->theta); /* Set parameter */
@@ -206,7 +206,7 @@ output: minus energy of node i on log scale, computed under the assumption of co
 */
 {
   int one = 1;
-  int i, j, edge, *lasttoggle, *number_edges, *pseudo_heads, *pseudo_tails;
+  int i, j, *number_edges, *pseudo_heads, *pseudo_tails;
   double sign, change, log_p_i_k, *statistic;
   Network nw;
   number_edges = &one;
@@ -254,11 +254,10 @@ input: input
 output: minus energy of node i on log scale, computed under the assumption of conditional dyad-independence given latent structure
 */
 {
-  int zero = 0;
   int one = 1;
   int two = 2;
-  int i, j, energy_0, energy_1, energy_2, energy_3, dyad, edge, *number_edges, *pseudo_heads, *pseudo_tails;
-  double change, log_p_i_k, *statistic;
+  int i, j, energy_0, energy_1, energy_2, energy_3, dyad, *number_edges, *pseudo_heads, *pseudo_tails;
+  double log_p_i_k, *statistic;
   Network nw;
   statistic = (double*) calloc(d,sizeof(double));
   if (statistic == NULL) { Rprintf("\n\ncalloc failed: PMF_Dyad_Independence_Node, statistic\n\n"); error("Error: out of memory"); }
@@ -422,7 +421,7 @@ output: indicators
 */
 {
   int i, k, *sample, sample_size;
-  double center, log_p_i_k, p_i_k, *p_i, sum, u;
+  double center, log_p_i_k, p_i_k, *p_i, sum;
   p_i = (double*) calloc(ls->number,sizeof(double));
   if (p_i == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Indicators_Independence, p_i\n\n"); error("Error: out of memory"); }
   sample = (int*) calloc(ls->n,sizeof(int));
@@ -533,7 +532,7 @@ input: number of nodes, indicator of directed network, number of edges, heads an
 output: degree sequence
 */
 {
-  int *degree, i, j, k, sum;
+  int *degree, i, j, k;
   degree = (int*) calloc(n,sizeof(int)); 
   if (degree == NULL) { Rprintf("\n\ncalloc failed: Degree_Sequence, degree\n\n"); error("Error: out of memory"); }
   for (k = 0; k < n_edges; k++)
@@ -1361,7 +1360,7 @@ output: within-block partition function on log scale, evaluated either by comple
 */
 {
   int zero = 0;
-  int i, j, *bipartite, *block_members, count, variational_verbose = 0;
+  int i, *bipartite, *block_members, count, variational_verbose = 0;
   double *eta, lower_bound_k, *theta;
   bipartite = &zero;
   if (ls->size[k] < 2) lower_bound_k = 0; /* No possible edge */
@@ -1402,6 +1401,7 @@ output: within-block partition function on log scale, evaluated either by comple
           block_members[count] = i;
           }
         }
+      lower_bound_k = 0.0;
       if (*directed == 0)
         {
         if (ls->size[k] == 2) lower_bound_k = Within_Block_Partition_Function_2_Graph(ls,block_members,ergm,input,theta,n,directed,bipartite,number_terms,funnames,sonames);
@@ -1589,7 +1589,7 @@ output: ratio of partition functions of ergms under alternative and data-generat
 */
 { 
   int i, j, k;
-  double ratio_n_const, log, log_generating, log_ratio_n_const, log_ratio, moment1, moment2, sum, variance;
+  double log, log_generating, log_ratio_n_const, moment1, moment2, sum, variance;
   /* Ratio of partition functions is expectation of exponential functions:
   - estimated by: MCMC sample average
   - computations stabilized by: log-normal approximation of log expectation = log ratio of partition constants
@@ -1651,6 +1651,9 @@ output: one sample from posterior predictive distribution
     sample[i] = 0.0;
     }
   number_networks = 1;
+  /*
+  *fVerbose = 5;
+  */
   MCMC_wrapper(&number_networks,dnedges,tails,heads, /* Sample one graph from posterior predictive distribution given input and theta */
                dn,directed,bipartite,
                nterms,funnames,
@@ -1665,6 +1668,12 @@ output: one sample from posterior predictive distribution
                minin,condAllDegExact,attriblength,
                maxedges,
                status);
+  if (*fVerbose == 5)
+    {
+    if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
+    else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
+    if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Graph: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+    }
   indicator = (int*) calloc(n,sizeof(int));
   if (indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, indicator\n\n"); error("Error: out of memory"); }
   for (i = 0; i < n; i++) /* Identical indicators */

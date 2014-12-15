@@ -3,6 +3,10 @@ useDynLib(hergm)
 
 importFrom(utils, packageDescription)
 import(ergm)
+importFrom(latentnet, ergmm.drawpie)
+import(network)
+importFrom(parallel, makePSOCKcluster, clusterEvalQ, clusterApplyLB, stopCluster)
+importFrom(sna, gplot, component.dist, geodist)
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")

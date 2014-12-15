@@ -18,17 +18,22 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.permutation.wrapper <- function(number) 
+hergm.plot <- function(sample = NULL,
+                       ...)
+# input: network, postprocess output
+# output: plot of network block membership probabilities
 {
-  number_permutations <- factorial(number)
-  permutations <- vector(length=number_permutations*number)
-  for (i in 1:number) permutations[i] = i
-  output <- .C("Permutations",
-                     as.integer(number),
-                     as.integer(number_permutations),
-                     permutations = as.integer(permutations),
-                     PACKAGE="hergm")
-  permutations <- matrix(output$permutations, nrow = number_permutations, ncol = number, byrow = TRUE)
-  permutations
+  # Extract
+  network <- sample$network 
+
+  # Plot
+  if (is.directed(network)) gmode <- "digraph"
+  else gmode <- "graph"
+  p <- gplot(network, gmode=gmode, mode="fruchtermanreingold", vertex.cex=1, vertex.col=0, vertex.border=0, displaylabels=TRUE, label.cex=0.8)
+  for(i in 1:nrow(p))
+    {
+    ergmm.drawpie(center=p[i,], radius=0.25, probs=sample$p_i_k[i,])
+    }
+
 }
 
