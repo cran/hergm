@@ -23,7 +23,7 @@ length_mcmc <- function(d1, d2, k, n, predictions)
 # output: number of elements stored on iteration of MCMC algorithm
 {
   terms <- d1 + (2 * d2) + (d2 * (k + 1)) 
-  if (k > 1) terms <- terms + n + k + k + 1 
+  if (d2 > 0) terms <- terms + n + k + k + 1 
   if (predictions == TRUE) terms <- terms + d1 + d2
   #terms <- d1 # Number of ergm terms
   #       + (2 * d2) # Number of mean and precision parameters of Gaussian baseline distribution of Dirichlet / stick-breaking prior

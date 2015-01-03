@@ -33,6 +33,7 @@ hergm.postprocess <- function(sample = NULL,
   # Extract 
   n <- sample$n
   max_number <- sample$max_number
+  number_fixed <- sample$number_fixed
   d1 <- sample$d1
   d2 <- sample$d2
   parallel <- sample$parallel
@@ -42,15 +43,8 @@ hergm.postprocess <- function(sample = NULL,
   predictions <- sample$predictions
 
   # Check
-  if (burnin > sample_size) 
-    {
-    cat("\n\n")
-    error_message <- paste("number of burn-in iterations ", burnin, " exceeds number of recorded iterations ", sample_size, ".", sep = "")
-    stop(error_message, call. = FALSE)
-    }
-  if ((d2 == 0) || (simulate == TRUE)) relabel <- 0 
-  if (relabel == FALSE) relabel <- 0 # Ensure backward compatibility
-  else if (relabel == TRUE) relabel <- 1 # Ensure backward compatibility
+  if (burnin > sample_size) burnin <- 0 
+  if ((d2 == 0) || (max_number == 1) || (number_fixed == n) || (simulate == TRUE)) relabel <- 0 
   
   # Preprocess MCMC sample: delete burn-in iterations and transform vector into matrix, where rows correspond to MCMC draws
   d <- d1 + d2

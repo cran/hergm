@@ -27,7 +27,7 @@ hergm.relabel_1 <- function(max_number, indicator, number_runs)
   minimum_loss <- Inf
   for (i in 1:number_runs)
     {
-    if (number_runs > 1) cat("\n------\n------\nRun ",i,"\n", "------\n------\n", sep="")
+    if (number_runs > 1) cat("\n------\nRun ", i, "\n------\n", sep="")
     output <- hergm.min_loss_1(max_number, indicator, 100) # Loss function of Schweinberger and Handcock (2015)
     loss[i] <- output$loss
     if (output$loss < minimum_loss)

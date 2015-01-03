@@ -7,8 +7,6 @@
 
 \alias{length_mcmc}
 
-\alias{hergm.seeds}
-
 \alias{number_clusters}
 
 \alias{bernoulli_map_mean_to_natural}
@@ -29,8 +27,6 @@
 
 \alias{hergm.relabel_2}
 
-\alias{hergm.dirichlet}
- 
 \alias{hergm.permute} 
 
 \alias{hergm.permute_indicator}

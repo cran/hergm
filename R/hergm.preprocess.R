@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, temperature, predictions, verbose, perturb)
+hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
 {
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms
@@ -206,11 +206,14 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       theta[i] <- 1 
       }
     }
-  if (d2 == 0) max_number <- 1
+  if (is.null(indicator)) number_fixed <- 0
+  else number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
+  if (simulate == TRUE) max_number <- max_number # Specified by function hergm(); accept what hergm() specifies
+  else if (d2 == 0) max_number <- 1 # No hergm term
+  else if ((is.null(indicator) == FALSE) && (number_fixed == Clist$n)) max_number <- length(unique(indicator)) # All neighborhood memberships known, thus max_number known 
   else if (is.null(max_number) == FALSE) max_number <- max_number # Specified by user; max_number overrules max_number_i
   else if (is.null(max_number_i) == FALSE) max_number <- max_number_i # Specified by user; max_number_i is overruled by max_number: see above 
   else max_number <- Clist$n # Unspecified by user: default
-  if (max_number == 1) indicator <- NULL # Otherwise issues may arise
   between <- vector(mode = "numeric", length = d2) # Default: no between-block terms
   for (i in 1:terms) # For given hergm term... 
     {
@@ -402,7 +405,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     sample_tails <- 0
     }
   mh_accept <- vector(mode = "numeric", length = 2 + (Clist$n - min_size))
-  if ((terms == 2) && (edges + edges_ij > 0) && (twostar_ijk + triangle_ijk + ttriple_ijk > 0)) model_type <- 1 # Some algorithms, e.g., variational algorithms, are restricted to a subset of model specifications; the specificiations it works: hergms with two model terms, one ergm term (either edges or edges_ij) and one hierarchical term (either twostar_ijk or triangle_ijk or ttriple_ijk)
+  if ((variational == TRUE) && (terms == 2) && (edges + edges_ij > 0) && (twostar_ijk + triangle_ijk + ttriple_ijk > 0)) model_type <- 1 # Some algorithms, e.g., variational algorithms, are restricted to a subset of model specifications; the specificiations it works: hergms with two model terms, one ergm term (either edges or edges_ij) and one hierarchical term (either twostar_ijk or triangle_ijk or ttriple_ijk)
   else model_type <- 0
   if ((simulate == FALSE) && (dependence > 0))
     {
@@ -446,6 +449,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   hergm_list$structural <- structural  
   hergm_list$min_size <- min_size
   hergm_list$max_number <- max_number
+  hergm_list$number_fixed <- number_fixed
   hergm_list$null <- null
   hergm_list$alpha_shape <- alpha_shape
   hergm_list$alpha_rate <- alpha_rate
@@ -471,7 +475,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   hergm_list$predictions <- predictions
   hergm_list$verbose <- verbose
   hergm_list$MHproposal <- MHproposal
-  hergm_list$maxedges <- maxedges
+  hergm_list$maxedges <- 5*maxedges # Please note: the multiplication is motivated by the fact that otherwise, when ERGM simulates complete graphs, it will return empty graphs; therefore, by adding 1, we are tricking ERGM into believing that complete graphs are not complete graphs; ERGM does the same in ergm.san.R: if(z$status==1) maxedges <- 5*maxedges 
   hergm_list$Clist <- Clist
   hergm_list$simulate <- simulate
   hergm_list$mh_accept <- mh_accept

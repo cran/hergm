@@ -44,10 +44,11 @@ hergm(formula,
       simulate = FALSE,
       seeds = NULL,
       samplesize = 1e+5,
-      burnin = NULL,
-      interval = 1e+2,
+      interval = 1024,
+      burnin = 16*interval,
       mh_scale = 0.25,
-      temperature = c(1,10),
+      variational = TRUE,
+      temperature = c(1,100),
       predictions = FALSE,
       verbose = 1,
       \dots)
@@ -95,13 +96,15 @@ hergm(formula,
 
 \item{samplesize}{if \code{simulate == TRUE}, number of network draws, otherwise number of posterior draws; if \code{parallel > 1}, number of draws on each computing node.}
 
-\item{burnin}{if \code{simulate == TRUE}, number of burn-in iterations.}
-
 \item{interval}{if \code{simulate == TRUE}, number of proposals between sampled networks.}
+
+\item{burnin}{if \code{simulate == TRUE}, number of burn-in iterations.}
 
 \item{mh_scale}{if \code{simulate == FALSE}, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
 
-\item{temperature}{minimum and maximum temperature; the temperature is used to melt down the proposal distributions of indicators, which are based on the full conditional distributions of indicators but can have low entropy, resulting in slow mixing of the Markov chain; the temperature is a function of the entropy of the full conditional distributions and is designed to increase the entropy of the proposal distributions, and the minimum and maximum temperature are user-defined lower and upper bounds on the temperature.}
+\item{variational}{if \code{simulate == FALSE} and \code{variational == TRUE}, variational methods are used to construct the proposal distributions of block memberships; limited to selected models.}
+
+\item{temperature}{if \code{simulate == FALSE} and \code{variational == TRUE}, minimum and maximum temperature; the temperature is used to melt down the proposal distributions of indicators, which are based on the full conditional distributions of indicators but can have low entropy, resulting in slow mixing of the Markov chain; the temperature is a function of the entropy of the full conditional distributions and is designed to increase the entropy of the proposal distributions, and the minimum and maximum temperature are user-defined lower and upper bounds on the temperature.}
 
 \item{predictions}{if \code{predictions == TRUE} and \code{simulate == FALSE}, returns posterior predictions of statistics in the model.}
 

@@ -30,10 +30,12 @@ hergm.gof <- function(sample = NULL,
   model <- sample$model
   max_number <- sample$max_number
   indicator <- sample$indicator
+  d1 <- sample$d1
+  d2 <- sample$d2
   ergm_theta <- sample$ergm_theta
   hergm_theta <- sample$hergm_theta
   sample_size <- sample$sample_size
-
+  
   # Initialize
   component.number <- vector(length = sample_size) 
   max.component.size <- vector(length = sample_size)
@@ -53,8 +55,8 @@ hergm.gof <- function(sample = NULL,
       cat("Sample", i)
       cat("\n------------------------------------------------------------------")
       cat("\nInput:")
-      cat("\n- parameters:", ergm_theta[i,])
-      if (max_number > 1) 
+      if (d1 > 0) cat("\n- parameters:", ergm_theta[i,])
+      if (d2 > 0) 
         {
         cat("\n- block parameters:", hergm_theta[i,])
         cat("\n- block memberships:", indicator[i,])

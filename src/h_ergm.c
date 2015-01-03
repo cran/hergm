@@ -419,11 +419,8 @@ output: indicators
   - in general, proposal distribution is given by ls->p
   - in special cases, proposal distribution is approximated by full conditional distribution by using mean-field methods:
   there are two mean-field methods, one fast and one slow; both give rise to exact results when ls->size[k] == 2 and work well as long as ls->size[k] is not too large, but when ls->size[k] > 5, the slow method is much more accurate than the slow method */
-  /*
-  if (model == 0) proposal_distribution = 0; 666 
+  if (model == 0) proposal_distribution = 0; /* 666 */
   else proposal_distribution = 1;
-  */
-  proposal_distribution = 0; /* 666 666 666 */
   if (proposal_distribution == 0) 
     {
     q_i = (double*) calloc(ls->number,sizeof(double));
@@ -648,7 +645,7 @@ output: indicators
     mtails_block = NULL;
     number_networks = 1;
     sample_size = 1;
-    if (20 * maxpossibleedges_block < 100) burn_in = 100;
+    if (20 * maxpossibleedges_block < 10000) burn_in = 10000;
     else burn_in = 20 * maxpossibleedges_block;
     MCMC_wrapper(&number_networks,&number_edges_block,tails_block,heads_block,  /* Sample one subgraph from posterior predictive distribution given input and theta */
                     &size,directed,bipartite, /* Number of nodes of the subgraph */ 
@@ -664,11 +661,10 @@ output: indicators
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
-    if (print > 1)
+    if (print >= 0)
       {
-      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
-      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Indicators_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      if (*status == 1) Rprintf("\nWARNING: Sample_Indicators_Dependence: number of edges %i is outside of (1, %i).",newnetworkheads[0],*maxedges-1);
+      else if (*status == 2) Rprintf("\nWARNING: M-H proposal failed.");
       }
     /*
     Rprintf("\n- maximum number of edges: %i",maxpossibleedges_block);
@@ -785,11 +781,10 @@ output: indicators
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
-    if (print > 1)
+    if (print >= 0)
       {
-      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
-      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Indicators_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      if (*status == 1) Rprintf("\nWARNING: Sample_Indicators_Dependence: number of edges %i is outside of (1, %i).",newnetworkheads[0],*maxedges-1);
+      else if (*status == 2) Rprintf("\nWARNING: M-H proposal failed.");
       }
     /*
     Rprintf("\n\nafter: newnetworkheads[0]=%i",newnetworkheads[0]);
@@ -840,7 +835,7 @@ output: indicators
     }
   accept = MH_Decision(log_ratio);
   /* Update ls->indicator and ls-size */
-  if (accept == 1) /* Proposal accepted */
+  if ((*status == 0) && (accept == 1)) /* Proposal accepted */
     {
     ls->indicator[update_node] = proposal_block;
     ls->size[present_block] = ls->size[present_block] - 1;
@@ -953,11 +948,10 @@ output: structural, non-structural parameters showing up in ergm pmf
                   minin,condAllDegExact,attriblength, 
                   maxedges,
                   status);
-  if (print > 1)
+  if (print >= 0)
     {
-    if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-    else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
-    if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Ergm_Theta_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+    if (*status == 1) Rprintf("\nWARNING: Sample_Ergm_Theta_Dependence: number of edges %i is outside of (1, %i).",newnetworkheads[0],*maxedges-1);
+    else if (*status == 2) Rprintf("\nWARNING: M-H proposal failed.");
     }
   proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
   proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
@@ -1000,7 +994,7 @@ output: structural, non-structural parameters showing up in ergm pmf
   Rprintf("\n- log ratio (observed graph) = %8.4f",log_ratio);  
   */
   accept = MH_Decision(log_ratio);
-  if (accept == 1) /* Proposal accepted */
+  if ((*status == 0) && (accept == 1)) /* Proposal accepted */
     {
     if (ergm->d1 > 0) Set_D_D(ergm->d1,ergm->theta,ergm_theta);
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls->theta);
@@ -1158,7 +1152,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     mtails_block = NULL;
     number_networks = 1;
     sample_size = 1;
-    if (20 * maxpossibleedges_block < 100) burn_in = 100;
+    if (20 * maxpossibleedges_block < 10000) burn_in = 10000;
     else burn_in = 20 * maxpossibleedges_block;
     /*
     if (print >= 1) *verbose = 5; 1 short, >5 long
@@ -1177,11 +1171,10 @@ output: structural, non-structural parameters showing up in ergm pmf
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
-    if (print > 1)
+    if (print >= 0)
       {
-      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
-      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Ls_Theta_Dependence block %i of size %i: MCMC_wrapper: number of edges %i is outside of (1,%i).",update_block,ls->size[update_block]+1,newnetworkheads[0],*maxedges);
+      if (*status == 1) Rprintf("\nWARNING: Sample_Ls_Theta_Dependence block %i of size %i: number of edges %i is outside of (1, %i).",update_block,ls->size[update_block]+1,newnetworkheads[0],*maxedges-1);
+      else if (*status == 2) Rprintf("\nWARNING: M-H proposal failed.");
       }
     /*
     if (print >= 1) *verbose = 0;
@@ -1283,11 +1276,10 @@ output: structural, non-structural parameters showing up in ergm pmf
                     minin,condAllDegExact,attriblength, 
                     maxedges,
                     status);
-    if (print > 1)
+    if (print >= 0)
       {
-      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-      else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
-      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Ls_Theta_Dependence: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      if (*status == 1) Rprintf("\nWARNING: Sample_Ls_Theta_Dependence: number of edges %i is outside of (1, %i).",newnetworkheads[0],*maxedges-1);
+      else if (*status == 2) Rprintf("\nWARNING: M-H proposal failed.");
       }
     proposal_n_edges = newnetworkheads[0]; /* Number of simulated edges */
     proposal_heads = (int*) calloc(proposal_n_edges,sizeof(int)); /* Proposed heads for auxiliary variable */
@@ -1331,7 +1323,7 @@ output: structural, non-structural parameters showing up in ergm pmf
     free(proposal_tails);
     }
   accept = MH_Decision(log_ratio);
-  if (accept == 1) /* Proposal accepted */
+  if ((*status == 0) && (accept == 1)) /* Proposal accepted */
     {
     Set_DD_DD(ls->d,ls->number+1,ls->theta,ls_theta);
     }
@@ -1859,8 +1851,8 @@ output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, parametric, hyper_prior;
-  double between_edge_parameter, *draw, *p, **parameter, *pp, progress, *shape1, *shape2, prob_between;	
+  int coordinate, degenerate_draws, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, parametric, hyper_prior, underflow;
+  double between_edge_parameter, *draw, *p, **parameter, *pp, progress, *shape1, *shape2, prob_between, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -1928,6 +1920,7 @@ output: simulated graph
   /****************/
   /* Sample graph */
   /****************/
+  degenerate_draws = 0;
   k = -1;
   for (i = 0; i < ergm->d1; i++)
     {
@@ -1960,6 +1953,24 @@ output: simulated graph
       if (*null_alpha == 1) ls->alpha = rgamma(prior_ls->alpha_shape,1.0/prior_ls->alpha_rate); 
       if (parametric == 0) ls->p = Stick_Breaking(shape1,shape2,ls); /* Construct category probability vector by stick-breaking */ 
       else Sample_Dirichlet(ls->number,ls->alpha,ls->p); /* Category probability vector */
+      sum = 0.0;
+      underflow = 0;
+      for (i = 0; i < ls->number; i++)
+         {
+         if (ls->p[i] < epsilon) 
+           {
+           underflow = 1;
+           ls->p[i] = epsilon;
+           }
+         sum = sum + ls->p[i];
+         }
+      if (underflow == 1) /* Renormalize */
+        {
+        for (i = 0; i < ls->number; i++) 
+          {
+          ls->p[i] = ls->p[i] / sum;
+          }
+        }
       for (i = 0; i < ls->n; i++)
         {
         if (ls->fixed[i] == 0) /* If block membership is not specified by user, sample block membership */
@@ -2055,11 +2066,11 @@ output: simulated graph
                          sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                          attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,status);
-    if (print > 1)
+    degenerate_draws = degenerate_draws + *status;
+    if (print >= 0)
       {
-      if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-      else if (*status == 2) Rprintf("\nWarning: Simulation: MCMC_wrapper: M-H proposal failed.");
-      if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+      if (*status == 1) Rprintf("\nWARNING: number of edges %i is outside of (1, %i).",newnetworkheads[0],*maxedges-1);
+      else if (*status == 2) Rprintf("\nWARNING: Simulation: M-H proposal failed.");
       }
     if (ergm->d1 > 0)
       {
@@ -2071,7 +2082,7 @@ output: simulated graph
         mcmc[coordinate] = ergm->theta[i];
         }  
       }
-    if (ls->number > 1)
+    if (ergm->d2 > 0)
       {
       if ((print >= 1) && (*null_eta == 1)) Rprintf("\nmeans of block parameters:");
       for (i = 0; i < ls->d; i++) /* Structural parameters */
@@ -2158,6 +2169,7 @@ output: simulated graph
   /************/
   /* Finalize */
   /************/
+  if (degenerate_draws > 0) Rprintf("\nWARNING: %i generated networks were extreme in terms of the number of edges. The corresponding draws should be discarded.\n\n", degenerate_draws);
   free(p);
   free(pseudo_indicator);
   for (i = 0; i < ls->d; i++)
@@ -2223,8 +2235,8 @@ output: MCMC sample of unknowns from posterior
 */
 {
   int null = 0;
-  int *available, model, batch, n_batches, batch_size, coordinate, console, dyad_dependence, dim, dim1, dim2, h, i, parametric, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, update_block, update_node, update_size;
-  double ls_alpha, accept, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, *scale_factor, sample_size_indicators;	
+  int *available, degenerate_draws, model, batch, n_batches, batch_size, coordinate, console, dyad_dependence, dim, dim1, dim2, h, i, parametric, hyper_prior, *mdnedges, *mheads, *mtails, number_local_mh, iteration, max_iteration, minimum_size, n, number, print, store, threshold, terms, *verbose, underflow, update_block, update_node, update_size;
+  double ls_alpha, accept, *local_mh, *local_mh_accept, *ls_p, *pp, *prior_mean2, *prior_precision2, progress, *scale_factor, sample_size_indicators, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
   priorstructure *prior;
@@ -2296,16 +2308,23 @@ output: MCMC sample of unknowns from posterior
     ls->size[0] = ls->n;
     }
   else Initial_State(parallel,alpha,ls->indicator,prior_ls,prior,ls,ergm,theta,scale_factor);
-  number_local_mh = 2 + (ls->n - ls->minimum_size);
+  if (dyad_dependence == 0) number_local_mh = 2;
+  else number_local_mh = 2 + (ls->n - ls->minimum_size);
   local_mh = (double*) calloc(number_local_mh,sizeof(double));
   if (local_mh == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh\n\n"); error("Error: out of memory"); }
   local_mh_accept = (double*) calloc(number_local_mh,sizeof(double));
   if (local_mh_accept == NULL) { Rprintf("\n\ncalloc failed: Inference, local_mh_accept\n\n"); error("Error: out of memory"); }
+  /* 
+  Rprintf("\n\nls->n = %i ls->minimum_size = %i number_local_mh = %i",ls->n,ls->minimum_size,number_local_mh);
+  Print_D(number_local_mh,scale_factor);
+  Print_D(number_local_mh,scalefactor);
+  */
   Set_D_D(number_local_mh,scale_factor,scalefactor); /* Metropolis-Hasting algorithm: scale factor */
   if (ls->n < 20) sample_size_indicators = round(ls->n / 3);
   else if (ls->n < 50) sample_size_indicators = round(ls->n / 6);
   else sample_size_indicators = round(ls->n / 12);
   if (sample_size_indicators > (ls->n - ls->number_fixed)) sample_size_indicators = ls->n - ls->number_fixed;
+  degenerate_draws = 0;
   coordinate = -1;
   for (batch = 0; batch < n_batches; batch++) /* Batch */
     {
@@ -2341,6 +2360,7 @@ output: MCMC sample of unknowns from posterior
           local_mh[i] = local_mh[i] + 1; 
           local_mh_accept[i] = local_mh_accept[i] + accept;
           }
+        Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
         }
       else /* Dyad-dependence conditional on latent structure */
         {
@@ -2359,6 +2379,7 @@ output: MCMC sample of unknowns from posterior
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_node,temperature,status);
+            degenerate_draws = degenerate_draws + *status;
             }
           free(available);
 	  }
@@ -2370,8 +2391,9 @@ output: MCMC sample of unknowns from posterior
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,status);
+          degenerate_draws = degenerate_draws + *status;
           }
-        if (ls->number > 1)
+        if (ergm->d2 > 0)
 	  {
 	  for (i = 0; i < ls->number; i++)
             {
@@ -2385,6 +2407,7 @@ output: MCMC sample of unknowns from posterior
                          sonames,MHproposaltype,MHproposalpackage,sample,burnin,interval, 
                          verbose,attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,inputs,print,newnetworkheads,newnetworktails,scale_factor,update_block,status);
+	      degenerate_draws = degenerate_draws + *status;
               }
             }
           if (ls->number_between > 0) 
@@ -2404,6 +2427,24 @@ output: MCMC sample of unknowns from posterior
          free(ls_p);
          }
       else Sample_Dirichlet(ls->number,ls->alpha,ls->p); /* Category probability vector */ 
+      sum = 0.0;
+      underflow = 0;
+      for (i = 0; i < ls->number; i++)
+         {
+         if (ls->p[i] < epsilon) 
+           {
+           underflow = 1;
+           ls->p[i] = epsilon;
+           }
+         sum = sum + ls->p[i];
+         }
+      if (underflow == 1) /* Renormalize */
+        {
+        for (i = 0; i < ls->number; i++) 
+          {
+          ls->p[i] = ls->p[i] / sum;
+          }
+        }
       if (hyper_prior == 1) /* Hyper prior: mean and precisions of Gaussian baseline distribution have non-degenerate prior */
         {
         ls_alpha = Sample_Alpha(prior_ls,ls); /* Clustering parameter */
@@ -2447,6 +2488,7 @@ output: MCMC sample of unknowns from posterior
                            sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                            attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                            maxedges,mheads,mtails,mdnedges,status);
+	  degenerate_draws = degenerate_draws + *status;
           }
         /* Store and output MCMC sample: */ 
         if (ergm->d1 > 0)
@@ -2459,7 +2501,7 @@ output: MCMC sample of unknowns from posterior
             mcmc[coordinate] = ergm->theta[i];
             }  
           }
-        if (ls->number > 1)
+        if (ergm->d2 > 0)
           {
           if (print >= 1) Rprintf("\nmeans of block parameters:");
           for (i = 0; i < ls->d; i++) /* Structural parameters */
@@ -2475,7 +2517,7 @@ output: MCMC sample of unknowns from posterior
             coordinate = coordinate + 1;	
             mcmc[coordinate] = prior->precision2[i][i];
             }
-          if (print >= 1) 
+	  if (print >= 1) 
             {
             Rprintf("\nblock parameters:");
             if (ergm->d2 > 1) Rprintf("\n");
@@ -2498,10 +2540,10 @@ output: MCMC sample of unknowns from posterior
             {
             if (print >= 1) 
               {
-              Rprintf(" %i",ls->indicator[i]+1);
+     	      Rprintf(" %i",ls->indicator[i]+1);
               }
-            coordinate = coordinate + 1;
-            mcmc[coordinate] = ls->indicator[i];
+            coordinate = coordinate + 1; 
+	    mcmc[coordinate] = ls->indicator[i];
             }
           if (print >= 1) Rprintf("\nblock sizes:");  
           for (i = 0; i < ls->number; i++)
@@ -2509,13 +2551,13 @@ output: MCMC sample of unknowns from posterior
             if (print >= 1) Rprintf(" %3i",ls->size[i]);
             coordinate = coordinate + 1;
             mcmc[coordinate] = ls->size[i];
-            } 
+            }
           if (print >= 1) Rprintf("\nblock probabilities:");
           for (i = 0; i < ls->number; i++) /* Category probability vector */
             {
             if (print >= 1) Rprintf(" %6.4f",ls->p[i]);
             coordinate = coordinate + 1;
-            mcmc[coordinate] = ls->p[i];
+             mcmc[coordinate] = ls->p[i];
             }
           if (print >= 1) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
           coordinate = coordinate + 1;
@@ -2555,10 +2597,11 @@ output: MCMC sample of unknowns from posterior
   Set_D_D(number_local_mh,mh_accept,local_mh_accept);
   if (console >= 1)
     {
-    Rprintf("\n");
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
-    Rprintf("\nThinning: every %i-th draw recorded",batch_size);
+    Rprintf("\nThinning: every %i-th draw recorded\n\n",batch_size);
     }
+  if (console == -1) Rprintf("\n");
+  if (degenerate_draws > 0) Rprintf("\nWARNING: %i generated networks were extreme in terms of the number of edges. The corresponding draws should be discarded.\n\n", degenerate_draws);
   free(scale_factor);
   free(local_mh_accept);
   free(local_mh);

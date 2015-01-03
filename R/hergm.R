@@ -40,10 +40,11 @@ hergm <- function(formula,
                   simulate = FALSE, 
                   seeds = NULL, 
                   samplesize = 1e+5, 
-                  burnin = NULL, 
-                  interval = 1e+2,
+                  interval = 1024,
+                  burnin = 16*interval, 
                   mh_scale = 0.25,
-                  temperature = c(1,10),
+                  variational = TRUE,
+                  temperature = c(1,100),
                   predictions = FALSE,
                   verbose = 1, 
                   ...) 
@@ -54,12 +55,6 @@ hergm <- function(formula,
   options()
   network <- ergm.getnetwork(formula)
   if (sum(network[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
-  if (is.null(burnin))
-    {
-    n <- network.size(network)
-    if (is.directed(network)) burnin <- 10*choose(n,2)*2
-    else burnin <- 10*choose(n,2)
-    }
   control$drop <- FALSE
   model <- ergm.getmodel(formula, network, drop=control$drop, expanded=TRUE)
   MCMCsamplesize <- samplesize
@@ -73,7 +68,7 @@ hergm <- function(formula,
   MCMCparams$target.stats <- Clist$target.stats
   print(
     system.time(
-      sample <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, temperature, predictions, perturb)
+      sample <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, variational, temperature, predictions, perturb)
     )
   )
   sample

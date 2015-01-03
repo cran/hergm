@@ -80,11 +80,13 @@ output: probability vector
 */
 {
   int i;
-  double sum;
+  double g, sum;
   sum = 0.0;
   for (i = 0; i < d; i++)
     { 
-    p[i] = rgamma(alpha,1.0);
+    g = rgamma(alpha,1.0);
+    if (g < epsilon) p[i] = epsilon;
+    else p[i] = g;
     sum = sum + p[i];
     }
   for (i = 0; i < d; i++)

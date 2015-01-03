@@ -1670,9 +1670,8 @@ output: one sample from posterior predictive distribution
                status);
   if (*fVerbose == 5)
     {
-    if (*status == 1) Rprintf("\nWarning: MCMC_wrapper: too many edges.");
-    else if (*status == 2) Rprintf("\nWarning: MCMC_wrapper: M-H proposal failed.");
-    if ((newnetworkheads[0] <= 0) || (newnetworkheads[0] >= *maxedges)) Rprintf("\nWarning: Sample_Graph: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+    if (*status == 1) Rprintf("\nWARNING: Sample_Graph: MCMC_wrapper: number of edges %i is outside of (1,%i).",newnetworkheads[0],*maxedges);
+    else if (*status == 2) Rprintf("\nWARNING: MCMC_wrapper: M-H proposal failed.");
     }
   indicator = (int*) calloc(n,sizeof(int));
   if (indicator == NULL) { Rprintf("\n\ncalloc failed: Sample_Graph, indicator\n\n"); error("Error: out of memory"); }
