@@ -48,11 +48,10 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       }
     else if (model$terms[[i]]$name == "mutual")
       {
-      mutual <- 1
       hierarchical[i] <- 0
-      dependence <- 1 # See ergm package: if dyad-independence term, non-null and FALSE, otherwise null
+      mutual <- 1
       }
-    else if (model$terms[[i]]$name %in% c("altkstar", "balance", "ctriple", "cycle", "cyclicalties", "cyclicalweights", "dsp", "esp", "gwdegree", "gwdsp", "gwdsp", "gwesp", "gwidegree", "gwnsp", "gwodegree", "intransitive", "istar", "kstar", "localtriangle", "mstar", "nsp", "opentriad", "ostar", "simmelian", "simmelianties", "threepath", "transitive", "transitiveties", "transitiveweights", "triadcensus", "triangle", "tripercent", "ttriple", "twopath")) # ergm term
+    else if (model$terms[[i]]$name %in% c("altkstar", "balance", "ctriple", "cycle", "cyclicalties", "cyclicalweights", "dsp", "esp", "gwdegree", "gwdsp", "gwdsp", "gwesp", "gwidegree", "gwnsp", "gwodegree", "intransitive", "istar", "kstar", "localtriangle", "mstar", "mutual", "nsp", "opentriad", "ostar", "simmelian", "simmelianties", "threepath", "transitive", "transitiveties", "transitiveweights", "triadcensus", "triangle", "tripercent", "ttriple", "twopath")) # ergm term
       {
       hierarchical[i] <- 0
       dependence <- 1
@@ -227,10 +226,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     {
     if (is.null(mean_between)) mean_between <- 3 / (Clist$n - 1) # If a homogeneous Bernoulli model without covariates governs between-block relations and node i is in its own block and all n-1 other nodes are in other blocks, then the expected degree of node i is 3/(n-1) * (n-1) = 3; otherwise, it is less  
     }
-  if (edges + edges_i + edges_ij > 1) nonidentifiable <- FALSE
-  else if (mutual + mutual_i + mutual_ij > 1) nonidentifiable <- FALSE
-  else identifiable <- TRUE
-  if (identifiable == FALSE) 
+  if ((edges + edges_i + edges_ij > 1) || (mutual + mutual_i + mutual_ij > 1)) 
     {
     cat("\n\n")
     error_message <- paste("The model is non-identifiable: check model terms and drop some of them.")      
@@ -350,7 +346,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   for (i in 1:terms) # We need to reset the input vectors of model terms; otherwise, when the user does not specify the number of blocks as an argument of the model terms, then the input vectors are intialized as vectors of length C n, where C > 0
     {
     hergm.theta <- rep.int(1, max_number+1)
-    model$terms[[i]]$inputs <- c(0, 1, 1+length(indicator)+length(hergm.theta), c(max_number, indicator, hergm.theta))
+    if (hierarchical[i] == 1) model$terms[[i]]$inputs <- c(0, 1, 1+length(indicator)+length(hergm.theta), c(max_number, indicator, hergm.theta))
     }
   #print(model$terms)
   Clist <- ergm.Cprepare(network, model)

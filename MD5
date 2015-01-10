@@ -1,4 +1,4 @@
-2c4bed1e869999eda81077aa7cbabbfc *DESCRIPTION
+9f5529128e9b9293a5c6ef6acbde5820 *DESCRIPTION
 f9ef04d84c0894f3a9137d42bd2a2715 *NAMESPACE
 8541ed07d5df033456a0f0b2167a6eba *R/hergm.R
 c8ea6eadf4dbe4c08e8a661148b26215 *R/hergm.gof.R
@@ -9,7 +9,7 @@ c8ea6eadf4dbe4c08e8a661148b26215 *R/hergm.gof.R
 a1feacc76f61c239b26bb6f6dc753296 *R/hergm.permutation.wrapper.R
 a59426490a482327b9adb69aef9a90cf *R/hergm.plot.R
 be562f4de642efc92c384043f5f4a3ea *R/hergm.postprocess.R
-4db723caa7ba2e10a7a200ca6b4082ca *R/hergm.preprocess.R
+6b6af5592dacbae10c67ed2316a14086 *R/hergm.preprocess.R
 01e9f66596710299f57181f94ce41e88 *R/hergm.relabel.R
 0db752e2a8202473c0a20bf17e45b3f7 *R/hergm.set.mcmc.R
 0458f6800bb7d8b8992bcaf12f6dc677 *R/hergm.terms.R
@@ -20,7 +20,7 @@ f8c6e7539adc23a12302ded557e866b1 *R/zzz.R
 dbba5e2d3b18bb97f140a933ebadb835 *data/sampson.RData
 bfd89f8541b3f80ade76ac4bb9e4cbc8 *demo/00Index
 c9fdd02ea12a54a0e1249cb1b4ea50d6 *demo/example.r
-58d0498db2726c3c576256758f32e13d *inst/CITATION
+0576613a011ab182b8be8308f4f76d4f *inst/CITATION
 b1f7bc357c64e360528ed4ca63f268f2 *man/bali.Rd
 ddd71862ba7bed4790784c82020265cd *man/example.Rd
 171dc4a4ad076cb7b5d99d7c6ac50efc *man/hergm-internal.Rd
