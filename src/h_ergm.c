@@ -2360,7 +2360,6 @@ output: MCMC sample of unknowns from posterior
           local_mh[i] = local_mh[i] + 1; 
           local_mh_accept[i] = local_mh_accept[i] + accept;
           }
-        Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
         }
       else /* Dyad-dependence conditional on latent structure */
         {
@@ -2410,16 +2409,16 @@ output: MCMC sample of unknowns from posterior
 	      degenerate_draws = degenerate_draws + *status;
               }
             }
-          if (ls->number_between > 0) 
-            {
-            local_mh[0] = local_mh[0] + 1;
-            local_mh_accept[0] = local_mh_accept[0] + Sample_Ls_Theta_Between(ergm,ls,prior,
-                                heads,tails,dnedges,dn,directed,bipartite, 
-                                nterms,funnames,sonames,inputs,print,scale_factor);
-            }
-          Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
 	  }
-	}
+        }
+      if (ls->number_between > 0)
+        {
+        local_mh[0] = local_mh[0] + 1;
+        local_mh_accept[0] = local_mh_accept[0] + Sample_Ls_Theta_Between(ergm,ls,prior,
+                              heads,tails,dnedges,dn,directed,bipartite,
+                              nterms,funnames,sonames,inputs,print,scale_factor);
+        }
+      Gibbs_Parameters(ergm,ls,prior); /* Structural parameters not showing up in ergm pmf */
       if (parametric == 0)
          {
          ls_p = Sample_P(ls); /* Category probability vector */

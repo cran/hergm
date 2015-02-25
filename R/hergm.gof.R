@@ -94,7 +94,7 @@ hergm.gof <- function(sample = NULL,
         edges[i] <- summary(simulated_network ~ edges)
         degree[i,] <- summary(simulated_network ~ odegree(1:n-1)) # Degree distribution          
         stars[i] <- summary(simulated_network ~ ostar(2))     
-        triangles[i] <- summary(simulated_network ~ ttriple_ijk)
+        triangles[i] <- summary(simulated_network ~ ttriple)
         } 
       else # Undirected networks
         {

@@ -216,11 +216,8 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   between <- vector(mode = "numeric", length = d2) # Default: no between-block terms
   for (i in 1:terms) # For given hergm term... 
     {
-    if (hierarchical[i] == 1)
-      {
-      if (model$terms[[i]]$name == "edges_ij") between[i] = 1
-      else if (model$terms[[i]]$name == "mutual_ij") between[i] = 1
-      }     
+    if ((hierarchical[i] == 1) && (model$terms[[i]]$name %in% c("edges_ij", "mutual_ij"))) between[i] <- 1
+    else between[i] <- 0 
     }
   if (sum(between) >= 1) # The following is used when simulate==TRUE and is.null(eta)==TRUE and unused otherwise
     {
@@ -375,7 +372,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   #print(model$terms)
   Clist <- ergm.Cprepare(network, model)
   #print(model$terms)
-  if ((simulate == FALSE) && (prior_assumptions[1] == 1))
+  if ((simulate == FALSE) && (prior_assumptions[1] == 1) && (d2 > 0))
     {
     cat("\nPrior:")
     cat("\n- alpha ~ Gamma(", alpha_shape, ",", alpha_rate, ")", sep="")

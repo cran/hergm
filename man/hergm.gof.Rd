@@ -33,7 +33,19 @@ hergm.gof(sample = NULL,
 
 \value{
 
-Functions of the network.
+\item{component.number}{number of components.}
+
+\item{max.component.size}{size of largest component.}
+
+\item{distance}{geodesic distance of pairs of nodes.}
+
+\item{degree}{degree of nodes.}
+
+\item{edges}{number of edges.}
+
+\item{stars}{number of \code{2}-stars.}
+
+\item{triangle}{number of triangles.}
 
 }
 
