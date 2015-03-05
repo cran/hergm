@@ -207,7 +207,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     }
   if (is.null(indicator)) number_fixed <- 0
   else number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
-  if (simulate == TRUE) max_number <- max_number # Specified by function hergm(); accept what hergm() specifies
+  if (simulate == TRUE) max_number <- max_number_i # Specified by function hergm(); accept what hergm() specifies
   else if (d2 == 0) max_number <- 1 # No hergm term
   else if ((is.null(indicator) == FALSE) && (number_fixed == Clist$n)) max_number <- length(unique(indicator)) # All neighborhood memberships known, thus max_number known 
   else if (is.null(max_number) == FALSE) max_number <- max_number # Specified by user; max_number overrules max_number_i

@@ -312,7 +312,6 @@ InitErgm.mutual_ij <- function(network, m, arglist, ...) # Michael
 ######################################################### 
 InitErgm.triangle_ijk <- function(network, m, arglist, ...) # Michael 
 {
-  ergm.checkdirected("triangle_ijk", is.directed(network), requirement = FALSE)
   a <- ergm.checkargs("triangle_ijk", 
     arglist,
     varnames = c("number"),

@@ -159,14 +159,17 @@ hergm.postprocess <- function(sample = NULL,
     output$hergm_theta_min[,index1:index2] <- hergm.permute_mcmc(theta, max_number, minimizer$min_permutations) # Within-block parameters 
     index2 <- index2 + 1 # Between-block parameters
     output$hergm_theta_min[,index2] <- output$hergm_theta[,index2] # Between-block parameters
-    for (h_term in 2:d2) # Relabel block-dependent parameters of block-dependent model terms one by one
+    if (d2 > 1)
       {
-      index1 <- index2 + 1 # Increment starting index
-      index2 <- index2 + max_number # Increment stopping index
-      theta <- output$hergm_theta[,index1:index2] # Within-block parameters
-      output$hergm_theta_min[,index1:index2] <- hergm.permute_mcmc(theta, max_number, minimizer$min_permutations) # Within-block parameters 
-      index2 <- index2 + 1 # Between-block parameters
-      output$hergm_theta_min[,index2] <- output$hergm_theta[,index2] # Copy between-block parameters
+      for (h_term in 2:d2) # Relabel block-dependent parameters of block-dependent model terms one by one
+        {
+        index1 <- index2 + 1 # Increment starting index
+        index2 <- index2 + max_number # Increment stopping index
+        theta <- output$hergm_theta[,index1:index2] # Within-block parameters
+        output$hergm_theta_min[,index1:index2] <- hergm.permute_mcmc(theta, max_number, minimizer$min_permutations) # Within-block parameters 
+        index2 <- index2 + 1 # Between-block parameters
+        output$hergm_theta_min[,index2] <- output$hergm_theta[,index2] # Copy between-block parameters
+        }
       }
     cat("\n")
     }

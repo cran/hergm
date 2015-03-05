@@ -24,8 +24,8 @@
   packageStartupMessage(
   paste('\nhergm: version ', info$Version, ', created on ', info$Date, '\n',
           "Copyright (c) 2009, Michael Schweinberger, Rice University\n", 
-          "                    Mark S. Handcock, University of California - Los Angeles\n",
           "                    with contributions from:\n",
+          "                    Mark S. Handcock, University of California - Los Angeles\n",
           "                    Pamela Luna, Rice University\n",
           "To start hergm: enter help(package=\"hergm\")\n",
           'For license and citation information type citation("hergm").\n', sep="")

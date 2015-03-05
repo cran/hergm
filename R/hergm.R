@@ -45,7 +45,7 @@ hergm <- function(formula,
                   mh_scale = 0.25,
                   variational = TRUE,
                   temperature = c(1,100),
-                  predictions = FALSE,
+                  predictions = TRUE,
                   verbose = 1, 
                   ...) 
 {
