@@ -1,4 +1,4 @@
-4abd10216d0d421ee52022f55b2cf01a *DESCRIPTION
+d6c4b068cad659c8b5e7a77d2a04795b *DESCRIPTION
 f9ef04d84c0894f3a9137d42bd2a2715 *NAMESPACE
 70a6641108b9cbb165176ef28a21c66e *R/hergm.R
 bdd880b819db15412fb46c61c922fb83 *R/hergm.gof.R
@@ -9,7 +9,7 @@ bdd880b819db15412fb46c61c922fb83 *R/hergm.gof.R
 a1feacc76f61c239b26bb6f6dc753296 *R/hergm.permutation.wrapper.R
 a59426490a482327b9adb69aef9a90cf *R/hergm.plot.R
 b74108e54222735937f0319e9472f9f9 *R/hergm.postprocess.R
-684539903f8b36f50acbf238000a144c *R/hergm.preprocess.R
+b66ca55e0a7aa81b4dadb3d269e6ad70 *R/hergm.preprocess.R
 01e9f66596710299f57181f94ce41e88 *R/hergm.relabel.R
 0db752e2a8202473c0a20bf17e45b3f7 *R/hergm.set.mcmc.R
 681305f688415433edc08802a83d30d3 *R/hergm.terms.R

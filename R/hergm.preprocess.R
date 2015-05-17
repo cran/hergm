@@ -207,12 +207,13 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     }
   if (is.null(indicator)) number_fixed <- 0
   else number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
-  if (simulate == TRUE) max_number <- max_number_i # Specified by function hergm(); accept what hergm() specifies
-  else if (d2 == 0) max_number <- 1 # No hergm term
-  else if ((is.null(indicator) == FALSE) && (number_fixed == Clist$n)) max_number <- length(unique(indicator)) # All neighborhood memberships known, thus max_number known 
-  else if (is.null(max_number) == FALSE) max_number <- max_number # Specified by user; max_number overrules max_number_i
-  else if (is.null(max_number_i) == FALSE) max_number <- max_number_i # Specified by user; max_number_i is overruled by max_number: see above 
-  else max_number <- Clist$n # Unspecified by user: default
+  if (d2 == 0) max_number <- 1 # No hergm terms
+  else # hergm terms
+    {
+    if (is.null(max_number) == FALSE) max_number <- max_number # Specified by user by using max_number; first option 
+    else if (is.null(max_number_i) == FALSE) max_number <- max_number_i # Specified by user by using max_number_i; second option, overruled by first option: see above
+    else max_number <- Clist$n # Unspecified by user: default
+    }
   between <- vector(mode = "numeric", length = d2) # Default: no between-block terms
   for (i in 1:terms) # For given hergm term... 
     {
