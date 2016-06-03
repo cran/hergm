@@ -8,7 +8,6 @@ citEntry(entry = "Manual",
          author = "Michael Schweinberger, Mark Handcock, and Pamela Luna",
          title = "hergm: Hierarchical Exponential-Family Random Graph Models with Local Dependence",
          year = year,
-         url = "http://cran.r-project.org/web/packages/hergm/index.html",
          textVersion = paste("Michael Schweinberger, Mark Handcock, and Pamela Luna (", year, "). hergm: Hierarchical Exponential-Family Random Graph Models with Local Dependence. ", version, ".", sep="")
          ) 
                    

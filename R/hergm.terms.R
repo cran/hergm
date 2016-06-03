@@ -19,33 +19,33 @@
 ###########################################################################
 
 # Upon encountering a model term such as [name](args), ergm and related
-# routines will call a function of the form InitErgm.[name].  The specific
+# routines will call a function of the form InitErgmTerm.[name].  The specific
 # function call will be of the form
-#   InitErgm.[name](network, model, arguments, ...)
+#   InitErgmTerm.[name](network, model, arguments, ...)
 # where network is the network object, model is a model object that should be
 # updated and then returned, arguments is the list (if any) of arguments
 # passed to the model term by the user, and ... includes any arguments
-# passed to the InitErgm function from within the program.
+# passed to the InitErgmTerm function from within the program.
 #
 # Arguments of
 # the latter type include such items as drop (a logical flag telling whether
 # degenerate terms should be dropped) and expanded (a logical flag used
 # by curved exponential family terms).  Because such arguments are usually
-# passed to ALL InitErgm functions, regardless of whether they are used,
-# it is important that each InitErgm function declaration include the
+# passed to ALL InitErgmTerm functions, regardless of whether they are used,
+# it is important that each InitErgmTerm function declaration include the
 # dot-dot-dot (...) argument.  Finally, such arguments are not guaranteed
-# to be passed when the InitErgm function is called, so any InitErgm function
+# to be passed when the InitErgmTerm function is called, so any InitErgmTerm function
 # requiring such an argument should supply a default value.
 #
 # An example:  If drop=TRUE is passed from inside the program,
 # then the statement
 #     ergm(network ~ triangle + kstar (2:4) + nodematch("sex"))
 # results in the following function calls:
-#     InitErgm.triangle (network, model, list(), drop=TRUE)
-#     InitErgm.kstar (network, model, list(2:4), drop=TRUE)
-#     InitErgm.nodematch (network, model, list("sex"), drop=TRUE)
+#     InitErgmTerm.triangle (network, model, list(), drop=TRUE)
+#     InitErgmTerm.kstar (network, model, list(2:4), drop=TRUE)
+#     InitErgmTerm.nodematch (network, model, list("sex"), drop=TRUE)
 #
-# Each InitErgm.[name] function should check its argument list for errors, 
+# Each InitErgmTerm.[name] function should check its argument list for errors, 
 # then set termnumber to 1+length(model$terms).
 # Next, it should add the names of the statistics that
 # will be computed to the vector model$coef.names.  These names must be
@@ -117,19 +117,19 @@
 
 
 ######################################################### 
-InitErgm.edges_i <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.edges_i <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("edges_i", is.directed(network), requirement = FALSE)
-  a <- ergm.checkargs("edges_i", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  #print("InitErgmTerm.edges_i")
+  #print(nw$gal$n)
+  #print(nw$terms)
+  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE, 
     varnames = c("number", "indicator", "theta"),
     vartypes = c("numeric", "numeric", "numeric"),
-    defaultvalues = list(network$gal$n, NULL, NULL),
+    defaultvalues = list(1, NULL, NULL),
     required = c(FALSE, FALSE, FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.edges_i")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.edges_i")
   number <- a$number # (Maximum) number of categories
   #print(number)
   if (is.null(a$indicator)) 
@@ -146,29 +146,23 @@ InitErgm.edges_i <- function(network, m, arglist, ...) # Michael
     }
   else theta <- a$theta
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "edges_i", 
-                                soname = "hergm",
+  list(name = "edges_i", coef.names="edges_i", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = FALSE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "edges_i")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.arcs_i <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.arcs_i <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("arcs_i", is.directed(network), requirement = TRUE)
-  a <- ergm.checkargs("arcs_i", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.arcs_i")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.arcs_i")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -177,29 +171,23 @@ InitErgm.arcs_i <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "arcs_i", 
-                                soname = "hergm",
+  list(name = "arcs_i", coef.names="arcs_i", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = FALSE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "arcs_i")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.arcs_j <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.arcs_j <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("arcs_j", is.directed(network), requirement = TRUE)
-  a <- ergm.checkargs("arcs_j", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,  
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.arcs_j")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.arcs_j")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -208,28 +196,23 @@ InitErgm.arcs_j <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "arcs_j", 
-                                soname = "hergm",
+  list(name = "arcs_j", coef.names="arcs_j", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = FALSE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "arcs_j")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.edges_ij <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.edges_ij <- function(nw, arglist, ...) # Michael 
 {
-  a <- ergm.checkargs("edges_ij",
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE,
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE))
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.edges_ij")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.edges_ij")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -238,29 +221,23 @@ InitErgm.edges_ij <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "edges_ij",
-                                soname = "hergm",
+  list(name = "edges_ij", coef.names="edges_ij",
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = FALSE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "edges_ij")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.mutual_i <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.mutual_i <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("mutual_i", is.directed(network), requirement = TRUE)
-  a <- ergm.checkargs("mutual_i", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.mutual_i")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.mutual_i")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -269,29 +246,23 @@ InitErgm.mutual_i <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "mutual_i", 
-                                soname = "hergm",
+  list(name = "mutual_i", coef.names="mutual_i", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = FALSE) 
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "mutual_i")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.mutual_ij <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.mutual_ij <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("mutual_ij", is.directed(network), requirement = TRUE)
-  a <- ergm.checkargs("mutual_ij", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.mutual_ij")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.mutual_ij")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -300,28 +271,23 @@ InitErgm.mutual_ij <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "mutual_ij", 
-                                soname = "hergm",
+  list(name = "mutual_ij", coef.names="mutual_ij", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = FALSE) 
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "mutual_ij")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.triangle_ijk <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.triangle_ijk <- function(nw, arglist, ...) # Michael 
 {
-  a <- ergm.checkargs("triangle_ijk", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
-    required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.triangle_ijk")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+    defaultvalues = list(n),
+    required = c(FALSE))
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.triangle_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -330,29 +296,23 @@ InitErgm.triangle_ijk <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "triangle_ijk", 
-                                soname = "hergm",
+  list(name = "triangle_ijk", coef.names="triangle_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = TRUE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "triangle_ijk")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.ttriple_ijk <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.ttriple_ijk <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("ttriple_ijk", is.directed(network), requirement = TRUE)
-  a <- ergm.checkargs("ttriple_ijk", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.ttriple_ijk")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.ttriple_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -361,29 +321,23 @@ InitErgm.ttriple_ijk <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "ttriple_ijk", 
-                                soname = "hergm",
+  list(name = "ttriple_ijk", coef.names="ttriple_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = TRUE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "ttriple_ijk")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.ctriple_ijk <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.ctriple_ijk <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("ctriple_ijk", is.directed(network), requirement = TRUE)
-  a <- ergm.checkargs("ctriple_ijk", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.ctriple_ijk")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.ctriple_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -392,29 +346,23 @@ InitErgm.ctriple_ijk <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "ctriple_ijk", 
-                                soname = "hergm",
+  list(name = "ctriple_ijk", coef.names="ctriple_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = TRUE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "ctriple_ijk")
-  m
+  #print(nw$terms[[termnumber]])
 }
 
 ######################################################### 
-InitErgm.twostar_ijk <- function(network, m, arglist, ...) # Michael 
+InitErgmTerm.twostar_ijk <- function(nw, arglist, ...) # Michael 
 {
-  ergm.checkdirected("twostar_ijk", is.directed(network), requirement = FALSE)
-  a <- ergm.checkargs("twostar_ijk", 
-    arglist,
+  n <- nw$gal$n # Number of nodes
+  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE, 
     varnames = c("number"),
     vartypes = c("numeric"),
-    defaultvalues = list(network$gal$n),
+    defaultvalues = list(n),
     required = c(FALSE)) 
-  termnumber <- 1 + length(m$terms)
-  #print("InitErgm.twostar_ijk")
-  n <- network$gal$n # Number of nodes
-  #print(n)
+  termnumber <- 1 + length(nw$terms)
+  #print("InitErgmTerm.twostar_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
@@ -423,12 +371,9 @@ InitErgm.twostar_ijk <- function(network, m, arglist, ...) # Michael
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 1 
   #print(theta)
-  m$terms[[termnumber]] <- list(name = "twostar_ijk", 
-                                soname = "hergm",
+  list(name = "twostar_ijk", coef.names="twostar_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
                                 dependence = TRUE)
-  #print(m$terms[[termnumber]])
-  m$coef.names <- c(m$coef.names, "twostar_ijk")
-  m
+  #print(nw$terms[[termnumber]])
 }
 

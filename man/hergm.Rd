@@ -18,40 +18,56 @@ The exponential-family random graph models with local dependence replace the lon
 Therefore, the exponential-family random graph models with local dependence replace the strong dependence of conventional exponential-family random graph models by weak dependence, 
 reducing the problem of model degeneracy (Handcock, 2003; Schweinberger, 2011) and improving goodness-of-fit (Schweinberger and Handcock, 2015).
 
+The function \code{hergm} postprocesses the output returned by the function \code{hergm}.
+If \code{hergm} is called with \code{relabel > 0},
+it solves the so-called label-switching problem.
+The label-switching problem is rooted in the invariance of the likelihood function to permutations of the labels of blocks, and implies that raw MCMC samples from the posterior cannot be used to infer to block-dependent entities.
+The label-switching problem can be solved in a Bayesian decision-theoretic framework: by choosing a loss function and minimizing the posterior expected loss.
+Two loss functions are implemented in \code{hergm}, the loss function of Schweinberger and Handcock (2015) (\code{relabel == 1}) and the loss function of Peng and Carvalho (2015) (\code{relabel == 2}).
+The first loss function seems to be superior in terms of the reported clustering probabilities, but is more expensive in terms of computing time.
+A rule of thumb is to use the first loss function when \code{max_number < 15} and use the second loss function otherwise.
+
 }
 
 \usage{
 
 hergm(formula,
-      max_number = NULL,
-      hierarchical = TRUE,
-      parametric = FALSE, 
-      initialize = FALSE,
-      perturb = TRUE,
-      alpha = NULL,
-      alpha_shape = NULL,
-      alpha_rate = NULL,
-      eta = NULL,
-      eta_mean = NULL,
-      eta_sd = NULL,
-      eta_mean_mean = NULL,
-      eta_mean_sd = NULL,
-      eta_precision_shape = NULL,
-      eta_precision_rate = NULL,
-      mean_between = NULL,
-      indicator = NULL,
-      parallel = 1,
-      simulate = FALSE,
-      seeds = NULL,
-      samplesize = 1e+5,
-      interval = 1024,
-      burnin = 16*interval,
-      mh_scale = 0.25,
-      variational = TRUE,
-      temperature = c(1,100),
-      predictions = TRUE,
-      verbose = 1,
-      \dots)
+                  max_number = NULL,
+                  hierarchical = TRUE,
+                  parametric = FALSE,
+                  initialize = FALSE,
+                  perturb = FALSE,
+                  scaling = NULL,
+                  alpha = NULL,
+                  alpha_shape = NULL,
+                  alpha_rate = NULL,
+                  eta = NULL,
+                  eta_mean = NULL,
+                  eta_sd = NULL,
+                  eta_mean_mean = NULL,
+                  eta_mean_sd = NULL,
+                  eta_precision_shape = NULL,
+                  eta_precision_rate = NULL,
+                  mean_between = NULL,
+                  all_indicators_fixed = FALSE,
+                  indicators_fixed = FALSE,
+                  indicator = NULL,
+                  parallel = 1,
+                  simulate = FALSE,
+                  seeds = NULL,
+                  samplesize = 1e+5,
+                  interval = 1024,
+                  burnin = 16*interval,
+                  mh.scale = 0.25,
+                  variational = FALSE,
+                  temperature = c(1,100),
+                  predictions = FALSE,
+                  posterior.burnin = 0,
+                  posterior.thinning = 1,
+                  relabel = 0,
+                  number.runs = 1,
+                  verbose = 1,
+                  \dots)
 
 }
 
@@ -68,9 +84,11 @@ hergm(formula,
 
 \item{parametric}{parametric prior; if \code{parametric == FALSE}, prior is truncated Dirichlet process prior, otherwise parametric Dirichlet prior.}
 
-\item{initialize}{if \code{indicator == NULL} and \code{initialize == TRUE}, initialize block memberships by spectral clustering.}
+\item{initialize}{if \code{initialize == TRUE}, initialize block memberships by spectral clustering.}
 
-\item{perturb}{if \code{indicator == NULL} and \code{initialize == TRUE} and \code{perturb == TRUE}, initialize block memberships by spectral clustering and perturb.}
+\item{perturb}{if \code{initialize == TRUE} and \code{perturb == TRUE}, initialize block memberships by spectral clustering and perturb.}
+
+\item{scaling}{if \code{scaling == TRUE}, use size-dependent parameterizations which ensure that the scaling of between- and within-neighborhood terms is consistent with sparse edge terms.}
 
 \item{alpha}{concentration parameter of truncated Dirichlet process prior of natural parameters of exponential-family model.}
 
@@ -86,7 +104,11 @@ hergm(formula,
 
 \item{mean_between}{if \code{simulate == TRUE} and \code{eta == NULL}, then \code{mean_between} specifies the mean-value parameter of edges between blocks.}
 
-\item{indicator}{if \code{simulate == TRUE} and indicator of block membership is specified, condition on specified indicator (of block membership).}
+\item{all_indicators_fixed}{indicates whether all indicators of the block memberships are fixed at the specified indicators; if some block memberships are unsspecified, spectral clustering is used to initialize all block memberships.}
+
+\item{indicators_fixed}{indicates whether the indicators of the block memberships are fixed at the specified indicators.}
+
+\item{indicator}{if the indicators of block memberships are specified as numbers between 1 and \code{max_number}, the specified indicators are either used as starting values (\code{indicator_fixed == FALSE}) or the indicators are fixed at the specified indicators (\code{indicator_fixed == TRUE}), which is useful when indicators of block memberhips are observed (which is the case in multilevel networks).}
 
 \item{parallel}{number of computing nodes; if \code{parallel > 1}, \code{hergm} is run on \code{parallel} computing nodes.}
 
@@ -100,13 +122,21 @@ hergm(formula,
 
 \item{burnin}{if \code{simulate == TRUE}, number of burn-in iterations.}
 
-\item{mh_scale}{if \code{simulate == FALSE}, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
+\item{mh.scale}{if \code{simulate == FALSE}, scale factor of candicate-generating distribution of Metropolis-Hastings algorithm.}
 
 \item{variational}{if \code{simulate == FALSE} and \code{variational == TRUE}, variational methods are used to construct the proposal distributions of block memberships; limited to selected models.}
 
 \item{temperature}{if \code{simulate == FALSE} and \code{variational == TRUE}, minimum and maximum temperature; the temperature is used to melt down the proposal distributions of indicators, which are based on the full conditional distributions of indicators but can have low entropy, resulting in slow mixing of the Markov chain; the temperature is a function of the entropy of the full conditional distributions and is designed to increase the entropy of the proposal distributions, and the minimum and maximum temperature are user-defined lower and upper bounds on the temperature.}
 
 \item{predictions}{if \code{predictions == TRUE} and \code{simulate == FALSE}, returns posterior predictions of statistics in the model.}
+
+\item{posterior.burnin}{number of burn-in iterations; if computing is parallel, number of burn-in iterations per processor.}
+
+\item{posterior.thinning}{if \code{thinning > 1}, every \code{thinning}-th sample point is used while all others discarded.}
+
+\item{relabel}{if \code{relabel > 0}, relabel MCMC sample by minimizing the posterior expected loss of Schweinberger and Handcock (2015) (\code{relabel == 1}) or Peng and Carvalho (2015) (\code{relabel == 2}).}
+
+\item{number.runs}{if \code{relabel == 1}, number of runs of relabeling algorithm.}
 
 \item{verbose}{if \code{verbose == -1}, no console output; if \code{verbose == 0}, short console output; if \code{verbose == +1}, long console output.}
 
@@ -119,12 +149,30 @@ hergm(formula,
 If called with the option \code{simulate == TRUE}, 
 the function \code{hergm} returns a sample of networks, 
 otherwise a MCMC sample from the posterior.
-To postprocess the sample,
-call the function \code{hergm.postprocess}.
+
+\item{ergm_theta}{parameters of \code{ergm-terms}.}
+
+\item{alpha}{concentration parameter of truncated Dirichlet process prior of parameters of \code{hergm-terms}.}
+
+\item{eta_mean}{mean parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
+
+\item{eta_precision}{precision parameters of Gaussian base distribution of parameters of \code{hergm-terms}.}
+
+\item{hergm_theta}{parameters of \code{hergm-terms}.}
+
+\item{loss}{if \code{relabel == TRUE}, local minimum of loss function.}
+
+\item{p_k}{probabilities of membership to blocks.}
+
+\item{indicator}{indicators of memberships of nodes.}
+
+\item{p_i_k}{probabilities of membership of nodes to blocks.}
+
+\item{prediction}{posterior predictions of statistics.}
 
 }
 
-\seealso{network, ergm.terms, hergm.terms, hergm.postprocess, hergm.gof, hergm.plot}
+\seealso{network, ergm.terms, hergm.terms, hergm.gof, hergm.plot, summary}
 
 \references{
 
@@ -133,6 +181,8 @@ Handcock, M. S. (2003). Assessing degeneracy in statistical models of social net
 Holland, P. W. and S. Leinhardt (1981). An exponential family of probability distributions for directed graphs. Journal of the American Statistical Association, Theory \& Methods, 76, 33--65.
 
 Nowicki, K. and T. A. B. Snijders (2001). Estimation and prediction for stochastic blockstructures. Journal of the American Statistical Association, Theory \& Methods, 96, 1077--1087.
+
+Peng, L. and L. Carvalho (2015). Bayesian degree-corrected stochastic block models for community detection. Technical report, Boston University, arXiv:1309.4796v1.
 
 Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochastic blockmodels for graphs with latent block structure. Journal of Classification 14, 75--100.
 

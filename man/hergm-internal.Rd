@@ -1,9 +1,8 @@
+\title{Internal hergm function}
 
 \name{hergm-internal}
 
 \alias{hergm.internal}
-
-\title{Internal hergm function}
 
 \alias{length_mcmc}
 
@@ -37,6 +36,8 @@
 
 \alias{hergm.preprocess} 
 
+\alias{hergm.postprocess} 
+
 \alias{hergm.sa} 
 
 \alias{hergm.set.mcmc} 
@@ -45,29 +46,33 @@
 
 \alias{hergm.step_2}
 
+\alias{summary_sample_network}
+
 \alias{hergm.wrapper} 
 
 \alias{hergm.permutation.wrapper} 
 
-\alias{InitErgm.ctriple_ijk} 
+\alias{InitErgmTerm.ctriple_ijk} 
 
-\alias{InitErgm.edges_i} 
+\alias{InitErgmTerm.edges_i} 
 
-\alias{InitErgm.arcs_i} 
+\alias{InitErgmTerm.arcs_i} 
 
-\alias{InitErgm.arcs_j} 
+\alias{InitErgmTerm.arcs_j} 
 
-\alias{InitErgm.edges_ij}
+\alias{InitErgmTerm.edges_ij}
 
-\alias{InitErgm.mutual_i} 
+\alias{InitErgmTerm.mutual_i} 
 
-\alias{InitErgm.mutual_ij} 
+\alias{InitErgmTerm.mutual_ij} 
 
-\alias{InitErgm.triangle_ijk} 
+\alias{InitErgmTerm.triangle_ijk} 
 
-\alias{InitErgm.ttriple_ijk}
+\alias{InitErgmTerm.ttriple_ijk}
 
-\alias{InitErgm.twostar_ijk}
+\alias{InitErgmTerm.twostar_ijk}
+
+\alias{hergm.getnetwork}
 
 \description{
 
@@ -81,7 +86,7 @@ Internal function which is called by user-level function.
 
 }
 
-\seealso{User-level functions: hergm, hergm.terms, hergm.postprocess}
+\seealso{User-level functions: hergm, hergm.terms, hergm.gof, hergm.summary}
 
 \keyword{internal}
 

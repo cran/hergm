@@ -18,34 +18,43 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.relabel_1 <- function(max_number, indicator, number_runs)
-# Relabeling algorithm, which aims to minimize posterior expected loss
-# input: number of categories, indicators, number of runs
-# output: minimum and minimizer of posterior expected loss 
+summary <- function(sample = NULL,
+                    ...)
+ {
+ UseMethod("summary")
+ }
+
+summary.hergm <- function(sample = NULL,
+                    ...)
+# input: output of function hergm
+# output: summary of output of function hergm
 {
-  loss <- vector(length = number_runs)
-  minimum_loss <- Inf
-  for (i in 1:number_runs)
+  if (sample$simulate == TRUE) # MCMC sample of networks from model
     {
-    if (number_runs > 1) cat("\n------\nRun ", i, "\n------\n", sep="")
-    output <- hergm.min_loss_1(max_number, indicator, 25) # Loss function of Schweinberger and Handcock (2015)
-    loss[i] <- output$loss
-    if (output$loss < minimum_loss)
+    # Initialize
+    sample_size <- sample$sample_size
+    n <- sample$network$gal$n
+    output <- list()
+    output$component.number <- vector(length = sample_size)
+    output$max.component.size <- vector(length = sample_size)
+    output$distance.label <- matrix(0, nrow = sample_size, ncol = n)
+    output$distance <- matrix(0, nrow = sample_size, ncol = n)
+    output$edges <- vector(length = sample_size)
+    output$degree <- matrix(0, nrow = sample_size, ncol = n)
+    output$stars <- vector(length = sample_size)
+    output$triangles <- vector(length = sample_size)
+    for (i in 1:sample$sample_size)
       {
-      minimum_loss <- output$loss
-      min_output <- output
+      summary_sample_network(sample, n, output, i)
       }
     }
-  if (number_runs > 1) cat("\n", "Minimum loss: ", min_output$loss, "\n", sep="")
-  min_output
+  else # MCMC sample of clustering and parameters from posterior
+    {
+    cat("\nSummary of posterior of clustering of nodes:")
+    sample$p_i_k
+    output <- hergm.plot(sample)
+    cat("\nSummary of marginal posteriors of parameters can be obtained by using running \"hergm$parameter\", where \"parameter\" is replaced by the parameter of interest: see \"?hergm\".")
+    }
+  output
 }
 
-hergm.relabel_2 <- function(max_number, indicator)
-# Relabeling algorithm, which aims to minimize posterior expected loss
-# input: number of categories, indicators
-# output: minimum and minimizer of posterior expected loss 
-{
-  min_output <- hergm.min_loss_2(max_number, indicator) # Loss function of Peng and Carvalho (2015); note: the algorithm converges to the same minimum in each run, therefore multiple runs are not necessary
-  min_output
-}
- 

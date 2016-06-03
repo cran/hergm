@@ -228,7 +228,7 @@ hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion)
     change <- present_loss - last_loss
     cat("\nChange",change)
     last_loss <- present_loss
-    if (abs(change) <= 0.01) i <- stop_criterion
+    if (abs(change) <= 1) i <- stop_criterion
     }
   min_permutations <- min_min_permutations
   indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)

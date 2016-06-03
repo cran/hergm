@@ -216,6 +216,7 @@ output: draw from truncated Dirichlet process prior:
 
 void Simulation(int *dyaddependence,
              int *hierarchical,
+             double *scaling,
              int *d, 
              int *d1, 
              int *d2,
@@ -262,7 +263,7 @@ output: simulated graph
 void Inference(int *model_type,
              int *dyaddependence,
              int *hierarchical,
-             int *decomposable,
+             double *scaling,
              int *d, 
              int *d1, 
              int *d2,

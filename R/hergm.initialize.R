@@ -48,13 +48,13 @@ hergm.initialize <- function(network, k, perturb)
   b <- eigen(m, symmetric=TRUE)
   
   # k-means clustering of nodes based on "spectral.decomposition":
-  c <- kmeans(b$vectors, centers=k, nstart=10) 
+  c <- kmeans(b$vectors[,1:log(n)], centers=k, nstart=10) 
 
   # Extract membership indicators from "clustering":
   c.indicators <- c$cluster
 
   # Write membership indicators to console:
-  cat("Membership Indicators:", c.indicators)
+  cat("\nInitial membership indicators:", c.indicators)
   
   if (perturb) 
     {
@@ -66,9 +66,10 @@ hergm.initialize <- function(network, k, perturb)
     
     # Write sampled membership indicators to console:
     cat("\n")
-    cat("Sampled Membership Indicators:", c.indicators)
-    cat("\n")
+    cat("Perturbed initial membership indicators:", c.indicators)
     }
+
+  cat("\n")
 
   # Return sampled partition, labeling blocks 0..k-1:
   indicator <- c.indicators - 1 # Replace by sampled membership indicators

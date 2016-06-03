@@ -4,9 +4,22 @@ useDynLib(hergm)
 importFrom(utils, packageDescription)
 import(ergm)
 importFrom(latentnet, ergmm.drawpie)
+import(mcgibbsit)
 import(network)
 importFrom(parallel, makePSOCKcluster, clusterEvalQ, clusterApplyLB, stopCluster)
 importFrom(sna, gplot, component.dist, geodist)
+importFrom("grDevices", "dev.off", "pdf")
+importFrom("graphics", "abline", "boxplot", "hist", "matplot", "par",
+             "pie", "plot", "points")
+importFrom("stats", "as.formula", "kmeans", "quantile", "runif",
+             "terms")
+importFrom("utils", "capture.output", "flush.console")
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")
+export(simulate, 
+summary,
+gof)
+S3method(simulate, hergm)
+S3method(summary, hergm)
+S3method(gof, hergm)

@@ -1807,6 +1807,7 @@ output: draw from truncated Dirichlet process prior:
 
 void Simulation(int *dyaddependence,
              int *hierarchical,
+             double *scaling,
              int *d, 
              int *d1, 
              int *d2,
@@ -1889,7 +1890,7 @@ output: simulated graph
     if (*directed == 0) threshold = 8;
     else threshold = 6;
     }
-  ls = Initialize_Latentstructure(number,n,indicator,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
+  ls = Initialize_Latentstructure(number,n,indicator,minimum_size,threshold,ergm->d2,between,scaling); /* Latent structure and structural parameters */
   prior_ls = Initialize_Prior_ls(*alpha_shape,*alpha_rate); /* Prior: clustering parameter */
   mdnedges = &null;
   mheads = NULL;
@@ -2192,7 +2193,7 @@ output: simulated graph
 void Inference(int *model_type,
              int *dyaddependence,
              int *hierarchical,
-             int *decomposable,
+             double *scaling,
              int *d, 
              int *d1, 
              int *d2,
@@ -2279,7 +2280,13 @@ output: MCMC sample of unknowns from posterior
     if (*directed == 0) threshold = 6;
     else threshold = 5;
     }
-  ls = Initialize_Latentstructure(number,n,indicator,minimum_size,threshold,ergm->d2,between); /* Latent structure and structural parameters */
+  /*
+  Print_I(n,indicator);
+  */
+  ls = Initialize_Latentstructure(number,n,indicator,minimum_size,threshold,ergm->d2,between,scaling); /* Latent structure and structural parameters */
+  /*
+  Print_I(n,ls->indicator);
+  */
   prior_ls = Initialize_Prior_ls(*alpha_shape,*alpha_rate); /* Prior: clustering parameter */
   hyper_prior = prior_assumptions[0]; /* If 1, hierarchical prior, otherwise non-hierarchical prior */
   parametric = prior_assumptions[1]; /* If 1, parametric prior */
@@ -2502,17 +2509,17 @@ output: MCMC sample of unknowns from posterior
           }
         if (ergm->d2 > 0)
           {
-          if (print >= 1) Rprintf("\nmeans of block parameters:");
+          if ((hyper_prior == 1) && (print >= 1)) Rprintf("\nmeans of block parameters:");
           for (i = 0; i < ls->d; i++) /* Structural parameters */
             {
-            if (print >= 1) Rprintf(" %8.4f",prior->mean2[i]);
+            if ((hyper_prior == 1) && (print >= 1)) Rprintf(" %8.4f",prior->mean2[i]);
             coordinate = coordinate + 1;	
             mcmc[coordinate] = prior->mean2[i];
             }
-          if (print >= 1) Rprintf("\nprecisions of block parameters:");
+          if ((hyper_prior == 1) && (print >= 1)) Rprintf("\nprecisions of block parameters:");
           for (i = 0; i < ls->d; i++) /* Structural parameters */
             {
-            if (print >= 1) Rprintf(" %8.4f",prior->precision2[i][i]);
+            if ((hyper_prior == 1) && (print >= 1)) Rprintf(" %8.4f",prior->precision2[i][i]);
             coordinate = coordinate + 1;	
             mcmc[coordinate] = prior->precision2[i][i];
             }
@@ -2558,20 +2565,20 @@ output: MCMC sample of unknowns from posterior
             coordinate = coordinate + 1;
              mcmc[coordinate] = ls->p[i];
             }
-          if (print >= 1) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
+          if ((hyper_prior == 1) && (print >= 1)) Rprintf("\nblock probabilities prior parameter: %6.4f",ls->alpha); /* Clustering parameter */
           coordinate = coordinate + 1;
           mcmc[coordinate] = ls->alpha;
           }
-  	if (*output == 1)
-	  {	
-          if (print >= 1) Rprintf("\nposterior prediction of statistics:");
+        if (*output == 1)
+          {
+          if ((*output == 1) && (print >= 1)) Rprintf("\nposterior prediction of statistics:");
           for (i = 0; i < ergm->d; i++) /* Posterior prediction of statistics */
             {
-            if (print >= 1) Rprintf(" %6.0f",pp[i]);
+            if ((*output == 1) && (print >= 1)) Rprintf(" %6.0f",pp[i]);
             coordinate = coordinate + 1;
             mcmc[coordinate] = pp[i];
             }
-	  }
+          }
         if (print >= 1) Rprintf("\n");
         else if (print == 0) 
           {

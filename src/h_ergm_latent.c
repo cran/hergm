@@ -20,7 +20,7 @@
 
 #include "h_ergm_latent.h"
 
-latentstructure* Initialize_Latentstructure(int number, int n, int *indicator, int minimum_size, int threshold, int d, int *between)
+latentstructure* Initialize_Latentstructure(int number, int n, int *indicator, int minimum_size, int threshold, int d, int *between, double *scaling)
 /*
 input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters, indicators of wether between-category parameters are restricted to 0
 ouput: latent structure
@@ -46,14 +46,14 @@ ouput: latent structure
   ls->number_fixed = 0;
   for (i = 0; i < ls->n; i++)
     {
-    if (indicator[i] <= 0)
+    if (indicator[i] < 0)
       {
       ls->number_fixed = ls->number_fixed + 1;
       ls->fixed[i] = 1;
-      ls->indicator[i] = -indicator[i];
+      ls->indicator[i] = -indicator[i] - 1; /* The translation by -1 is needed, because the R code submits numbers -ls->number...-1 as category memberships so that reflecting them around 0 gives 1...ls->number, but we need 0...l->number-1 */
       }	
-    else ls->indicator[i] = 0;    
-    /*
+    else ls->indicator[i] = indicator[i];    
+    /* 
     Rprintf("\ni=%i indicator[i]=%i ls->number_fixed=%i ls->fixed[i]=%i ls->indicator[i]=%i",i,indicator[i],ls->number_fixed,ls->fixed[i],ls->indicator[i]);
     */    
     }
@@ -79,6 +79,12 @@ ouput: latent structure
         ls->between[k] = i;
         } 
       }
+    }
+  ls->scaling = (double*) calloc(ls->d,sizeof(double));
+  if (ls->scaling == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->scaling\n\n"); error("Error: out of memory"); }
+  for (i = 0; i < ls->d; i++)
+    {
+    ls->scaling[i] = scaling[i];
     }
   if (d == 0) k = 1; 
   else k = d;
@@ -128,6 +134,7 @@ ouput: latent structure
   free(ls->indicator);
   free(ls->fixed);
   if (ls->number_between > 0) free(ls->between);
+  free(ls->scaling);
   for (i = 0; i < d; i++)
     {
     free(ls->theta[i]);

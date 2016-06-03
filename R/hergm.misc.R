@@ -61,3 +61,36 @@ bernoulli_map_mean_to_natural <- function(n, mu, directed)
   theta
 }
 
+summary_sample_network <- function(sample, n, output, i)
+# input: sample network in the form of edge list, number of nodes, output, number of sample networks
+# output: summary of sample network
+{
+  sample.edgelist <- cbind(sample$heads, sample$tails) # Edge list of simulated network
+  sample.network <- as.network(sample.edgelist, directed = FALSE, matrix.type = "edgelist") # The simulated network as network object; note: simulated_network$gal$n <- maximum vertex number
+  if (sample.network$gal$n < n) add.vertices(sample.network, nv = n-sample.network$gal$n) # If simulated$gal$n < n, add isolates 
+  components <- component.dist(sample.network)
+  output$component.number[i] <- length(components$csize) # Number of components
+  output$max.component.size[i] <- max(components$csize) # Size of largest component
+  output$distances <- geodist(sample.network)
+  output$distances <- output$distances$gdist
+  output$frequencies_distances <- table(output$distances) # First column: frequency of self loops; columns 2:number: frequencies finite and (last column) infinite distances
+  output$number <- length(output$frequencies_distances) - 1 - (sum(output$distances == Inf) > 0) # Number of distances minus 0-distance minus Inf-distance
+  output$distance.label[i,1:output$number] <- rownames(output$frequencies_distances)[2:(output$number+1)]
+  output$distance[i,1:output$number] <- output$frequencies_distances[2:(output$number+1)] # Frequencies of finite distances
+  if (is.directed(sample.network)) # Directed networks
+    {
+    output$edges[i] <- summary(sample.network ~ edges)
+    output$degree[i,] <- summary(sample.network ~ odegree(1:n-1)) # Degree distribution             
+    output$stars[i] <- summary(sample.network ~ ostar(2))
+    output$triangles[i] <- summary(sample.network ~ ttriple)
+    }
+  else # Undirected networks
+    {
+    output$edges[i] <- summary(sample.network ~ edges)
+    output$degree[i,] <- summary(sample.network ~ degree(1:n-1)) # Degree distribution             
+    output$stars[i] <- summary(sample.network ~ kstar(2))
+    output$triangles[i] <- summary(sample.network ~ triangles)
+    }
+  output
+}
+

@@ -23,7 +23,8 @@ hergm <- function(formula,
                   hierarchical = TRUE,
                   parametric = FALSE,
                   initialize = FALSE,
-                  perturb = TRUE,
+                  perturb = FALSE,
+                  scaling = NULL,
                   alpha = NULL,
                   alpha_shape = NULL, 
                   alpha_rate = NULL, 
@@ -35,6 +36,8 @@ hergm <- function(formula,
                   eta_precision_shape = NULL,
                   eta_precision_rate = NULL,
                   mean_between = NULL,
+                  all_indicators_fixed = FALSE,
+                  indicators_fixed = FALSE,
                   indicator = NULL,
                   parallel = 1, 
                   simulate = FALSE, 
@@ -42,10 +45,14 @@ hergm <- function(formula,
                   samplesize = 1e+5, 
                   interval = 1024,
                   burnin = 16*interval, 
-                  mh_scale = 0.25,
-                  variational = TRUE,
+                  mh.scale = 0.25,
+                  variational = FALSE,
                   temperature = c(1,100),
-                  predictions = TRUE,
+                  predictions = FALSE,
+                  posterior.burnin = 0,
+                  posterior.thinning = 1,
+                  relabel = 0,
+                  number.runs = 1,
                   verbose = 1, 
                   ...) 
 {
@@ -53,7 +60,7 @@ hergm <- function(formula,
   options(warn = -1)
   control <- control.ergm()
   options()
-  network <- ergm.getnetwork(formula)
+  network <- hergm.getnetwork(formula)
   if (sum(network[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
   control$drop <- FALSE
   model <- ergm.getmodel(formula, network, drop=control$drop, expanded=TRUE)
@@ -68,9 +75,10 @@ hergm <- function(formula,
   MCMCparams$target.stats <- Clist$target.stats
   print(
     system.time(
-      sample <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, variational, temperature, predictions, perturb)
+      sample <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, all_indicators_fixed, indicators_fixed, indicator, parallel, simulate, seeds, mh.scale, variational, temperature, predictions, perturb)
     )
   )
-  sample
+  output <- hergm.postprocess(sample, seeds, posterior.burnin, posterior.thinning, relabel, number.runs)
+  output
 }
 

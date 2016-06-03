@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
+hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, all_indicators_fixed, indicators_fixed, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
 {
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms
@@ -39,30 +39,36 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   twostar_ijk <- 0
   triangle_ijk <- 0
   ttriple_ijk <- 0
+  if (is.null(scaling)) size.dependent <- FALSE
+  else size.dependent <- TRUE
+  scaling <- vector(length=terms) # Size-dependent parameterizations
   for (i in 1:terms) # For given hergm term...
     {
     if (model$terms[[i]]$name == "edges")
       {
       hierarchical[i] <- 0
       edges <- 1
+      scaling[i] <- 2 # Order of subgraph count
       }
     else if (model$terms[[i]]$name == "mutual")
       {
       hierarchical[i] <- 0
       mutual <- 1
+      scaling[i] <- 2 # Order of subgraph count
       }
     else if (model$terms[[i]]$name %in% c("altkstar", "balance", "ctriple", "cycle", "cyclicalties", "cyclicalweights", "dsp", "esp", "gwdegree", "gwdsp", "gwdsp", "gwesp", "gwidegree", "gwnsp", "gwodegree", "intransitive", "istar", "kstar", "localtriangle", "mstar", "mutual", "nsp", "opentriad", "ostar", "simmelian", "simmelianties", "threepath", "transitive", "transitiveties", "transitiveweights", "triadcensus", "triangle", "tripercent", "ttriple", "twopath")) # ergm term
       {
       hierarchical[i] <- 0
       dependence <- 1
+      scaling[i] <- 3 # In general, the resulting rescaling is not the best possible, but the best possible rescaling is too burdensome to implement
       }
     else if (model$terms[[i]]$name == "edges_i") # hergm term
       {
       edges_i <- 1
       hierarchical[i] <- 1
+      scaling[i] <- 2 # Order of subgraph count
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       if (simulate == FALSE)
         {
         degree <- vector(mode = "numeric", length = Clist$n)    
@@ -92,77 +98,77 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     else if (model$terms[[i]]$name == "arcs_i") # hergm term
       {
       hierarchical[i] <- 1 
+      scaling[i] <- 2 # Order of subgraph count
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "arcs_j") # hergm term
       {
       hierarchical[i] <- 1 
+      scaling[i] <- 2 # Order of subgraph count
       min_size_i <- 1
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "edges_ij") # hergm term
       {
       edges_ij <- 1
       hierarchical[i] <- 1 
+      scaling[i] <- 2 # Order of subgraph count
       min_size_i <- 2
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "mutual_i") # hergm term
       {
       mutual_i <- 1
       hierarchical[i] <- 1 
+      scaling[i] <- 2 # Order of subgraph count
       dependence <- 1
       min_size_i <- 2
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "mutual_ij") # hergm term
       {
       mutual_ij <- 1
       hierarchical[i] <- 1 
+      scaling[i] <- 2 # Order of subgraph count
       dependence <- 1
       min_size_i <- 2
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "twostar_ijk") # hergm term
       {
       twostar_ijk <- 1
       hierarchical[i] <- 1 
+      scaling[i] <- 3 # Order of subgraph count
       dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "triangle_ijk") # hergm term
       {
       triangle_ijk <- 1
       hierarchical[i] <- 1 
+      scaling[i] <- 3 # Order of subgraph count
       dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "ttriple_ijk") # hergm term
       {
       ttriple_ijk <- 1
       hierarchical[i] <- 1 
+      scaling[i] <- 3 # Order of subgraph count
       dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else if (model$terms[[i]]$name == "ctriple_ijk") # hergm term
       {
       hierarchical[i] <- 1 
+      scaling[i] <- 3 # Order of subgraph count
       dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
-      max_number_i <- model$terms[[i]]$inputs[4] # (Maximum) number of categories: 1st model$terms[[i]]$inputs, thus 4th element of inputs; see InitErgm.R
       }     
     else 
       {
@@ -170,6 +176,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       if (is.null(model$terms[[i]]$dependence) || (model$terms[[i]]$dependence == 1)) dependence <- 1
       }
     }
+  if (size.dependent == TRUE) cat("\nSize-dependent parameterizations.\n") 
   d <- Clist$nstats # Number of parameters
   structural <- vector(mode = "integer", length = d) # Indicator: structural parameters 
   theta <- vector(mode = "numeric", length = d) 
@@ -205,14 +212,20 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       theta[i] <- 1 
       }
     }
-  if (is.null(indicator)) number_fixed <- 0
-  else number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
+  if (all_indicators_fixed == TRUE)
+    {
+    if (is.null(indicator) == TRUE) initialize <- TRUE
+    else if (sum(is.na(indicator)) > 0) initialize <- TRUE
+    else initialize <- FALSE
+    }
+  if (all_indicators_fixed == TRUE) number_fixed <- Clist$n
+  else if (indicators_fixed == TRUE) number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
+  else number_fixed <- 0
   if (d2 == 0) max_number <- 1 # No hergm terms
   else # hergm terms
     {
     if (is.null(max_number) == FALSE) max_number <- max_number # Specified by user by using max_number; first option 
-    else if (is.null(max_number_i) == FALSE) max_number <- max_number_i # Specified by user by using max_number_i; second option, overruled by first option: see above
-    else max_number <- Clist$n # Unspecified by user: default
+    else max_number <- round(Clist$n / 3) # Unspecified by user: default
     }
   between <- vector(mode = "numeric", length = d2) # Default: no between-block terms
   for (i in 1:terms) # For given hergm term... 
@@ -243,7 +256,8 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   null$eta_precision <- is.null(eta_sd)
   null$eta <- is.null(eta)
   null$indicator <- is.null(indicator)
-  if ((simulate == TRUE) && (null$indicator == FALSE)) hyper_prior <- 0
+  if ((simulate == FALSE) && (all_indicators_fixed == TRUE)) hyper_prior <- 0
+  else if ((simulate == TRUE) && (null$indicator == FALSE)) hyper_prior <- 0
   prior_assumptions <- vector(length=2)
   if (hyper_prior == 0) prior_assumptions[1] <- 0 # If TRUE, hierarchical prior, otherwise non-hierarchical prior
   else prior_assumptions[1] <- 1 
@@ -329,17 +343,20 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   if (null$indicator) 
     {
     indicator <- vector(mode = "numeric", length = Clist$n)
-    if (initialize == TRUE) indicator <- hergm.initialize(network, max_number, perturb)
-    else indicator[] <- max_number # On purpose, inadmissible block membership; will be corrected in C source code
     }
-  else 
+  if (initialize == TRUE) 
     {
-    if (min(indicator, na.rm=TRUE) != 0) indicator <- indicator - min(indicator, na.rm=TRUE)
-    for (i in 1:Clist$n) 
+    indicator <- hergm.initialize(network, max_number, perturb)
+    }
+  indicator <- indicator - min(indicator, na.rm=TRUE) # Make sure that the block memberhips start at 0
+  for (i in 1:Clist$n) 
+    {
+    if (is.na(indicator[i]) == FALSE) 
       {
-      if (is.na(indicator[i]) == FALSE) indicator[i] <- -abs(indicator[i]) # Check whether specified indicator is integer between 0 and max_number-1
-      else indicator[i] <- max_number # On purpose, inadmissible block membership; will be corrected in C source code
-      } 
+      if ((all_indicators_fixed == TRUE) || (indicators_fixed == TRUE)) indicator[i] <- -abs(indicator[i]) - 1 # The additional subtraction of -1 is important, because then all fixed memberships are -max_number...-1, which is what the C code expects: see h_ergm_latent.c
+      else indicator[i] <- indicator[i] # Specified and non-fixed indicator of block membership
+      }
+    else indicator[i] <- 0 
     } 
   for (i in 1:terms) # We need to reset the input vectors of model terms; otherwise, when the user does not specify the number of blocks as an argument of the model terms, then the input vectors are intialized as vectors of length C n, where C > 0
     {
@@ -436,7 +453,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   hergm_list$hyper_prior <- prior_assumptions[1]
   hergm_list$dependence <- dependence
   hergm_list$hierarchical <- hierarchical
-  hergm_list$decomposable <- decomposable
+  hergm_list$scaling <- scaling
   hergm_list$d <- d
   hergm_list$d1 <- d1
   hergm_list$d2 <- d2

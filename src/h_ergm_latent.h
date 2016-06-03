@@ -44,6 +44,7 @@ Structure and structural parameters:
   int d; /* Number of category-bound parameters */
   int number_between; /* Number of unrestricted between-category parameters */
   int *between; /* Indicators of whether between-category parameters are unrestricted */
+  double *scaling; /* Orders of statistics, e.g., number of edges = 2, number of triangles = 3 */
   double **theta; /* Category-bound parameters */
 } 
   latentstructure; 
@@ -63,7 +64,7 @@ Non-structural parameters of law generating data
 }
   ergmstructure;
 
-latentstructure* Initialize_Latentstructure(int number, int n, int *indicator, int minimum_size, int threshold, int d, int *between);
+latentstructure* Initialize_Latentstructure(int number, int n, int *indicator, int minimum_size, int threshold, int d, int *between, double *scaling);
 /*
 input: maximum number of categories, number of nodes, minimum number of nodes so that structural parameters show up in ergm pmf, number of structural parameters, indicators of wether between-category parameters are restricted to 0
 ouput: latent structure
