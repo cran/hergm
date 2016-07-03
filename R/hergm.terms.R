@@ -126,11 +126,12 @@ InitErgmTerm.edges_i <- function(nw, arglist, ...) # Michael
   a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE, 
     varnames = c("number", "indicator", "theta"),
     vartypes = c("numeric", "numeric", "numeric"),
-    defaultvalues = list(1, NULL, NULL),
+    defaultvalues = list(NULL, NULL, NULL),
     required = c(FALSE, FALSE, FALSE)) 
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.edges_i")
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
+  #print("number")
   #print(number)
   if (is.null(a$indicator)) 
     {
@@ -142,7 +143,7 @@ InitErgmTerm.edges_i <- function(nw, arglist, ...) # Michael
   if (is.null(a$theta)) 
     {
     theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-    for (i in 1:length(theta)) theta[i] <- 0.5
+    for (i in 1:length(theta)) theta[i] <- 0
     }
   else theta <- a$theta
   #print(theta)
@@ -156,20 +157,20 @@ InitErgmTerm.edges_i <- function(nw, arglist, ...) # Michael
 InitErgmTerm.arcs_i <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.arcs_i")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "arcs_i", coef.names="arcs_i", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -181,20 +182,20 @@ InitErgmTerm.arcs_i <- function(nw, arglist, ...) # Michael
 InitErgmTerm.arcs_j <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,  
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.arcs_j")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "arcs_j", coef.names="arcs_j", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -207,19 +208,19 @@ InitErgmTerm.edges_ij <- function(nw, arglist, ...) # Michael
 {
   n <- nw$gal$n # Number of nodes
   a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE,
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE))
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.edges_ij")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1
+  for (i in 1:length(theta)) theta[i] <- 0
   #print(theta)
   list(name = "edges_ij", coef.names="edges_ij",
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -231,20 +232,20 @@ InitErgmTerm.edges_ij <- function(nw, arglist, ...) # Michael
 InitErgmTerm.mutual_i <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.mutual_i")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "mutual_i", coef.names="mutual_i", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -256,20 +257,20 @@ InitErgmTerm.mutual_i <- function(nw, arglist, ...) # Michael
 InitErgmTerm.mutual_ij <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.mutual_ij")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "mutual_ij", coef.names="mutual_ij", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -281,20 +282,21 @@ InitErgmTerm.mutual_ij <- function(nw, arglist, ...) # Michael
 InitErgmTerm.triangle_ijk <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE))
+  #print("InitErgmTerm.triangle_ijk")
+  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.triangle_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "triangle_ijk", coef.names="triangle_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -306,20 +308,20 @@ InitErgmTerm.triangle_ijk <- function(nw, arglist, ...) # Michael
 InitErgmTerm.ttriple_ijk <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.ttriple_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "ttriple_ijk", coef.names="ttriple_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -331,20 +333,20 @@ InitErgmTerm.ttriple_ijk <- function(nw, arglist, ...) # Michael
 InitErgmTerm.ctriple_ijk <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=TRUE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.ctriple_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "ctriple_ijk", coef.names="ctriple_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),
@@ -356,20 +358,20 @@ InitErgmTerm.ctriple_ijk <- function(nw, arglist, ...) # Michael
 InitErgmTerm.twostar_ijk <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE, 
-    varnames = c("number"),
-    vartypes = c("numeric"),
-    defaultvalues = list(n),
-    required = c(FALSE)) 
+  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE,
+    varnames = c("number", "indicator", "theta"),
+    vartypes = c("numeric", "numeric", "numeric"),
+    defaultvalues = list(NULL, NULL, NULL),
+    required = c(FALSE, FALSE, FALSE))
   termnumber <- 1 + length(nw$terms)
   #print("InitErgmTerm.twostar_ijk")
   indicator <- vector(mode = "numeric", length = n) # Category indicators  
   for (i in 1:length(indicator)) indicator[i] <- 1
   #print(indicator)
-  number <- a$number # (Maximum) number of categories
+  number <- nw$max_number # (Maximum) number of categories
   #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
-  for (i in 1:length(theta)) theta[i] <- 1 
+  for (i in 1:length(theta)) theta[i] <- 0 
   #print(theta)
   list(name = "twostar_ijk", coef.names="twostar_ijk", 
                                 inputs = c(0, 1, 1+length(indicator)+length(theta), c(number, indicator, theta)),

@@ -23,7 +23,7 @@
 #
 ###################################################################################
 
-hergm.getnetwork <- function (form, loopswarning=TRUE) {
+hergm.getnetwork <- function (form, max_number, loopswarning=TRUE) {
   if ((dc<-data.class(form)) != "formula")
     stop (paste("Invalid formula of class ",dc))
   trms<-terms(form)
@@ -52,11 +52,14 @@ hergm.getnetwork <- function (form, loopswarning=TRUE) {
     }
   }
   nw$terms <- 1
-  model <- ergm.getmodel(form, nw)
+  if (is.null(max_number)) nw$max_number <- nw$gal$n
+  else nw$max_number <- max_number
+  #print("nw$max_number")
+  #print(nw$max_number)
+  model <- ergm.getmodel(form, nw, drop=FALSE, expanded=TRUE)
   Clist <- ergm.Cprepare(nw, model)
   nw$terms <- Clist$nterms
-  # print("hergm.getnetwork")
-  # print("nw$terms")
-  # print(nw$terms)
+  #print("nw$terms")
+  #print(nw$terms)
   nw
 }

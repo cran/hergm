@@ -38,14 +38,6 @@ hergm.mcmc <- function(original.formula, max_number, initialize, network, model,
     }
   flush.console() # Windows
 
-  #print(model$term)
-  #ergm.getglobalstats(network,model)
-  #model<-append.rhs.formula(model,list(as.name("edges")))
-  #model<-append.rhs.formula(model,list(as.name("edges")))
-  #print(model$term)
-  #hergm_list$Clist <- ergm.Cprepare(network, model)
-  #print("done")
-
   # Run
   if (simulate == TRUE) parallel <- 1
   if (parallel > 1) # Parallel computing

@@ -60,7 +60,7 @@ hergm <- function(formula,
   options(warn = -1)
   control <- control.ergm()
   options()
-  network <- hergm.getnetwork(formula)
+  network <- hergm.getnetwork(formula, max_number)
   if (sum(network[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
   control$drop <- FALSE
   model <- ergm.getmodel(formula, network, drop=control$drop, expanded=TRUE)

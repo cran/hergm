@@ -363,33 +363,32 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     hergm.theta <- rep.int(1, max_number+1)
     if (hierarchical[i] == 1) model$terms[[i]]$inputs <- c(0, 1, 1+length(indicator)+length(hergm.theta), c(max_number, indicator, hergm.theta))
     }
-  #print(model$terms)
   Clist <- ergm.Cprepare(network, model)
+  # Important note: the following works as long as the statistics are either monotone subgraph counts or functions of the graph such that the function takes its minimum value at the empty graph and its maximum value at the complete graph
   #print(model$terms)
+  network$terms <- terms
+  network$max_number <- max_number
   g0 <- matrix(0, Clist$n, Clist$n)
   g1 <- matrix(1, Clist$n, Clist$n)
   g0 <- as.network(g0, type="adjacency", directed=is.directed(network))
   g1 <- as.network(g1, type="adjacency", directed=is.directed(network))
-  m <- paste("~", as.name(model$terms[[1]]$name))
-  if (terms > 2)
+  g0$terms <- terms
+  g0$max_number <- max_number
+  g1$terms <- terms
+  g1$max_number <- max_number
+  for (i in 1:terms)
     {
-    for (i in 2:terms) 
+    if (hierarchical[i] == 1)
       {
-      m <- paste(m, "+", as.name(model$terms[[i]]$name))
+      #print(model$terms[[i]]$name)
+      f0 <- paste("g0", "~", model$terms[[i]]$name)
+      f0 <- as.formula(f0)
+      model$minval <- summary(f0)
+      f1 <- paste("g1", "~", model$terms[[i]]$name)
+      f1 <- as.formula(f1)
+      model$maxval <- summary(f1)
       }
     }
-  f0 <- paste("g0", m)
-  f0 <- as.formula(f0)
-  f1 <- paste("g1", m)
-  f1 <- as.formula(f1)
-  s0 <- summary(f0)
-  s1 <- summary(f1)
-  # Important note: the following works as long as the statistics are either monotone subgraph counts or functions of the graph such that the function takes its minimum value at the empty graph and its maximum value at the complete graph
-  model$minval <- s0
-  model$maxval <- s1
-  #print(model$terms)
-  Clist <- ergm.Cprepare(network, model)
-  #print(model$terms)
   if ((simulate == FALSE) && (prior_assumptions[1] == 1) && (d2 > 0))
     {
     cat("\nPrior:")
