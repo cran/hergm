@@ -19,7 +19,13 @@
 ###########################################################################
 
 mcmc.diagnostics <- function(sample = NULL,
-                  ...)
+                             ...) 
+{
+  UseMethod("mcmc.diagnostics")
+}
+
+mcmc.diagnostics.hergm <- function(sample = NULL,
+                                   ...)
 {
   hyper_prior <- sample$hyper_prior
   output <- list()
@@ -32,7 +38,7 @@ mcmc.diagnostics <- function(sample = NULL,
   output$hergm_theta <- mcgibbsit(sample$hergm_theta[,1:ncol(sample$hergm_theta)])
   if (hyper_prior == 1)
     {
-    par(mfrow=c(4,1))
+    par(mfrow=c(3,1))
     plot(sample$alpha, type="l", xlab=expression(alpha), ylab="", main="", cex.lab=1.5)
     matplot(sample$eta_mean, type="l", xlab=expression(mu), ylab="", main="", cex.lab=1.5)
     matplot(sample$eta_precision, type="l", xlab=expression(Sigma^{-1}), ylab="", main="", cex.lab=1.5)

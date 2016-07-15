@@ -20,9 +20,9 @@
 
 summary <- function(sample = NULL,
                     ...)
- {
- UseMethod("summary")
- }
+{
+  UseMethod("summary")
+}
 
 summary.hergm <- function(sample = NULL,
                     ...)
@@ -50,10 +50,14 @@ summary.hergm <- function(sample = NULL,
     }
   else # MCMC sample of clustering and parameters from posterior
     {
-    cat("\nSummary of posterior of clustering of nodes:")
-    sample$p_i_k
-    output <- hergm.plot(sample)
-    cat("\nSummary of marginal posteriors of parameters can be obtained by using running \"hergm$parameter\", where \"parameter\" is replaced by the parameter of interest: see \"?hergm\".")
+    output <- NULL
+    if (!(is.null(sample$p_i_k)))
+      {
+      cat("Summary of posterior of clustering of nodes: see plot.\n")
+      sample$p_i_k
+      output <- hergm.plot(sample)
+      }
+    cat("\nSummary of marginal posteriors of parameters can be obtained by using running \"hergm$parameter\", where \"parameter\" is replaced by the parameter of interest: see \"?hergm\".\n")
     }
   output
 }

@@ -212,6 +212,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       theta[i] <- 1 
       }
     }
+  if ((simulate == TRUE) && (!(is.null(indicator))) && (length(indicator) == Clist$n) && (sum(is.na(indicator)) == 0)) all_indicators_fixed <- TRUE
   if (all_indicators_fixed == TRUE)
     {
     if (is.null(indicator) == TRUE) initialize <- TRUE
@@ -398,6 +399,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     cat("\n")
     }
   max_iteration <- MCMCparams$samplesize
+  if (simulate == TRUE) predictions <- TRUE
   number_terms <- length_mcmc(d1, d2, max_number, Clist$n, predictions)
   if (simulate == TRUE) dimension <- MCMCparams$samplesize
   else dimension <- min(MCMCparams$samplesize, 10000)

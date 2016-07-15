@@ -2,6 +2,10 @@
 
 \alias{mcmc.diagnostics}
 
+\alias{hergm.mcmc.diagnostics}
+
+\alias{mcmc.diagnostics.hergm}
+
 \title{MCMC diagnostics}
 
 \description{
@@ -12,7 +16,7 @@ The function \code{mcmc.diagnostics} helps assess the convergence of the Markov 
 
 \usage{
 
-mcmc.diagnostics(sample = NULL,
+\method{mcmc.diagnostics}{hergm}(sample = NULL,
           \dots)
 
 }

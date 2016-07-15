@@ -1912,6 +1912,9 @@ output: simulated graph
   if (pseudo_indicator == NULL) { Rprintf("\n\ncalloc failed: Simulation, pseudo_indicator\n\n"); error("Error: out of memory"); }
   pp = (double*) calloc(ergm->d,sizeof(double));
   if (pp == NULL) { Rprintf("\n\ncalloc failed: Simulation, pp\n\n"); error("Error: out of memory"); }
+  /* 
+  Rprintf("\nh_ergm_c: d = %i and pp = %8.4f %8.4f \n",ergm->d, pp[0], pp[1]);
+  */ 
   newnetworkheads = (int*) calloc(*maxpossibleedges+1,sizeof(int));
   if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); error("Error: out of memory"); }
   newnetworktails = (int*) calloc(*maxpossibleedges+1,sizeof(int));

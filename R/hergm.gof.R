@@ -29,7 +29,7 @@ gof.hergm <- function(sample = NULL,
 # input: postprocessed sample, number of nodes, number of blocks, number covariates, observed network
 # output: goodness of fit data
 {
-  public <- FALSE
+  public <- TRUE
   if (public == TRUE)
   {
   # Extract
@@ -38,8 +38,6 @@ gof.hergm <- function(sample = NULL,
   model <- sample$model
   max_number <- sample$max_number
   indicator <- sample$indicator
-  ergm_theta <- sample$ergm_theta
-  hergm_theta <- sample$hergm_theta
   sample_size <- nrow(indicator)
   
   # Observed network
@@ -70,15 +68,18 @@ gof.hergm <- function(sample = NULL,
   output$triangles <- vector(length = sample_size)
 
   # Simulated networks
+  eta <- NULL
+  if (sample$d1 > 0) eta <- cbind(eta, sample$ergm_theta)
+  if (sample$d2 > 0) eta <- cbind(eta, sample$hergm_theta)
   edgelists <- simulate.hergm(  
       model = model,
       network = network,
+      eta = eta,
       max_number = max_number, 
       indicator = indicator, 
-      sample_size = sample_size,
       verbose = 1
       )
-  for (i in 1:sample_size) 
+  for (i in 1:sample_size)
     {
     sample <- edgelists$edgelist[[i]]
     output <- summary_sample_network(sample=sample, n=n, output, i) 

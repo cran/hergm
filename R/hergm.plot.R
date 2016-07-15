@@ -27,7 +27,8 @@ hergm.plot <- function(sample = NULL,
   network <- sample$network 
 
   # Plot
-  if (is.directed(network)) gmode <- "digraph"
+  par(mfrow=c(1,1))
+  if (is.directed(network)) gmode <- "digraph" 
   else gmode <- "graph"
   p <- gplot(network, gmode=gmode, mode="fruchtermanreingold", vertex.cex=1, vertex.col=0, vertex.border=0, displaylabels=TRUE, label.cex=0.8)
   for(i in 1:nrow(p))

@@ -72,31 +72,25 @@ simulate.hergm <- function(model = NULL,
   output$triangles <- vector(length = sample_size)
 
   # Sample
-
-print(indicator)
-
   edgelists <- list()
   edgelists$edgelist <- list()
   for (i in 1:sample_size)
     { 
-    eta <- c(ergm_theta[i,], hergm_theta[i,]) 
-    verbose <- 1
     if (verbose == 1) 
       {
       cat("\nSample", i)
       cat("\n------------------------------------------------------------------")
       cat("\nInput:")
-      if (length(ergm_theta) > 0) cat("\n- parameters:", ergm_theta[i,])
-      if (length(hergm_theta) > 0) 
+      cat("\n- parameters:", eta[i,]) 
+      if (length(indicator) > 0) 
         {
-        cat("\n- block parameters:", hergm_theta[i,])
         cat("\n- block memberships:", indicator[i,])
         }
       cat("\n")
       }
     edgelist <- hergm(model$formula, 
       max_number = max_number, 
-      eta = eta, 
+      eta = eta[i,], 
       indicator = indicator[i,], 
       simulate = TRUE, 
       samplesize = 1,

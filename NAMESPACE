@@ -17,9 +17,11 @@ importFrom("utils", "capture.output", "flush.console")
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")
-export(simulate, 
-summary,
-gof)
+export(gof,
+mcmc.diagnostics,
+simulate, 
+summary)
+S3method(gof, hergm)
+S3method(mcmc.diagnostics, hergm)
 S3method(simulate, hergm)
 S3method(summary, hergm)
-S3method(gof, hergm)

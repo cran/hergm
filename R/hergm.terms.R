@@ -207,7 +207,7 @@ InitErgmTerm.arcs_j <- function(nw, arglist, ...) # Michael
 InitErgmTerm.edges_ij <- function(nw, arglist, ...) # Michael 
 {
   n <- nw$gal$n # Number of nodes
-  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE,
+  a <- check.ErgmTerm(nw, arglist, bipartite=FALSE,
     varnames = c("number", "indicator", "theta"),
     vartypes = c("numeric", "numeric", "numeric"),
     defaultvalues = list(NULL, NULL, NULL),
@@ -283,7 +283,7 @@ InitErgmTerm.triangle_ijk <- function(nw, arglist, ...) # Michael
 {
   n <- nw$gal$n # Number of nodes
   #print("InitErgmTerm.triangle_ijk")
-  a <- check.ErgmTerm(nw, arglist, directed=FALSE, bipartite=FALSE,
+  a <- check.ErgmTerm(nw, arglist, bipartite=FALSE,
     varnames = c("number", "indicator", "theta"),
     vartypes = c("numeric", "numeric", "numeric"),
     defaultvalues = list(NULL, NULL, NULL),

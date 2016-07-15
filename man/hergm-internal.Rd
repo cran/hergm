@@ -36,8 +36,6 @@
 
 \alias{hergm.preprocess} 
 
-\alias{hergm.postprocess} 
-
 \alias{hergm.sa} 
 
 \alias{hergm.set.mcmc} 
