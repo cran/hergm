@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 

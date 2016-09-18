@@ -27,6 +27,9 @@ void network_stats_wrapper(int *tails, int *heads, int *timings, int *time, int 
   n_edges = (Edge)*dnedges;     
   directed_flag = *dflag;
   bip = (Vertex)*bipartite;
+
+
+  if(*lasttoggle == 0) lasttoggle = NULL;
   
   m=ModelInitialize(*funnames, *sonames, &inputs, *nterms);
   nw[0]=NetworkInitialize(NULL, NULL, 0,

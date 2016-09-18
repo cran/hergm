@@ -144,7 +144,6 @@ D_CHANGESTAT_FN(d_tesp);
 D_CHANGESTAT_FN(d_threepath);
 D_CHANGESTAT_FN(d_tnsp);
 D_CHANGESTAT_FN(d_transitive);
-D_CHANGESTAT_FN(d_transitiveties); S_CHANGESTAT_FN(s_transitiveties);
 D_CHANGESTAT_FN(d_triadcensus);
 D_CHANGESTAT_FN(d_triangle);
 D_CHANGESTAT_FN(d_tripercent);
@@ -156,6 +155,7 @@ D_CHANGESTAT_FN(d_arcs_j); /* Michael */
 D_CHANGESTAT_FN(d_edges_ij); /* Michael */
 D_CHANGESTAT_FN(d_mutual_i); /* Michael */
 D_CHANGESTAT_FN(d_mutual_ij); /* Michael */
+D_CHANGESTAT_FN(d_transitiveties_ijk); /* Michael */
 D_CHANGESTAT_FN(d_triangle_ijk); /* Michael */
 D_CHANGESTAT_FN(d_ttriple_ijk); /* Michael */
 D_CHANGESTAT_FN(d_ctriple_ijk); /* Michael */

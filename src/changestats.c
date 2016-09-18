@@ -6230,6 +6230,101 @@ D_CHANGESTAT_FN(d_mutual_ij)
 
 /* Michael */
 /*****************
+ changestat: d_transitiveties_ijk
+note: input parameters:
+0: (maximum) number of categories
+1..n: node-bound category indicators
+n+1..n+number: n+1 is within-category parameter of category 0, ..., n+number is within-category parameter of category number-1
+n+number+1: between-category parameter
+*****************/
+D_CHANGESTAT_FN(d_transitiveties_ijk) 
+{ 
+  Edge e, f;
+  int i, echange, ochange;
+  int L2th, L2tu, L2uh;
+  Vertex tail, head, u, v;
+  double cumchange;
+  /*
+  Rprintf("\n N_INPUT_PARAMS = %i N_NODES = %i\n", N_INPUT_PARAMS , N_NODES);
+  for (i = 1; i < N_NODES; i++) Rprintf(" %4.0f", INPUT_PARAM[i]);
+  */
+  CHANGE_STAT[0] = 0.0;
+  FOR_EACH_TOGGLE(i)
+    {      
+    cumchange = 0.0;
+    L2th = 0;
+    head = HEAD(i); 
+    tail = TAIL(i);
+    /*
+    Rprintf("\n head=%i, %4.0f", head, INPUT_PARAM[head]);
+    Rprintf("\n tail=%i, %4.0f", tail, INPUT_PARAM[tail]);
+    */
+    if (INPUT_PARAM[head] == INPUT_PARAM[tail]) 
+      { 
+      ochange = (EdgetreeSearch(tail, head, nwp->outedges) == 0) ? 0 : -1;
+      echange = 2*ochange + 1; 
+      for (e = EdgetreeMinimum(nwp->outedges, head); (u = nwp->outedges[e].value) != 0; e = EdgetreeSuccessor(nwp->outedges, e)) /* Step through outedges of head  */
+        {
+        if ((EdgetreeSearch(tail, u, nwp->outedges) != 0) && (INPUT_PARAM[tail] == INPUT_PARAM[u])) /* Step through inedges of u */
+          {
+  	  L2tu = ochange; 
+       	  for (f = EdgetreeMinimum(nwp->inedges, u); (v = nwp->inedges[f].value) != 0; f = EdgetreeSuccessor(nwp->inedges, f))
+            {
+	    if ((EdgetreeSearch(tail, v, nwp->outedges) != 0) && (INPUT_PARAM[tail] == INPUT_PARAM[v])) 
+              {
+              /*
+              Rprintf("\n tail=%i, %4.0f", tail, INPUT_PARAM[tail]);
+              Rprintf("\n u=%i, %4.0f", u, INPUT_PARAM[u]);
+              */
+              L2tu++;
+              }
+	    if (L2tu>0) 
+              {
+              break;
+              }
+	    }
+	  cumchange += (L2tu==0);
+          }
+        }
+      for (e = EdgetreeMinimum(nwp->inedges, head); (u = nwp->inedges[e].value) != 0; e = EdgetreeSuccessor(nwp->inedges, e)) /* Step through inedges of head */
+        {
+        /*
+        Rprintf("\n tail=%i, %4.0f", tail, INPUT_PARAM[tail]);
+        Rprintf("\n u=%i, %4.0f", u, INPUT_PARAM[u]);
+        */
+        if (((EdgetreeSearch(tail, u, nwp->outedges) != 0)) && (INPUT_PARAM[tail] == INPUT_PARAM[u])) L2th++;
+        if ((EdgetreeSearch(u, tail, nwp->outedges) != 0) && (INPUT_PARAM[u] == INPUT_PARAM[tail]))  /* Step through outedges of u */
+          {
+	  L2uh = ochange; 
+	  for (f = EdgetreeMinimum(nwp->outedges, u); (v = nwp->outedges[f].value) != 0; f = EdgetreeSuccessor(nwp->outedges, f))
+            {
+	    if ((EdgetreeSearch(v, head, nwp->outedges) != 0) && (INPUT_PARAM[v] == INPUT_PARAM[head])) 
+              {
+              /*
+              Rprintf("\n head=%i, %4.0f", head, INPUT_PARAM[head]);
+              Rprintf("\n v=%i, %4.0f", v, INPUT_PARAM[v]);
+              */
+              L2uh++; 
+              }
+	    if (L2uh>0) 
+              { 
+              break;
+              }
+	    }
+          cumchange += (L2uh==0);
+          }
+        }
+      cumchange += (L2th>0);
+      cumchange  = echange*cumchange;
+      (CHANGE_STAT[0]) += cumchange;
+      }
+    TOGGLE_IF_MORE_TO_COME(i);
+    }
+  UNDO_PREVIOUS_TOGGLES(i);
+}
+
+/* Michael */
+/*****************
  changestat: d_triangle_ijk
 note: input parameters:
 0: (maximum) number of categories

@@ -1,4 +1,3 @@
-
 \name{hergm-terms}
 
 \alias{hergm.terms}
@@ -19,9 +18,9 @@
 
 \alias{mutual_ij}
 
-\alias{transedges}
-
 \alias{twostar_ijk}
+
+\alias{transitiveties_ijk}
 
 \alias{triangle_ijk}
 
@@ -46,48 +45,28 @@ In addition, \code{ergm.terms} can be used to include covariates.
 
 \arguments{
 
-\item{edges_i(k) (undirected network)}{adding the term \code{edges_i} to the model adds node-dependent edge terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
+\item{edges_i (undirected network)}{adding the term \code{edges_i} to the model adds node-dependent edge terms to the model.}
+
+\item{arcs_i (directed network)}{adding the term \code{arcs_i} to the model adds node-dependent outdegree terms to the model.}
+
+\item{arcs_j (directed network)}{adding the term \code{arcs_j} to the model adds node-dependent indegree terms to the model.}
+
+\item{edges_ij (undirected, directed network)}{adding the term \code{edges_ij} to the model adds block-dependent edge terms to the model.}
+
+\item{mutual_i (directed network)}{adding the term \code{mutual_i} to the model adds additive, block-dependent mutual edge terms to the model.}
+
+\item{mutual_ij (directed network)}{adding the term \code{mutual_ij} to the model adds block-dependent mutual edge terms to the model.}
+
+\item{twostar_ijk (undirected network)}{adding the term \code{twostar_ijk} to the model adds block-dependent two-star terms to the model;
 }
 
-\item{arcs_i(k) (directed network)}{adding the term \code{arcs_i} to the model adds node-dependent outdegree terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
+\item{transitiveties_ijk (directed network)}{adding the term \code{transitiveties_ijk} to the model adds block-dependent transitive ties terms to the model.}
 
-\item{arcs_j(k) (directed network)}{adding the term \code{arcs_j} to the model adds node-dependent indegree terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
+\item{triangle_ijk (undirected, directed network)}{adding the term \code{triangle_ijk} to the model adds block-dependent triangle terms to the model.}
 
-\item{edges_ij(k) (undirected, directed network)}{adding the term \code{edges_ij} to the model adds block-dependent edge terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
-
-\item{mutual_i(k) (directed network)}{adding the term \code{mutual_i} to the model adds additive, block-dependent mutual edge terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
-
-\item{mutual_ij(k) (directed network)}{adding the term \code{mutual_ij} to the model adds block-dependent mutual edge terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
-
-\item{transedges (undirected network)}{adding the term \code{transedges} to the model adds the number of transitive edges to the model.
-}
-
-\item{twostar_ijk(k) (undirected network)}{adding the term \code{twostar_ijk} to the model adds block-dependent two-star terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
-
-\item{triangle_ijk(k) (undirected, directed network)}{adding the term \code{triangle_ijk} to the model adds block-dependent triangle terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
-
-\item{ttriple_ijk(k) (directed network)}{adding the term \code{ttriple_ijk} to the model adds block-dependent transitive triple terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
+\item{ttriple_ijk (directed network)}{adding the term \code{ttriple_ijk} to the model adds block-dependent transitive triple terms to the model.}
  
-\item{ctriple_ijk(k) (directed network)}{adding the term \code{ctriple_ijk} to the model adds block-dependent cyclic triple terms to the model;
-the optional argument \code{k} is the maximum number of blocks (default: the number of nodes).
-}
+\item{ctriple_ijk (directed network)}{adding the term \code{ctriple_ijk} to the model adds block-dependent cyclic triple terms to the model.}
 
 }
 
@@ -103,7 +82,7 @@ Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochast
 
 Schweinberger, M. (2011). Instability, sensitivity, and degeneracy of discrete exponential families. Journal of the American Statistical Association, Theory & Methods, 106, 1361--1370.
 
-Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical Inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 1-30, in press.
+Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical Inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
 
 Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response on September 11, 2001 through the lens of statistical network analysis. Social Networks, 37, 42--55.
 
@@ -111,7 +90,7 @@ Vu, D. Q., Hunter, D. R. and M. Schweinberger (2013). Model-based clustering of 
 
 }
 
-\seealso{network, hergm, ergm.terms}
+\seealso{hergm, ergm.terms}
 
 \examples{
 \dontrun{

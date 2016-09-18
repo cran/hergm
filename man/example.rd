@@ -1,4 +1,3 @@
-
 \name{example}
 
 \alias{example}
@@ -24,11 +23,8 @@ Example data set: synthetic, undirected network with 15 nodes.
 \seealso{network, hergm, ergm.terms, hergm.terms}
 
 \examples{
-\dontrun{
-data(example)
-
+\dontrun{data(example)
 hergm(d ~ edges_i)
-
 hergm(d ~ edges_ij + triangle_ijk)
 }
 }

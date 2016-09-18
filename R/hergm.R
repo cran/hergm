@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -36,24 +36,22 @@ hergm <- function(formula,
                   eta_precision_shape = NULL,
                   eta_precision_rate = NULL,
                   mean_between = NULL,
-                  all_indicators_fixed = FALSE,
-                  indicators_fixed = FALSE,
                   indicator = NULL,
                   parallel = 1, 
                   simulate = FALSE, 
                   seeds = NULL, 
-                  samplesize = 1e+5, 
+                  sample_size = 1e+5, 
                   interval = 1024,
                   burnin = 16*interval, 
                   mh.scale = 0.25,
                   variational = FALSE,
                   temperature = c(1,100),
                   predictions = FALSE,
-                  posterior.burnin = 0,
+                  posterior.burnin = 2000,
                   posterior.thinning = 1,
-                  relabel = 0,
-                  number.runs = 1,
-                  verbose = 1, 
+                  relabel = 1,
+                  number_runs = 1,
+                  verbose = 0, 
                   ...) 
 {
   original.formula <- formula
@@ -64,21 +62,26 @@ hergm <- function(formula,
   if (sum(network[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
   control$drop <- FALSE
   model <- ergm.getmodel(formula, network, drop=control$drop, expanded=TRUE)
-  MCMCsamplesize <- samplesize
+  MCMCsamplesize <- sample_size
   Clist <- ergm.Cprepare(network, model)
   Clist.miss <- ergm.design(network, model, verbose=verbose)
   constraints <- ~.
   MHproposal <- MHproposal(constraints, weights=control$MCMC.prop.weights, control$MCMC.prop.args, network, class="c")
   MCMCparams=c(control,list(samplesize=MCMCsamplesize,burnin=burnin,interval=interval,maxit=1,Clist.miss=Clist.miss,mcmc.precision=control$MCMLE.mcmc.precision))
+  if (((min(10000, sample_size) - posterior.burnin) / posterior.thinning) < 1000) 
+    {
+    posterior.burnin <- 0
+    posterior.thinning <- 1
+    }
   s <- min(MCMCparams$samplesize, 10000)
   MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=s)
   MCMCparams$target.stats <- Clist$target.stats
-  print(
-    system.time(
-      sample <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, all_indicators_fixed, indicators_fixed, indicator, parallel, simulate, seeds, mh.scale, variational, temperature, predictions, perturb)
-    )
-  )
-  output <- hergm.postprocess(sample, seeds, posterior.burnin, posterior.thinning, relabel, number.runs)
-  output
+  object <- hergm.mcmc(original.formula, max_number, initialize, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh.scale, variational, temperature, predictions, perturb)
+  if (is.null(max_number)) max_number <- 1
+  if ((max_number >= 10) && (relabel == 1)) relabel <- 2 
+  object.hergm <- hergm.postprocess(object=object, burnin=posterior.burnin, thinning=posterior.thinning, relabel=relabel, number_runs=number_runs)
+  if (simulate == FALSE) object.hergm$mcmc.diagnostics <- mcmc.diagnostics.hergm(object.hergm)
+
+  return(structure(object.hergm, class="hergm"))
 }
 

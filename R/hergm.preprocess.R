@@ -1,5 +1,5 @@
-##########################################################################
-# Copyright 2009 Nobody                                                   #
+###########################################################################
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, all_indicators_fixed, indicators_fixed, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
+hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
 {
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms
@@ -37,6 +37,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   mutual_i <- 0
   mutual_ij <- 0
   twostar_ijk <- 0
+  transitiveties_ijk <- 0
   triangle_ijk <- 0
   ttriple_ijk <- 0
   if (is.null(scaling)) size.dependent <- FALSE
@@ -143,6 +144,15 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       dependence <- 1
       min_size_i <- 3
       if (min_size_i < min_size) min_size <- min_size_i
+      }
+    else if (model$terms[[i]]$name == "transitiveties_ijk") # hergm term
+      {
+      transitiveties_ijk <- 1
+      hierarchical[i] <- 1
+      scaling[i] <- 3 # Order of subgraph count
+      dependence <- 1
+      min_size_i <- 3
+      if (min_size_i < min_size) min_size <- min_size_i
       }     
     else if (model$terms[[i]]$name == "triangle_ijk") # hergm term
       {
@@ -212,22 +222,28 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       theta[i] <- 1 
       }
     }
-  if ((simulate == TRUE) && (!(is.null(indicator))) && (length(indicator) == Clist$n) && (sum(is.na(indicator)) == 0)) all_indicators_fixed <- TRUE
-  if (all_indicators_fixed == TRUE)
-    {
-    if (is.null(indicator) == TRUE) initialize <- TRUE
-    else if (sum(is.na(indicator)) > 0) initialize <- TRUE
-    else initialize <- FALSE
-    }
-  if (all_indicators_fixed == TRUE) number_fixed <- Clist$n
-  else if (indicators_fixed == TRUE) number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
-  else number_fixed <- 0
   if (d2 == 0) max_number <- 1 # No hergm terms
   else # hergm terms
     {
-    if (is.null(max_number) == FALSE) max_number <- max_number # Specified by user by using max_number; first option 
-    else max_number <- round(Clist$n / 3) # Unspecified by user: default
+    if (is.null(max_number)) max_number <- Clist$n # Unspecified by user: default
+    else max_number <- min(max_number, Clist$n) # Specified by user by using max_number; first option 
     }
+  if (!is.null(indicator)) indicator <- as.integer(indicator) # If non-null, make sure all elements of indicator are integers
+  # ...otherwise leave indicator NULL, because NULL means non-fixed, whereas non-NULL means fixed
+  if (simulate == TRUE) all_indicators_fixed <- TRUE # To simulate data, use given indicators
+  else # To estimate model... 
+    {
+    if ((!is.null(indicator)) && (length(indicator) == Clist$n) && (sum(is.na(indicator)) == 0) && (min(indicator) >= 0) && (max(indicator) <= max_number)) all_indicators_fixed <- TRUE # ...use given indicator if indicator is not NULL and the length is correct and there are no NA
+    else all_indicators_fixed <- FALSE # ...otherwise estimate all of them
+    }
+  if (all_indicators_fixed == TRUE) initialize <- FALSE
+  if (is.null(indicator)) number_fixed <- 0
+  else number_fixed <- Clist$n - sum(is.na(indicator)) # Number of fixed indicators
+  if (number_fixed > 0) # Make minimum 0 
+    {
+    indicator <- indicator - min(indicator, na.rm=TRUE)
+    }
+  indicator <- as.integer(indicator) # One more time: making sure that all elements of indicator are integers
   between <- vector(mode = "numeric", length = d2) # Default: no between-block terms
   for (i in 1:terms) # For given hergm term... 
     {
@@ -257,8 +273,13 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   null$eta_precision <- is.null(eta_sd)
   null$eta <- is.null(eta)
   null$indicator <- is.null(indicator)
-  if ((simulate == FALSE) && (all_indicators_fixed == TRUE)) hyper_prior <- 0
-  else if ((simulate == TRUE) && (null$indicator == FALSE)) hyper_prior <- 0
+  if (simulate == TRUE) hyper_prior <- 0
+  else # simulate == FALSE
+    {
+    if (d2 == 0) hyper_prior <- 0 # No hierarchical model terms
+    }
+  #if ((simulate == FALSE) && (all_indicators_fixed == TRUE)) hyper_prior <- 0
+  #else if ((simulate == TRUE) && (null$indicator == FALSE)) hyper_prior <- 0
   prior_assumptions <- vector(length=2)
   if (hyper_prior == 0) prior_assumptions[1] <- 0 # If TRUE, hierarchical prior, otherwise non-hierarchical prior
   else prior_assumptions[1] <- 1 
@@ -354,7 +375,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     {
     if (is.na(indicator[i]) == FALSE) 
       {
-      if ((all_indicators_fixed == TRUE) || (indicators_fixed == TRUE)) indicator[i] <- -abs(indicator[i]) - 1 # The additional subtraction of -1 is important, because then all fixed memberships are -max_number...-1, which is what the C code expects: see h_ergm_latent.c
+      if (number_fixed > 0) indicator[i] <- -abs(indicator[i]) - 1 # The additional subtraction of -1 is important, because then all fixed memberships are -max_number...-1, which is what the C code expects: see h_ergm_latent.c
       else indicator[i] <- indicator[i] # Specified and non-fixed indicator of block membership
       }
     else indicator[i] <- 0 
@@ -390,7 +411,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       model$maxval <- summary(f1)
       }
     }
-  if ((simulate == FALSE) && (prior_assumptions[1] == 1) && (d2 > 0))
+  if ((simulate == FALSE) && (prior_assumptions[1] == 1) && (d2 > 0) && (verbose >= 0))
     {
     cat("\nPrior:")
     cat("\n- alpha ~ Gamma(", alpha_shape, ",", alpha_rate, ")", sep="")
@@ -417,7 +438,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     sample_tails <- 0
     }
   mh_accept <- vector(mode = "numeric", length = 2 + (Clist$n - min_size))
-  if ((variational == TRUE) && (terms == 2) && (edges + edges_ij > 0) && (twostar_ijk + triangle_ijk + ttriple_ijk > 0)) model_type <- 1 # Some algorithms, e.g., variational algorithms, are restricted to a subset of model specifications; the specificiations it works: hergms with two model terms, one ergm term (either edges or edges_ij) and one hierarchical term (either twostar_ijk or triangle_ijk or ttriple_ijk)
+  if ((variational == TRUE) && (terms == 2) && (edges + edges_ij > 0) && (twostar_ijk + transitiveties_ijk + triangle_ijk + ttriple_ijk > 0)) model_type <- 1 # Some algorithms, e.g., variational algorithms, are restricted to a subset of model specifications; the specificiations it works: hergms with two model terms, one ergm term (either edges or edges_ij) and one hierarchical term (either twostar_ijk or transitiveties + triangle_ijk or ttriple_ijk)
   else model_type <- 0
   if ((simulate == FALSE) && (dependence > 0))
     {
@@ -441,7 +462,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       temperature[1] <- min
       temperature[2] <- max
       }
-    if (verbose >= 0)
+    if (verbose == 1)
       {
       cat("\nMinimum or maximum temperature: ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
       }

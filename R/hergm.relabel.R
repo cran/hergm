@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -180,13 +180,16 @@ hergm.step_2 <- function(n_sample, n_nodes, n_categories, n_permutations, permut
   step_2
 }
 
-hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion)
+hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion, verbose)
 # Minimize posterior expected loss
 # input: number of categories, convergence criterion, stop criterion
 # output: minimizing permutations, classification probabilities, relabeled MCMC output of categories of nodes
 {
-  cat("\nRelabeling algorithm 1")
-  cat("\n----------------------")
+  if (verbose >= 0) 
+    {
+    cat("\nRelabeling MCMC sample...")
+    cat("\n-------------------------")
+    }
   n_permutations <- factorial(n_categories)
   permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels
   if (min(indicator) == 0) # Category indicators: if category labels are 0..n_categories-1, then translate by 1 to obtain category labels 1..n_categories
@@ -213,7 +216,7 @@ hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion)
   while (i < stop_criterion) # Stop criterion 
     {
     i <- i + 1
-    cat("\n\nIteration ",i)
+    if (verbose >= 0) cat("\n\nIteration ",i)
     nu_indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)
     p <- hergm.step_1(n_nodes,n_categories,n_sample,nu_indicator) # Minimize loss with respect to classification probabilites
     step_2 <- hergm.step_2(n_sample,n_nodes,n_categories,n_permutations,permutations,indicator,p,last_minimizers) # Minimize loss with respect to permutations of category labels
@@ -224,15 +227,15 @@ hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion)
       min_min_loss <- present_loss
       min_min_permutations <- min_permutations
       }
-    cat("\nLoss:",present_loss)
+    if (verbose >= 0) cat("\nLoss:",present_loss)
     change <- present_loss - last_loss
-    cat("\nChange",change)
+    if (verbose >= 0) cat("\nChange",change)
     last_loss <- present_loss
     if (abs(change) <= 1) i <- stop_criterion
     }
   min_permutations <- min_min_permutations
   indicator <- hergm.permute_indicator(n_nodes,n_categories,n_sample,indicator,min_permutations)
-  cat("\n\nMCMC sample relabeled\n")
+  if (verbose >= 0) cat("\n\nMCMC sample relabeled\n")
   minimizer <- list()
   minimizer$loss <- last_loss 
   minimizer$min_permutations <- min_permutations
@@ -241,13 +244,16 @@ hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion)
   minimizer
 }	
 
-hergm.min_loss_2 <- function(n_categories, indicator)
+hergm.min_loss_2 <- function(n_categories, indicator, verbose)
 # Minimize posterior expected loss
 # input: number of categories, convergence criterion, stop criterion
 # output: minimizing permutations, classification probabilities, relabeled MCMC output of categories of nodes
 {
-  cat("\nRelabeling algorithm 2")
-  cat("\n----------------------")
+  if (verbose >= 0)
+    {
+    cat("\nRelabeling MCMC sample...")
+    cat("\n-------------------------")
+    }
   n_permutations <- factorial(n_categories)
   permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels
   if (min(indicator) == 0) # Category indicators: if category labels are 0..n_categories-1, then translate by 1 to obtain category labels 1..n_categories
@@ -288,7 +294,7 @@ hergm.min_loss_2 <- function(n_categories, indicator)
     }
   #print("Estimated posterior classification probabilities based on relabeled MCMC sample:")
   #print(p)
-  cat("\n\nMCMC sample relabeled\n")
+  if (verbose >= 0) cat("\n\nMCMC sample relabeled\n")
   minimizer <- list()
   minimizer$loss <- NULL
   minimizer$min_permutations <- min_permutations

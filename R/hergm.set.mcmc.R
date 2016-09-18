@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, all_indicators_fixed, indicators_fixed, indicator, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, mean_between, simulate, parallel, seeds, predictions, variational, temperature, mh_scale, perturb)
+hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, indicator, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, eta, mean_between, simulate, parallel, seeds, predictions, variational, temperature, mh_scale, perturb)
 {
 
   # verbose <- 1
@@ -33,23 +33,26 @@ hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, 
   Clist <- ergm.Cprepare(network, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else maxedges <- Clist$n * (Clist$n - 1) # Directed
-  hergm_list <- hergm.preprocess(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, all_indicators_fixed, indicators_fixed, indicator, simulate, parallel = 1, variational, temperature, predictions = FALSE, verbose = -1, perturb)
+  hergm_list <- hergm.preprocess(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel = 1, variational, temperature, predictions = FALSE, verbose = -1, perturb)
   # Metropolis-Hastings: finding scale factor
-  if (verbose >= 0) 
+  if (verbose == 0)
     {
-    #if (hergm_list$dependence > 0) cat("\nMCMC: mean-field methods generate candidates of block memberships.\n")
-    cat("\nMetropolis-Hastings algorithm:")
+    cat("\nCalibrating auxiliary-variable MCMC algorithm...")
+    }
+  else if (verbose == 1) 
+    {
+    cat("\nCalibrating auxiliary-variable MCMC algorithm...")
     cat("\n   ", formatC("ergm", digits = 0, width = 16, format = "f", mode = "character"), sep = "")
     }
   if (hergm_list$dependence == 0) 
     {
     number <- 2
-    if (verbose >= 0) cat(formatC("hergm", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
+    if (verbose == 1) cat(formatC("hergm", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
     }
   else 
     {
     number <- 2 + (Clist$n - hergm_list$min_size)
-    if (verbose >= 0)
+    if (verbose == 1)
       {
       for (i in hergm_list$min_size:Clist$n)
         {
@@ -63,7 +66,7 @@ hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, 
   min_accept <- 0.2
   iteration <- 1
   s <- hergm.wrapper(seeds[1], hergm_list)
-  if (verbose >= 0) 
+  if (verbose == 1) 
     {
     cat("\n", "(", formatC(iteration, digits = 0, width = 1, mode = "character"), ")", sep = "")
     cat(formatC("scale:", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
@@ -80,7 +83,7 @@ hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, 
   while ((s$mh_accept[1] < min_accept) && (min(s$mh_accept[2:number]) < (min_accept / 2)) && (iteration <= 20))
     { 
     iteration <- iteration + 1
-    hergm_list <- hergm.preprocess(number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, all_indicators_fixed, indicators_fixed, indicator, simulate, parallel = 1, variational, temperature, predictions = FALSE, verbose = -1, perturb)
+    hergm_list <- hergm.preprocess(number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel = 1, variational, temperature, predictions = FALSE, verbose = -1, perturb)
     for (i in 1:number) 
       {
       if (s$mh_accept[i] < min_accept) scalefactor[i] <- scalefactor[i] / 2
@@ -91,7 +94,7 @@ hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, 
       }
     hergm_list$scalefactor <- scalefactor
     s <- hergm.wrapper(seeds[1], hergm_list)
-    if (verbose >= 0) 
+    if (verbose == 1) 
       {
       cat("\n", "(", formatC(iteration, digits = 0, width = 1, mode = "character"), ")", sep = "")
       cat(formatC("scale:", digits = 0, width = 8, format = "f", mode = "character"), sep = "")
@@ -107,7 +110,7 @@ hergm.set.mcmc <- function(max_number, initialize, network, model, hyper_prior, 
       }
     }
 
-  if (verbose >= 0) cat("\n")
+  if (verbose == 1) cat("\n")
 
   MCMCparams$samplesize <- cp_samplesize # Reset
 

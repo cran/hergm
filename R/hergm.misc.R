@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -61,36 +61,70 @@ bernoulli_map_mean_to_natural <- function(n, mu, directed)
   theta
 }
 
-summary_sample_network <- function(sample, n, output, i)
-# input: sample network in the form of edge list, number of nodes, output, number of sample networks
-# output: summary of sample network
+silent <- function(f) 
+# Shup up loud function f that insists on printing to the screen
+{ 
+  sink(tempfile()) 
+  on.exit(sink()) 
+  invisible(force(f)) 
+}
+
+summary_sample_network <- function(edgelists, sample_size, directed, n)
 {
-  sample.edgelist <- cbind(sample$heads, sample$tails) # Edge list of simulated network
-  sample.network <- as.network(sample.edgelist, directed = FALSE, matrix.type = "edgelist") # The simulated network as network object; note: simulated_network$gal$n <- maximum vertex number
-  if (sample.network$gal$n < n) add.vertices(sample.network, nv = n-sample.network$gal$n) # If simulated$gal$n < n, add isolates 
-  components <- component.dist(sample.network)
-  output$component.number[i] <- length(components$csize) # Number of components
-  output$max.component.size[i] <- max(components$csize) # Size of largest component
-  output$distances <- geodist(sample.network)
-  output$distances <- output$distances$gdist
-  output$frequencies_distances <- table(output$distances) # First column: frequency of self loops; columns 2:number: frequencies finite and (last column) infinite distances
-  output$number <- length(output$frequencies_distances) - 1 - (sum(output$distances == Inf) > 0) # Number of distances minus 0-distance minus Inf-distance
-  output$distance.label[i,1:output$number] <- rownames(output$frequencies_distances)[2:(output$number+1)]
-  output$distance[i,1:output$number] <- output$frequencies_distances[2:(output$number+1)] # Frequencies of finite distances
-  if (is.directed(sample.network)) # Directed networks
+  # Simulated networks
+  output <- list()
+  output$component.number <- vector(length = sample_size)
+  output$max.component.size <- vector(length = sample_size)
+  output$distance.label <- matrix(0, nrow = sample_size, ncol = n)
+  output$distance <- matrix(0, nrow = sample_size, ncol = n)
+  output$edges <- vector(length = sample_size)
+  output$degree <- matrix(0, nrow = sample_size, ncol = n)
+  output$stars <- vector(length = sample_size)
+  output$triangles <- vector(length = sample_size)
+  for (i in 1:sample_size)
     {
-    output$edges[i] <- summary(sample.network ~ edges)
-    output$degree[i,] <- summary(sample.network ~ odegree(1:n-1)) # Degree distribution             
-    output$stars[i] <- summary(sample.network ~ ostar(2))
-    output$triangles[i] <- summary(sample.network ~ ttriple)
-    }
-  else # Undirected networks
-    {
-    output$edges[i] <- summary(sample.network ~ edges)
-    output$degree[i,] <- summary(sample.network ~ degree(1:n-1)) # Degree distribution             
-    output$stars[i] <- summary(sample.network ~ kstar(2))
-    output$triangles[i] <- summary(sample.network ~ triangles)
+    edgelist <- edgelists[[i]] # Edge list of simulated network
+    simulated.network <- as.network(edgelist, directed = directed, matrix.type = "edgelist") # The simulated network as simulated.network; note: simulated_network$gal$n <- maximum vertex number
+    if (simulated.network$gal$n < n) add.vertices(simulated.network, nv = n-simulated.network$gal$n) # If simulated$gal$n < n, add isolates 
+    components <- silent(component.dist(simulated.network)) # Problem: in sna/src/components.c, output is printed that cannot be surppressed.
+    output$component.number[i] <- length(components$csize) # Number of components
+    output$max.component.size[i] <- max(components$csize) # Size of largest component
+    output$distances <- geodist(simulated.network)
+    output$distances <- output$distances$gdist
+    output$frequencies_distances <- table(output$distances) # First column: frequency of self loops; columns 2:number: frequencies finite and (last column) infinite distances
+    output$number <- length(output$frequencies_distances) - 1 - (sum(output$distances == Inf) > 0) # Number of distances minus 0-distance minus Inf-distance
+    output$distance.label[i,1:output$number] <- rownames(output$frequencies_distances)[2:(output$number+1)]
+    output$distance[i,1:output$number] <- output$frequencies_distances[2:(output$number+1)] # Frequencies of finite distances
+    output$edges[i] <- summary(simulated.network ~ edges)
+    if (is.directed(simulated.network)) # Directed networks
+      {
+      output$degree[i,] <- summary(simulated.network ~ odegree(1:n-1)) # Degree distribution             
+      output$stars[i] <- summary(simulated.network ~ ostar(2))
+      output$triangles[i] <- summary(simulated.network ~ ttriple)
+      }
+    else # Undirected networks
+      {
+      output$degree[i,] <- summary(simulated.network ~ degree(1:n-1)) # Degree distribution             
+      output$stars[i] <- summary(simulated.network ~ kstar(2))
+      output$triangles[i] <- summary(simulated.network ~ triangles)
+      }
     }
   output
+}
+
+plot_weighted_graph <- function(network, p) 
+{
+  n <- network$gal$n
+  for (i in 1:n)
+    {
+    for (j in 1:n)
+      {
+      if (p[i,j] <= .5) p[i,j] <- 0
+      }
+    }
+  edge.col<- matrix(paste0("grey", round(exp(10*p) / exp(10), digits = 2) * 100), nrow=nrow(p), ncol=ncol(p)) # Create a color matrix based on various hues of greys
+  # Plot
+  coordinates <- gplot(network, gmode="graph", mode="fruchtermanreingold", vertex.cex=1, vertex.col=0, vertex.border=0, displaylabels=TRUE, label=c(1:n), label.cex=0.8)
+  gplot(as.network(p), coord=coordinates, edge.col=edge.col, gmode="graph")
 }
 

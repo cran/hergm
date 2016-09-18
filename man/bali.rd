@@ -1,9 +1,8 @@
-
 \name{bali}
 
 \alias{bali}
 
-\title{Terrorist network behind Bali bombing in 2002}
+\title{Bali terrorist network}
 
 \usage{
 
@@ -30,9 +29,7 @@ Studies in Conflict and Terrorism, 29, 559--575.
 }
 
 \examples{
-\dontrun{
-data(bali)
-
+\dontrun{data(bali)
 hergm(bali ~ edges_ij + triangle_ijk)
 }
 }

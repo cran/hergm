@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.relabel_1 <- function(max_number, indicator, number_runs)
+hergm.relabel_1 <- function(max_number, indicator, number_runs, verbose)
 # Relabeling algorithm, which aims to minimize posterior expected loss
 # input: number of categories, indicators, number of runs
 # output: minimum and minimizer of posterior expected loss 
@@ -27,8 +27,8 @@ hergm.relabel_1 <- function(max_number, indicator, number_runs)
   minimum_loss <- Inf
   for (i in 1:number_runs)
     {
-    if (number_runs > 1) cat("\n------\nRun ", i, "\n------\n", sep="")
-    output <- hergm.min_loss_1(max_number, indicator, 25) # Loss function of Schweinberger and Handcock (2015)
+    if ((verbose >= 0) && (number_runs > 1)) cat("\n------\nRun ", i, "\n------\n", sep="")
+    output <- hergm.min_loss_1(max_number, indicator, 25, verbose) # Loss function of Schweinberger and Handcock (2015)
     loss[i] <- output$loss
     if (output$loss < minimum_loss)
       {
@@ -36,16 +36,16 @@ hergm.relabel_1 <- function(max_number, indicator, number_runs)
       min_output <- output
       }
     }
-  if (number_runs > 1) cat("\n", "Minimum loss: ", min_output$loss, "\n", sep="")
+  if ((verbose >= 0) && (number_runs > 1)) cat("\n", "Minimum loss: ", min_output$loss, "\n", sep="")
   min_output
 }
 
-hergm.relabel_2 <- function(max_number, indicator)
+hergm.relabel_2 <- function(max_number, indicator, verbose)
 # Relabeling algorithm, which aims to minimize posterior expected loss
 # input: number of categories, indicators
 # output: minimum and minimizer of posterior expected loss 
 {
-  min_output <- hergm.min_loss_2(max_number, indicator) # Loss function of Peng and Carvalho (2015); note: the algorithm converges to the same minimum in each run, therefore multiple runs are not necessary
+  min_output <- hergm.min_loss_2(max_number, indicator, verbose) # Loss function of Peng and Carvalho (2015); note: the algorithm converges to the same minimum in each run, therefore multiple runs are not necessary
   min_output
 }
  

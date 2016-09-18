@@ -2336,6 +2336,15 @@ output: MCMC sample of unknowns from posterior
   if (sample_size_indicators > (ls->n - ls->number_fixed)) sample_size_indicators = ls->n - ls->number_fixed;
   degenerate_draws = 0;
   coordinate = -1;
+  if (console == 0) 
+    {
+    Rprintf("\nSizes of blocks");
+    for (i = 0; i < ls->number; i++) 
+      {
+      Rprintf(" %i", i+1);
+      }
+    Rprintf("\n");
+    }
   for (batch = 0; batch < n_batches; batch++) /* Batch */
     {
     progress = (batch * 100.0) / n_batches;

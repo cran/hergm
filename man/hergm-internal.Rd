@@ -64,6 +64,8 @@
 
 \alias{InitErgmTerm.mutual_ij} 
 
+\alias{InitErgmTerm.transitiveties_ijk} 
+
 \alias{InitErgmTerm.triangle_ijk} 
 
 \alias{InitErgmTerm.ttriple_ijk}
@@ -71,6 +73,10 @@
 \alias{InitErgmTerm.twostar_ijk}
 
 \alias{hergm.getnetwork}
+
+\alias{plot_weighted_graph}
+
+\alias{silent}
 
 \description{
 

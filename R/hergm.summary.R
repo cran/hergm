@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,47 +18,19 @@
 #                                                                         # 
 ###########################################################################
 
-summary <- function(sample = NULL,
+summary <- function(object,
                     ...)
 {
   UseMethod("summary")
 }
 
-summary.hergm <- function(sample = NULL,
-                    ...)
-# input: output of function hergm
-# output: summary of output of function hergm
+summary.hergm <- function(object,
+                          ...)
 {
-  if (sample$simulate == TRUE) # MCMC sample of networks from model
+  if (object$simulate == FALSE) 
     {
-    # Initialize
-    sample_size <- sample$sample_size
-    n <- sample$network$gal$n
-    output <- list()
-    output$component.number <- vector(length = sample_size)
-    output$max.component.size <- vector(length = sample_size)
-    output$distance.label <- matrix(0, nrow = sample_size, ncol = n)
-    output$distance <- matrix(0, nrow = sample_size, ncol = n)
-    output$edges <- vector(length = sample_size)
-    output$degree <- matrix(0, nrow = sample_size, ncol = n)
-    output$stars <- vector(length = sample_size)
-    output$triangles <- vector(length = sample_size)
-    for (i in 1:sample$sample_size)
-      {
-      summary_sample_network(sample, n, output, i)
-      }
+    plot.hergm(object)
+    print.hergm(object)
     }
-  else # MCMC sample of clustering and parameters from posterior
-    {
-    output <- NULL
-    if (!(is.null(sample$p_i_k)))
-      {
-      cat("Summary of posterior of clustering of nodes: see plot.\n")
-      sample$p_i_k
-      output <- hergm.plot(sample)
-      }
-    cat("\nSummary of marginal posteriors of parameters can be obtained by using running \"hergm$parameter\", where \"parameter\" is replaced by the parameter of interest: see \"?hergm\".\n")
-    }
-  output
 }
 

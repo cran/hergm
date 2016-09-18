@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,23 +18,70 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.plot <- function(sample = NULL,
-                       ...)
-# input: network, postprocess output
-# output: plot of network block membership probabilities
+plot <- function(object,
+                 threshold = c(.7, .8, .9),
+                 ...)
 {
-  # Extract
-  network <- sample$network 
+  UseMethod("plot")
+}
 
-  # Plot
-  par(mfrow=c(1,1))
-  if (is.directed(network)) gmode <- "digraph" 
-  else gmode <- "graph"
-  p <- gplot(network, gmode=gmode, mode="fruchtermanreingold", vertex.cex=1, vertex.col=0, vertex.border=0, displaylabels=TRUE, label.cex=0.8)
-  for(i in 1:nrow(p))
+plot.hergm <- function(object,
+                       threshold = c(.7, .8, .9),
+                       ...)
+{
+  formula <- object$formula
+  max_number <- object$max_number
+  network <- hergm.getnetwork(formula, max_number)
+  n <- network$gal$n
+  if (max_number > 1)
     {
-    ergmm.drawpie(center=p[i,], radius=0.25, probs=sample$p_i_k[i,])
+    par(mfrow=c(1,1))
+    if (is.directed(network)) gmode <- "digraph" 
+    else gmode <- "graph"
+    if ((object$relabel %in% c(1, 2)) && (!(is.null(object$p_i_k)))) # relabel = 1
+      {
+      p <- gplot(network, gmode=gmode, mode="fruchtermanreingold", vertex.cex=1, vertex.col=0, vertex.border=0, displaylabels=TRUE, label=c(1:n), label.cex=0.8)
+      for(i in 1:nrow(p))
+        {
+        ergmm.drawpie(center=p[i,], radius=0.25, probs=object$p_i_k[i,])
+        }
+      }
+    else # Choose relabel = 3 instead, which is always possible, though the computing time is quadratic in number of nodes
+      { 
+      # Extract
+      indicator <- object$indicator
+      sample_size <- object$sample_size
+      # Estimate same-block-membership posterior probabilities
+      if (sample_size > 0)
+        {
+        p <- matrix(0, n, n)
+        for (i in 1:n)
+          {
+          for (j in 1:n)
+            {
+            for (h in 1:sample_size)
+              {
+              if (indicator[h,i] == indicator[h,j]) p[i,j] <- p[i,j] + 1
+              }
+            if (i == j) p[i,j] <- 0
+            else p[i,j] <- p[i,j] / sample_size
+            }
+         }
+        # Plot
+        #plot_weighted_graph(network, p) 
+        threshold <- unique(threshold)
+        threshold <- sort(threshold)
+        count <- length(threshold) + 1
+        par(mfrow=c(ceiling(count/2), 2))
+        coordinates <- gplot(network, gmode=gmode, mode="fruchtermanreingold", vertex.cex=1, vertex.col="black", vertex.border=0, displaylabels=TRUE, label=c(1:n), label.cex=0.8, edge.col="black", xlab="observed network", cex.lab=1.25)
+        for (i in 1:length(threshold))
+          {
+          same.neighborhood.graph <- (p >= threshold[i])
+          same.neighborhood.graph <- as.network(same.neighborhood.graph, directed=is.directed(network))
+          gplot(same.neighborhood.graph, coord=coordinates, gmode="graph", vertex.col = "black", vertex.cex=1, vertex.border=0, displaylabels=TRUE, label.cex=0.8, edge.col="gray", xlab=paste("same-neighborhood-network (", threshold[i], ")", sep=""), cex.lab=1.25) 
+          }
+        }
+      }
     }
-
 }
 

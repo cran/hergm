@@ -11,17 +11,20 @@ importFrom(sna, gplot, component.dist, geodist)
 importFrom("grDevices", "dev.off", "pdf")
 importFrom("graphics", "abline", "boxplot", "hist", "matplot", "par",
              "pie", "plot", "points")
-importFrom("stats", "as.formula", "kmeans", "quantile", "runif",
-             "terms")
+importFrom("stats", "as.formula", "kmeans", "quantile", "runif", "sd", "terms")
 importFrom("utils", "capture.output", "flush.console")
+importFrom("methods", "is")
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")
 export(gof,
 mcmc.diagnostics,
+print,
 simulate, 
 summary)
 S3method(gof, hergm)
 S3method(mcmc.diagnostics, hergm)
+S3method(plot, hergm)
+S3method(print, hergm)
 S3method(simulate, hergm)
 S3method(summary, hergm)

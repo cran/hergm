@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2009 Nobody                                                   #
+# Copyright 2009 Michael Schweinberger                                    #
 #                                                                         #
 # This file is part of hergm.                                             #
 #                                                                         # 
@@ -18,58 +18,61 @@
 #                                                                         # 
 ###########################################################################
 
-simulate <- function(model = NULL,
-                     network = NULL,
-                     eta = NULL,
+simulate <- function(object, 
                      max_number = NULL,
                      indicator = NULL,
-                     sample_size = 1000,
-                     sample = NULL,
-                     verbose = 1, 
+                     eta = NULL,
+                     sample_size = 1,
+                     verbose = 0, 
                      ...)
  {
  UseMethod("simulate")
  }
 
-simulate.hergm <- function(model = NULL,
-                           network = NULL,
-                           eta = NULL,
+simulate.hergm <- function(object,
                            max_number = NULL, 
                            indicator = NULL,
-                           sample_size = 1000, 
-                           sample = NULL,
-                           verbose = 1, 
+                           eta = NULL,
+                           sample_size = 1,
+                           verbose = 0, 
                            ...)
-# input: postprocessed sample, number of nodes, number of blocks, number covariates, observed network
-# output: goodness of fit data
 {
   # Extract
-  if (!is.null(sample))
+  condition <- (is(object) == "hergm")
+  condition <- min(condition)
+  if (condition == TRUE)
     { 
-    network <- sample$network
-    n <- sample$network$gal$n
-    model <- sample$model
-    max_number <- sample$max_number
-    indicator <- sample$indicator
-    ergm_theta <- sample$ergm_theta
-    hergm_theta <- sample$hergm_theta
-    sample_size <- sample$sample_size
+    formula <- object$formula
+    max_number <- object$max_number
+    indicator <- object$indicator
+    ergm_theta <- object$ergm_theta
+    hergm_theta <- object$hergm_theta
+    eta <- cbind(ergm_theta, hergm_theta)
+    if (is.null(sample_size)) sample_size <- object$sample_size
+    verbose <- object$verbose
+    }
+  else formula <- object
+  if (sample_size == 1)
+    {
+    if (is.vector(indicator)) indicator <- t(as.matrix(indicator))
+    if (is.vector(indicator)) eta <- t(as.matrix(eta))
     }
   else 
     {
-    n <- network$gal$n
+    indicator_matrix <- NULL
+    eta_matrix <- NULL
+    if (is.vector(indicator)) 
+      {
+      for (i in 1:sample_size) indicator_matrix <- rbind(indicator_matrix, indicator)
+      indicator <- indicator_matrix
+      }
+    if (is.vector(eta)) 
+      {
+      for (i in 1:sample_size) eta_matrix <- rbind(eta_matrix, eta)
+      eta <- eta_matrix
+      }
     }
-
-  # Initialize
-  output <- list()
-  output$component.number <- vector(length = sample_size) 
-  output$max.component.size <- vector(length = sample_size)
-  output$distance.label <- matrix(0, nrow = sample_size, ncol = n)
-  output$distance <- matrix(0, nrow = sample_size, ncol = n)
-  output$edges <- vector(length = sample_size)
-  output$degree <- matrix(0, nrow = sample_size, ncol = n)
-  output$stars <- vector(length = sample_size)
-  output$triangles <- vector(length = sample_size)
+  n <- ncol(indicator)
 
   # Sample
   edgelists <- list()
@@ -88,17 +91,17 @@ simulate.hergm <- function(model = NULL,
         }
       cat("\n")
       }
-    edgelist <- hergm(model$formula, 
+    object.hergm <- hergm(formula, 
       max_number = max_number, 
       eta = eta[i,], 
       indicator = indicator[i,], 
       simulate = TRUE, 
-      samplesize = 1,
+      sample_size = 1,
       verbose = verbose
       )
-    edgelists$edgelist[[i]] <- edgelist
+    edgelists$edgelist[[i]] <- object.hergm$edgelist
     }
-
+  
   edgelists
 }
 
