@@ -48,7 +48,7 @@ simulate.hergm <- function(object,
     ergm_theta <- object$ergm_theta
     hergm_theta <- object$hergm_theta
     eta <- cbind(ergm_theta, hergm_theta)
-    if (is.null(sample_size)) sample_size <- object$sample_size
+    sample_size <- object$sample_size
     verbose <- object$verbose
     }
   else formula <- object

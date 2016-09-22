@@ -1,8 +1,8 @@
-5fe8e53e1ddd4fb5c09c6ff6ff7080a2 *DESCRIPTION
+bc22369dff40dad6def72dabedd9a51d *DESCRIPTION
 a503a04808c090aff43dcf7fb9b4783a *NAMESPACE
 8de4dd6a4b9cd4d58763714c953b0000 *R/hergm.R
 eb14413fd4f0a749315d62fa34079bfa *R/hergm.getnetwork.R
-99320a1962fcfe9b5f761812f70aacfd *R/hergm.gof.R
+9fdb9cc1b04f7498abcd43a091b593f7 *R/hergm.gof.R
 8b1293090cfd2b6efa89d5e6afefab14 *R/hergm.initialize.R
 044ad74fcc2ddff0533e09c66050c875 *R/hergm.mcmc.R
 91e6d816a08306575501ca220063826f *R/hergm.mcmc.diagnostics.R
@@ -15,7 +15,7 @@ d0259785b6bfa3fae405b52c7b152146 *R/hergm.postprocess.R
 8c114f7f261f62e78f77b1b1933f1c54 *R/hergm.print.R
 12aeccf1aa274c7c115f22e7f1c4c67b *R/hergm.relabel.R
 9d3f6e6b7704878a5da92d4b77a98883 *R/hergm.set.mcmc.R
-efc2816f4c97b69f792898c0b04b56ca *R/hergm.simulate.R
+2ced43fe2939e33c57969fd585897562 *R/hergm.simulate.R
 bff347a586f1cc4d2158d4733d8eb0a9 *R/hergm.summary.R
 51b0ff9ec258d23cdf339174d8bed603 *R/hergm.terms.R
 351c58efee0f22ba29aac4c92c96e3d6 *R/hergm.wrapper.R

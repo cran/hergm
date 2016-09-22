@@ -62,7 +62,7 @@ gof.hergm <- function(object,
 
   # Simulated networks
   object.hergm <- simulate.hergm(object, verbose=verbose)
-  output <- summary_sample_network(edgelists=object.hergm$edgelists, sample_size=sample_size, directed=directed, n=n)
+  output <- summary_sample_network(edgelists=object.hergm$edgelist, sample_size=sample_size, directed=directed, n=n)
 
   # Goodness-of-fit plots
   par(mfrow = c(2, 3))
@@ -74,7 +74,9 @@ gof.hergm <- function(object,
   abline(v = observed.max.component.size, col="red")
   boxplot(output$distance[,1:(n-2)], main = "", xlab = "geodesic distances", ylab = "", cex.lab=1.25)
   points(x = c(observed.distance[1:(n-2)]), col = "red", type = "b")
-  boxplot(output$degree[,1:(n-1)], ylim = c(0,n-1), main = "", xlab = "degrees", ylab = "", cex.lab=1.25)
+  if (directed == TRUE) xlab <- "out-degrees"
+  else xlab <- "degrees"
+  boxplot(output$degree[,1:(n-1)], ylim = c(0,n-1), main = "", xlab = xlab, ylab = "", cex.lab=1.25)
   points(x = c(observed.degree), col = "red", type = "b")
   hist(output$edges, 50, prob = T, main = "", xlab = "number of edges", ylab = "", cex.lab=1.25)
   #abline(v = c(quantile(output$star, 0.025), quantile(output$star, 0.975)), col = "blue")
