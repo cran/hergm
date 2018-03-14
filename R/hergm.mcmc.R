@@ -44,7 +44,8 @@ hergm.mcmc <- function(original.formula, max_number, initialize, network, model,
     number <- parallel # Specify number of computing nodes on cluster
     if (length(seeds) < number) 
       {
-      cluster.seeds <- runif(number)
+      maximum <- as.integer(.Machine$integer.max / 10)
+      cluster.seeds <- sample(0:maximum, size=number, replace=FALSE)
       }
     else 
       {

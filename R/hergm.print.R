@@ -18,57 +18,50 @@
 #                                                                         # 
 ###########################################################################
 
-print <- function(object,
-                  ...)
- {
- UseMethod("print")
- }
-
-print.hergm <- function (object, 
-                         ...)
+print.hergm <- function(x, ...)
 {
- if (object$simulate == FALSE) 
+ if (x$simulate == FALSE) 
    {
-   max_number <- object$max_number
-   if (object$relabel %in% c(1, 2)) hergm_theta <- object$relabeled.hergm_theta
-   else hergm_theta <- object$hergm_theta
+   max_number <- x$max_number
+   if (x$relabel %in% c(1, 2)) hergm_theta <- x$relabeled.hergm_theta
+   else hergm_theta <- x$hergm_theta
    cat("\n====================\n")
    cat("Summary of model fit\n")
    cat("====================\n")
    cat("\nFormula: ")
-   formula <- deparse(object$formula)
+   formula <- deparse(x$formula)
    cat(formula, "\n")
-   cat("\nSize of MCMC sample from posterior: ", object$sample_size)
+   cat("\nSize of MCMC sample from posterior: ", x$sample_size)
    cat("\n")
    cat("\nPosterior quantiles                         2.5%        50%      97.5%")
    cat("\n----------------------------------------------------------------------")
-   if (object$hyper_prior == 1)
+   if (x$hyper_prior == 1)
      {
-     if (!(is.null(object$alpha))) 
+     if (!(is.null(x$alpha))) 
        {
        cat("\nConcentration parameter alpha:           ")
-       cat(formatC(quantile(object$alpha, .025), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(object$alpha, .500), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(object$alpha, .975), format="f", width=7, digits=3))
+       cat(formatC(quantile(x$alpha, .025), format="f", width=7, digits=3), "   ")
+       cat(formatC(quantile(x$alpha, .500), format="f", width=7, digits=3), "   ")
+       cat(formatC(quantile(x$alpha, .975), format="f", width=7, digits=3))
        }
-     if (!(is.null(object$eta_mean))) 
+     if (!(is.null(x$eta_mean))) 
        {
-       for (i in 1:ncol(object$eta_mean))
+       for (i in 1:ncol(x$eta_mean))
          {
          cat("\nMean of parameters of hergm term ", i, ":      ", sep="")
-         cat(formatC(quantile(object$eta_mean[,i], .025), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(object$eta_mean[,i], .500), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(object$eta_mean[,i], .975), format="f", width=7, digits=3))
+         cat(formatC(quantile(x$eta_mean[,i], .025), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$eta_mean[,i], .500), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$eta_mean[,i], .975), format="f", width=7, digits=3))
          }
        }
-     if (!(is.null(object$eta_precision)))
+     if (!(is.null(x$eta_precision)))
        {
-       for (i in 1:ncol(object$eta_precision))
+       for (i in 1:ncol(x$eta_precision))
          {
          cat("\nPrecision of parameters of hergm term ", i, ": ", sep="")
-         cat(formatC(quantile(object$eta_precision[,i], .025), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(object$eta_precision[,i], .500), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(object$eta_precision[,i], .975), format="f", width=7, digits=3))
+         cat(formatC(quantile(x$eta_precision[,i], .025), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$eta_precision[,i], .500), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$eta_precision[,i], .975), format="f", width=7, digits=3))
          }
        cat("\n----------------------------------------------------------------------")
        }
@@ -99,14 +92,14 @@ print.hergm <- function (object,
        }
      cat("\n----------------------------------------------------------------------")
      }
-   if (!(is.null(object$ergm_theta)))
+   if (!(is.null(x$ergm_theta)))
      {
-     for (i in 1:ncol(object$ergm_theta)) 
+     for (i in 1:ncol(x$ergm_theta)) 
        {
        cat("\nergm term ", i, " parameter:                   ", sep="")
-       cat(formatC(quantile(object$ergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(object$ergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(object$ergm_theta[,i], .975), format="f", width=7, digits=3))
+       cat(formatC(quantile(x$ergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
+       cat(formatC(quantile(x$ergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
+       cat(formatC(quantile(x$ergm_theta[,i], .975), format="f", width=7, digits=3))
        }
      cat("\n----------------------------------------------------------------------")
      } 

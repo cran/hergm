@@ -18,14 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-mcmc.diagnostics <- function(object,
-                             ...) 
-{
-  UseMethod("mcmc.diagnostics")
-}
-
-mcmc.diagnostics.hergm <- function(object,
-                                   ...)
+mcmc.diagnostics.hergm <- function(object, ...)
 {
   sample_size <- object$sample_size
   hyper_prior <- object$hyper_prior
@@ -36,7 +29,7 @@ mcmc.diagnostics.hergm <- function(object,
   if (verbose >= 0) cat("\nConvergence check using R function mcgibbsit()...")
 
   output <- list()
-  warning <- FALSE
+  warn <- FALSE
   if (!(is.null(object$hergm_theta)))
     {
     nonfixed <- NULL
@@ -52,34 +45,34 @@ mcmc.diagnostics.hergm <- function(object,
     }
   if (sample_size < 600) 
     {
-    output$warning <- "WARNING: mcgibbsit() cannot be used with a sample size smaller than 600, therefore no convergence checks have been run."
+    warning("mcgibbsit() cannot be used with a sample size smaller than 600, therefore no convergence checks have been run.")
     }
   else
     {
     if (!(is.null(object$ergm_theta))) 
       { 
       output$mcmc.ergm_theta <- mcgibbsit(object$ergm_theta)
-      if (max(output$mcmc.ergm_theta$resmatrix[,3]) > sample_size) warning <- TRUE
-      if (max(output$mcmc.ergm_theta$resmatrix[,5]) > 10) warning <- TRUE
+      if (max(output$mcmc.ergm_theta$resmatrix[,3]) > sample_size) warn <- TRUE
+      if (max(output$mcmc.ergm_theta$resmatrix[,5]) > 10) warn <- TRUE
       }
     if (!(is.null(hergm_theta)))
     #if (((object$relabel %in% c(1, 2)) && (!(is.null(object$relabeled.hergm_theta)))) || ((object$max_number == 1) && ((!(is.null(object$relabeled.hergm_theta)))))) 
       {
       output$mcmc.hergm_theta <- mcgibbsit(hergm_theta[,nonfixed])
-      if ((max(output$mcmc.hergm_theta$resmatrix[,3])) > sample_size) warning <- TRUE
-      if ((max(output$mcmc.hergm_theta$resmatrix[,5])) > 10) warning <- TRUE
+      if ((max(output$mcmc.hergm_theta$resmatrix[,3])) > sample_size) warn <- TRUE
+      if ((max(output$mcmc.hergm_theta$resmatrix[,5])) > 10) warn <- TRUE
       }
     if (hyper_prior == 1)
       {
       output$mcmc.alpha <- mcgibbsit(object$alpha)
-      if ((max(output$mcmc.alpha$resmatrix[,3])) > sample_size) warning <- TRUE
-      if ((max(output$mcmc.alpha$resmatrix[,5])) > 10) warning <- TRUE
+      if ((max(output$mcmc.alpha$resmatrix[,3])) > sample_size) warn <- TRUE
+      if ((max(output$mcmc.alpha$resmatrix[,5])) > 10) warn <- TRUE
       output$mcmc.eta_mean <- mcgibbsit(object$eta_mean)
-      if ((max(output$mcmc.eta_mean$resmatrix[,3])) > sample_size) warning <- TRUE
-      if ((max(output$mcmc.eta_mean$resmatrix[,5])) > 10) warning <- TRUE
+      if ((max(output$mcmc.eta_mean$resmatrix[,3])) > sample_size) warn <- TRUE
+      if ((max(output$mcmc.eta_mean$resmatrix[,5])) > 10) warn <- TRUE
       output$mcmc.eta_precision <- mcgibbsit(object$eta_precision)
-      if ((max(output$mcmc.eta_precision$resmatrix[,3])) > sample_size) warning <- TRUE
-      if ((max(output$mcmc.eta_precision$resmatrix[,5])) > 10) warning <- TRUE
+      if ((max(output$mcmc.eta_precision$resmatrix[,3])) > sample_size) warn <- TRUE
+      if ((max(output$mcmc.eta_precision$resmatrix[,5])) > 10) warn <- TRUE
       }
     }
   count <- 0 # Count the number of trace plots
@@ -103,15 +96,12 @@ mcmc.diagnostics.hergm <- function(object,
     }
   if (verbose >= 0)
     {
-    if (warning == TRUE) 
+    if (warn == TRUE) 
       {
-      cat("\n\nWARNING: There are signs of non-convergence: to view details, enter")
-      cat("\n         \'print(object$mcmc.diagnostics)\'")
-      cat("\n         where object is the object returned by function hergm().\n\n")
+      warning("There are signs of non-convergence: to view details, enter\n         \'print(object$mcmc.diagnostics)\'\n         where object is the object returned by function hergm().\n\n")
       }
-    else if (sample_size < 600) cat("\n\nWARNING: mcgibbsit() cannot be used with a sample size smaller than 600, therefore no convergence checks have been run.")
-    else cat("OK\n\n")
-    if ((object$max_number > 1) && (object$number_fixed < object$network$gal$n) && (!(object$relabel %in% c(1, 2)))) cat("\n\nWARNING: The label-switching problem has not been solved so that the interpretation of block-dependent hergm terms parameters is problematic.")
+    else if (sample_size < 600) warning("mcgibbsit() cannot be used with a sample size smaller than 600, therefore no convergence checks have been run.")
+    if ((object$max_number > 1) && (object$number_fixed < object$network$gal$n) && (!(object$relabel %in% c(1, 2)))) warning("The label-switching problem has not been solved so that the interpretation of block-dependent hergm terms parameters is problematic.")
     }
   
   output

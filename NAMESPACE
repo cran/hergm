@@ -1,5 +1,5 @@
 
-useDynLib(hergm)
+useDynLib(hergm, .registration = TRUE)
 
 importFrom(utils, packageDescription)
 import(ergm)
@@ -8,20 +8,14 @@ import(mcgibbsit)
 import(network)
 importFrom(parallel, makePSOCKcluster, clusterEvalQ, clusterApplyLB, stopCluster)
 importFrom(sna, gplot, component.dist, geodist)
-importFrom("grDevices", "dev.off", "pdf")
-importFrom("graphics", "abline", "boxplot", "hist", "matplot", "par",
-             "pie", "plot", "points")
-importFrom("stats", "as.formula", "kmeans", "quantile", "runif", "sd", "terms")
-importFrom("utils", "capture.output", "flush.console")
-importFrom("methods", "is")
+importFrom(grDevices, "dev.off", "pdf")
+importFrom(graphics, "abline", "boxplot", "hist", "matplot", "par", "pie", "plot", "points")
+importFrom(stats, "as.formula", "kmeans", "quantile", "runif", "sd", "simulate", "terms")
+importFrom(utils, "capture.output", "flush.console")
+importFrom(methods, "is")
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")
-export(gof,
-mcmc.diagnostics,
-print,
-simulate, 
-summary)
 S3method(gof, hergm)
 S3method(mcmc.diagnostics, hergm)
 S3method(plot, hergm)

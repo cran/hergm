@@ -18,19 +18,12 @@
 #                                                                         # 
 ###########################################################################
 
-plot <- function(object,
-                 threshold = c(.7, .8, .9),
-                 ...)
-{
-  UseMethod("plot")
-}
-
-plot.hergm <- function(object,
+plot.hergm <- function(x,
                        threshold = c(.7, .8, .9),
                        ...)
 {
-  formula <- object$formula
-  max_number <- object$max_number
+  formula <- x$formula
+  max_number <- x$max_number
   network <- hergm.getnetwork(formula, max_number)
   n <- network$gal$n
   if (max_number > 1)
@@ -38,19 +31,19 @@ plot.hergm <- function(object,
     par(mfrow=c(1,1))
     if (is.directed(network)) gmode <- "digraph" 
     else gmode <- "graph"
-    if ((object$relabel %in% c(1, 2)) && (!(is.null(object$p_i_k)))) # relabel = 1
+    if ((x$relabel %in% c(1, 2)) && (!(is.null(x$p_i_k)))) # relabel = 1
       {
       p <- gplot(network, gmode=gmode, mode="fruchtermanreingold", vertex.cex=1, vertex.col=0, vertex.border=0, displaylabels=TRUE, label=c(1:n), label.cex=0.8)
       for(i in 1:nrow(p))
         {
-        ergmm.drawpie(center=p[i,], radius=0.25, probs=object$p_i_k[i,])
+        ergmm.drawpie(center=p[i,], radius=0.25, probs=x$p_i_k[i,])
         }
       }
     else # Choose relabel = 3 instead, which is always possible, though the computing time is quadratic in number of nodes
       { 
       # Extract
-      indicator <- object$indicator
-      sample_size <- object$sample_size
+      indicator <- x$indicator
+      sample_size <- x$sample_size
       # Estimate same-block-membership posterior probabilities
       if (sample_size > 0)
         {

@@ -1,6 +1,6 @@
 Package: hergm
-Version: 3.1-0
-Date: 2016-09-22
+Version: 3.1-1
+Date: 2018-03-14
 Title: Hierarchical Exponential-Family Random Graph Models
 Author: Michael Schweinberger <michael.schweinberger@rice.edu> [aut, cre], Mark S. Handcock <handcock@ucla.edu> [ctb], Pamela Luna <pamela.luna@rice.edu> [ctb]
 Maintainer: Michael Schweinberger <michael.schweinberger@rice.edu>
@@ -8,8 +8,8 @@ Depends: ergm, latentnet, mcgibbsit, network, sna
 Imports: methods
 Description: Hierarchical exponential-family random graph models with local dependence.
 License: GPL-3
-BugReports:
 NeedsCompilation: yes
-Packaged: 2016-09-22 20:39:42 UTC; gilgamesh
+BugReports: http://www.stat.rice.edu/~ms88/hergm/BugReports/BugReports.html
+Packaged: 2018-03-14 21:21:54 UTC; gilgamesh
 Repository: CRAN
-Date/Publication: 2016-09-22 23:06:53
+Date/Publication: 2018-03-14 21:53:47 UTC

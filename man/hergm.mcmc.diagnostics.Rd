@@ -1,6 +1,4 @@
-\name{mcmc.diagnostics}
-
-\alias{mcmc.diagnostics}
+\name{hergm.mcmc.diagnostics}
 
 \alias{hergm.mcmc.diagnostics}
 
@@ -10,7 +8,7 @@
 
 \description{
 
-The function \code{mcmc.diagnostics} helps detect non-convergence of the auxiliary-variable MCMC algorithm implemented in function \code{hergm}.
+The function \code{mcmc.diagnostics.hergm} helps detect non-convergence of the auxiliary-variable MCMC algorithm implemented in function \code{hergm}.
 It reports Markov chain Monte Carlo convergence diagnostics by using the function \code{mcgibbsit} of \code{R} package \code{mcgibbsit} along with trace plots.
 The help function of the function \code{mcgibbsit} provides additional details about the output of the function \code{mcgibbsit}.
 

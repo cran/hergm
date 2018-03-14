@@ -1,6 +1,4 @@
-\name{summary}
-
-\alias{summary}
+\name{summary.hergm}
 
 \alias{summary.hergm}
 
@@ -10,9 +8,9 @@
 
 \description{
 
-The function \code{summary} generates a summary of an object of class \code{hergm} by using the functions \code{print} and \code{plot}.
-The function \code{print} prints a summary of a sample of parameters from the posterior,
-whereas the function \code{plot} plots a summary of a sample of block memberships of nodes from the posterior.
+The function \code{summary.hergm} generates a summary of an object of class \code{hergm} by using the functions \code{print.hergm} and \code{plot.hergm}.
+The function \code{print.hergm} prints a summary of a sample of parameters from the posterior,
+whereas the function \code{plot.hergm} plots a summary of a sample of block memberships of nodes from the posterior.
 
 }
 
@@ -30,7 +28,7 @@ whereas the function \code{plot} plots a summary of a sample of block membership
 
 }
 
-\seealso{hergm, hergm.postprocess, print, plot}
+\seealso{hergm, hergm.postprocess, print.hergm, plot.hergm}
 
 \examples{
 \dontrun{data(example)

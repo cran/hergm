@@ -237,7 +237,7 @@ The function \code{hergm} returns an object of class \code{hergm} with component
 
 }
 
-\seealso{network, ergm.terms, hergm.terms, hergm.postprocess, mcmc.diagnostics, summary, print, plot, gof, simulate}
+\seealso{network, ergm.terms, hergm.terms, hergm.postprocess, mcmc.diagnostics.hergm, summary.hergm, print.hergm, plot.hergm, gof.hergm, simulate.hergm}
 
 \references{
 

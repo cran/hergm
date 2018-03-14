@@ -18,12 +18,12 @@
 #                                                                         # 
 ###########################################################################
 
-simulate <- function(object, 
+simulate <- function(object,
                      max_number = NULL,
                      indicator = NULL,
                      eta = NULL,
                      sample_size = 1,
-                     verbose = 0, 
+                     verbose = 0,
                      ...)
  {
  UseMethod("simulate")

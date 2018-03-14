@@ -1,6 +1,4 @@
-\name{gof}
-
-\alias{gof}
+\name{gof.hergm}
 
 \alias{gof.hergm}
 
@@ -10,7 +8,7 @@
 
 \description{
 
-The function \code{gof} accepts an \code{object} of class \code{hergm} as argument and assesses the goodness-of-fit of the model estimated by function \code{hergm}.
+The function \code{gof.hergm} accepts an \code{object} of class \code{hergm} as argument and assesses the goodness-of-fit of the model estimated by function \code{hergm}.
 
 }
 
@@ -48,7 +46,7 @@ The function \code{gof.hergm} returns a list with components:
 
 }
 
-\seealso{hergm, simulate}
+\seealso{hergm, simulate.hergm}
 
 \examples{
 \dontrun{data(example)

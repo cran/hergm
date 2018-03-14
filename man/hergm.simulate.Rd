@@ -1,16 +1,16 @@
-\name{simulate}
-
-\alias{simulate}
+\name{simulate.hergm}
 
 \alias{simulate.hergm}
 
 \alias{hergm.simulate}
 
+\alias{simulate}
+
 \title{Simulate network}
 
 \description{
 
-The function \code{simulate} accepts an \code{object} of class \code{hergm} as argument and simulates networks.
+The function \code{simulate.hergm} accepts an object of class \code{hergm} as argument and simulates networks.
 
 }
 
@@ -45,11 +45,11 @@ The function \code{simulate} accepts an \code{object} of class \code{hergm} as a
 
 \value{
 
-The function \code{simulate} returns the simulated networks in the form of edge lists.
+The function \code{simulate.hergm} returns the simulated networks in the form of edge lists.
 
 }
 
-\seealso{hergm, ergm.terms, hergm.terms, gof}
+\seealso{hergm, ergm.terms, hergm.terms, gof.hergm}
 
 \examples{
 \dontrun{data(example)

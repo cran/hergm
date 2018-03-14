@@ -55,7 +55,7 @@ hergm <- function(formula,
                   ...) 
 {
   original.formula <- formula
-  options(warn = -1)
+  oopts <- options(warn = -1)
   control <- control.ergm()
   options()
   network <- hergm.getnetwork(formula, max_number)
@@ -81,6 +81,7 @@ hergm <- function(formula,
   if ((max_number >= 10) && (relabel == 1)) relabel <- 2 
   object.hergm <- hergm.postprocess(object=object, burnin=posterior.burnin, thinning=posterior.thinning, relabel=relabel, number_runs=number_runs)
   if (simulate == FALSE) object.hergm$mcmc.diagnostics <- mcmc.diagnostics.hergm(object.hergm)
+  on.exit(options(oopts))
 
   return(structure(object.hergm, class="hergm"))
 }

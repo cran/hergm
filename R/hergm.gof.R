@@ -18,14 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-gof <- function(object,
-                ...)
- {
- UseMethod("gof")
- }
-
-gof.hergm <- function(object, 
-                      ...)
+gof.hergm <- function(object, ...)
 {
   # Extract
   network <- object$network

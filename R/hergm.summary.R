@@ -18,14 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-summary <- function(object,
-                    ...)
-{
-  UseMethod("summary")
-}
-
-summary.hergm <- function(object,
-                          ...)
+summary.hergm <- function(object, ...)
 {
   if (object$simulate == FALSE) 
     {
