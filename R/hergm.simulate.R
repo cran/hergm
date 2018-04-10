@@ -38,7 +38,7 @@ simulate.hergm <- function(object,
                            ...)
 {
   # Extract
-  condition <- (is(object) == "hergm")
+  condition <- is(object, "hergm")
   condition <- min(condition)
   if (condition == TRUE)
     { 

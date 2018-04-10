@@ -80,8 +80,8 @@ hergm <- function(formula,
   if (is.null(max_number)) max_number <- 1
   if ((max_number >= 10) && (relabel == 1)) relabel <- 2 
   object.hergm <- hergm.postprocess(object=object, burnin=posterior.burnin, thinning=posterior.thinning, relabel=relabel, number_runs=number_runs)
-  if (simulate == FALSE) object.hergm$mcmc.diagnostics <- mcmc.diagnostics.hergm(object.hergm)
   on.exit(options(oopts))
+  if (simulate == FALSE) object.hergm$mcmc.diagnostics <- mcmc.diagnostics.hergm(object.hergm)
 
   return(structure(object.hergm, class="hergm"))
 }

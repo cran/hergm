@@ -100,7 +100,7 @@ mcmc.diagnostics.hergm <- function(object, ...)
       {
       warning("There are signs of non-convergence: to view details, enter\n         \'print(object$mcmc.diagnostics)\'\n         where object is the object returned by function hergm().\n\n")
       }
-    else if (sample_size < 600) warning("mcgibbsit() cannot be used with a sample size smaller than 600, therefore no convergence checks have been run.")
+    else cat("OK\n\n")
     if ((object$max_number > 1) && (object$number_fixed < object$network$gal$n) && (!(object$relabel %in% c(1, 2)))) warning("The label-switching problem has not been solved so that the interpretation of block-dependent hergm terms parameters is problematic.")
     }
   

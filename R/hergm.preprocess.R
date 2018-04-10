@@ -186,7 +186,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       if (is.null(model$terms[[i]]$dependence) || (model$terms[[i]]$dependence == 1)) dependence <- 1
       }
     }
-  if (size.dependent == TRUE) cat("\nSize-dependent parameterizations.\n") 
+  if ((size.dependent == TRUE) && (verbose >= 0)) cat("\nSize-dependent parameterizations.\n") 
   d <- Clist$nstats # Number of parameters
   structural <- vector(mode = "integer", length = d) # Indicator: structural parameters 
   theta <- vector(mode = "numeric", length = d) 
@@ -256,7 +256,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     }
   if ((edges + edges_i + edges_ij > 1) || (mutual + mutual_i + mutual_ij > 1)) 
     {
-    cat("\n\n")
+    if (verbose >= 0) cat("\n\n")
     error_message <- paste("The model is non-identifiable: check model terms and drop some of them.")      
     stop(error_message, call. = FALSE)
     } 
@@ -446,12 +446,12 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     if (is.null(temperature))
       {
       temperature <- default
-      cat("\nWarning: minimum and maximum temperature are NULL and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+      warning("minimum and maximum temperature are NULL and are replaced by ",temperature[1]," and ",temperature[2],", respectively.",sep="")
       }
     else if (length(temperature) < 2)
       {
       temperature <- default
-      cat("\nWarning: either minimum or maximum temperature are unspecified and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
+      warning("either minimum or maximum temperature are unspecified and are replaced by ",temperature[1]," and ",temperature[2],", respectively.",sep="")
       }
     temperature[1] <- abs(temperature[1])
     temperature[2] <- abs(temperature[2])

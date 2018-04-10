@@ -30,11 +30,14 @@ hergm.mcmc <- function(original.formula, max_number, initialize, network, model,
   else if (hergm_list$hyper_prior == 1)
     {
     k <- number_clusters(hergm_list$alpha, hergm_list$Clist$n)
-    cat("\nDirichlet process:")
-    cat("\n- scaling parameter: ", hergm_list$alpha, sep = "")
-    cat("\n- mean of number of non-empty blocks: ", formatC(k$mean, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
-    cat("\n- variance of number of non-empty blocks: ", formatC(k$variance, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
-    cat("\n")   
+    if (verbose >= 0)
+      {
+      cat("\nDirichlet process:")
+      cat("\n- scaling parameter: ", hergm_list$alpha, sep = "")
+      cat("\n- mean of number of non-empty blocks: ", formatC(k$mean, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
+      cat("\n- variance of number of non-empty blocks: ", formatC(k$variance, digits = 2, width = 4, format = "f", mode = "real"), sep = "") 
+      cat("\n")   
+      }
     }
 
   # Run

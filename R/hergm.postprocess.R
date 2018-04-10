@@ -186,7 +186,7 @@ hergm.postprocess <- function(object,
           object.hergm$relabeled.hergm_theta[,index2] <- object.hergm$hergm_theta[,index2] # Copy between-block parameters
           }
         }
-      cat("\n")
+      if (verbose >= 0) cat("\n")
       }
     }
 

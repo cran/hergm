@@ -46,9 +46,9 @@ hergm.getnetwork <- function (form, max_number, loopswarning=TRUE) {
   if (loopswarning) {
     e <- as.edgelist(nw)
     if(any(e[,1]==e[,2])) {
-      print("Warning:  This network contains loops")
+      warning("This network contains loops")
     } else if (has.loops(nw)) {
-      print("Warning:  This network is allowed to contain loops")
+      warning("This network is allowed to contain loops")
     }
   }
   nw$terms <- 1
