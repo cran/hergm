@@ -2617,9 +2617,8 @@ output: MCMC sample of unknowns from posterior
     {
     Rprintf("\nNumber of draws from posterior: %i",n_batches * batch_size);
     Rprintf("\nThinning: every %i-th draw recorded\n\n",batch_size);
+    if (degenerate_draws > 0) Rprintf("\nWARNING: %i generated networks were extreme in terms of the number of edges. The corresponding draws should be discarded.\n\n", degenerate_draws);
     }
-  if (console == -1) Rprintf("\n");
-  if (degenerate_draws > 0) Rprintf("\nWARNING: %i generated networks were extreme in terms of the number of edges. The corresponding draws should be discarded.\n\n", degenerate_draws);
   free(scale_factor);
   free(local_mh_accept);
   free(local_mh);

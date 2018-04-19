@@ -26,7 +26,9 @@ mcmc.diagnostics.hergm <- function(object, ...)
   network <- object$network
   n <- network$gal$n
   verbose <- object$verbose
-  if (verbose >= 0) cat("\nConvergence check using R function mcgibbsit()...")
+  if ((verbose >= 0) && (sample_size >= 600)) { 
+    cat("\nConvergence check using R function mcgibbsit()...")
+  }
 
   output <- list()
   warn <- FALSE
@@ -45,7 +47,9 @@ mcmc.diagnostics.hergm <- function(object, ...)
     }
   if (sample_size < 600) 
     {
+    if (verbose >= 0) options(warn = 0)
     warning("mcgibbsit() cannot be used with a sample size smaller than 600, therefore no convergence checks have been run.")
+    if (verbose >= 0) options(warn = -1)
     }
   else
     {
@@ -94,14 +98,26 @@ mcmc.diagnostics.hergm <- function(object, ...)
     output$eta_mean <- matplot(object$eta_mean, type="l", xlab="means of hergm term parameters", ylab="", main="", cex.lab=1.25)
     output$eta_precision <- matplot(object$eta_precision, type="l", xlab="precisions of hergm term parameters", ylab="", main="", cex.lab=1.25)
     }
-  if (verbose >= 0)
+  if ((verbose >= 0) && (sample_size >= 600))
     {
     if (warn == TRUE) 
       {
+      options(warn = 0)
+      cat("\n\n")
       warning("There are signs of non-convergence: to view details, enter\n         \'print(object$mcmc.diagnostics)\'\n         where object is the object returned by function hergm().\n\n")
+      options(warn = -1)
       }
     else cat("OK\n\n")
-    if ((object$max_number > 1) && (object$number_fixed < object$network$gal$n) && (!(object$relabel %in% c(1, 2)))) warning("The label-switching problem has not been solved so that the interpretation of block-dependent hergm terms parameters is problematic.")
+    if ((object$max_number > 1) && (object$number_fixed < object$network$gal$n) && (!(object$relabel %in% c(1, 2))))  
+      { 
+        if (verbose >= 0) 
+          {  
+            options(warn = 0)
+            cat("\n\n")
+            warning("The label-switching problem has not been solved so that the interpretation of block-dependent hergm terms parameters is problematic.")
+            options(warn = -1)
+          }
+      }
     }
   
   output

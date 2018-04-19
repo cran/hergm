@@ -1,11 +1,11 @@
-a02f2186afc002afcbbb4ae5d7a0aa7f *DESCRIPTION
+f617937ffd3ed22b16b37aeffa224535 *DESCRIPTION
 e3623c79decfd21553f68b23e68b2476 *NAMESPACE
 37683f0cf854e75d1e231d9874e74e19 *R/hergm.R
 2459a21686a85fb6e566883b7799bc81 *R/hergm.getnetwork.R
 02c0a88d8f09bc62114f643e3ee9e796 *R/hergm.gof.R
 8b1293090cfd2b6efa89d5e6afefab14 *R/hergm.initialize.R
 1a9716ef0611f3236ba6097a6fd3b3cb *R/hergm.mcmc.R
-1f13b092e88cd1fa8216ad463e5c1ba6 *R/hergm.mcmc.diagnostics.R
+889bc116d55557ca3125a0cb63f39eab *R/hergm.mcmc.diagnostics.R
 7b6f04eda0664dc977eed177c0846ce3 *R/hergm.misc.R
 17b0561bd3292cc1720b6f6514221bc6 *R/hergm.multiple.R
 06a3f3202b50e49d83da55df3de9bb96 *R/hergm.permutation.wrapper.R
@@ -55,7 +55,7 @@ e178345af533dab64b29e35b1253917e *src/edgelist.c
 35dc99a4c17a9cabacbeb8ed0c0023b9 *src/edgelist.h
 543acf30d9eec34d4f719c8a5ef97362 *src/edgetree.c
 832142e7dddaa89d0192d3608eeb7a52 *src/edgetree.h
-c9e6e2061ebb152aa39a3a4f96cceaa8 *src/h_ergm.c
+1b4c6e4cb40fd60e11852418f9b8edde *src/h_ergm.c
 9c331159535adb3742ac8b4a87d68b2a *src/h_ergm.h
 3d0216c719b5bfba42a04e316f01e596 *src/h_ergm_basics.c
 efe351d614164b2c0c5cfc300fd5c5b7 *src/h_ergm_basics.h
