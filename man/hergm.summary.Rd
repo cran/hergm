@@ -30,6 +30,12 @@ whereas the function \code{plot.hergm} plots a summary of a sample of block memb
 
 \seealso{hergm, hergm.postprocess, print.hergm, plot.hergm}
 
+\references{
+
+Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
+
+}
+
 \examples{
 \dontrun{data(example)
 object <- hergm(d ~ edges_ij + triangle_ijk)

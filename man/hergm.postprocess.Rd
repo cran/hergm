@@ -78,9 +78,11 @@ please note that \code{hergm} returns min(\code{sample_size}, 10000) sample poin
 
 \references{
 
-Peng, L. and L. Carvalho (2015). Bayesian degree-corrected stochastic block models for community detection. Technical report, Boston University, arXiv:1309.4796v1.
+Peng, L. and L. Carvalho (2016). Bayesian degree-corrected stochastic block models for community detection. Electronic Journal of Statistics 10, 2746--2779.
 
 Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical Inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
+
+Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 }
 

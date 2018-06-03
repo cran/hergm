@@ -1,13 +1,17 @@
-year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
-version <- paste("R package version", meta$Version)
+bibentry(bibtype = "Article",
+  title        = "{hergm}: Hierarchical Exponential-Family Random Graph Models",
+  author       = c(person(given = "Michael",
+                          family = "Schweinberger",
+                          email = "michael.schweinberger@rice.edu"),
+                   person(given = "Pamela",
+                          family = "Luna")),
+  journal      = "Journal of Statistical Software",
+  year         = "2018",
+  volume       = "85",
+  number       = "1",
+  pages        = "1--39",
+  doi          = "10.18637/jss.v085.i01",
 
-citHeader("To cite the package 'hergm', please use the citation below.\n\n",
-   'A BibTeX-format citation can be obtained by using toBibtex(citation("hergm")).', sep="")
-   
-citEntry(entry = "Manual",
-         author = "Michael Schweinberger, Mark Handcock, and Pamela Luna",
-         title = "hergm: Hierarchical Exponential-Family Random Graph Models with Local Dependence",
-         year = year,
-         textVersion = paste("Michael Schweinberger, Mark Handcock, and Pamela Luna (", year, "). hergm: Hierarchical Exponential-Family Random Graph Models with Local Dependence. ", version, ".", sep="")
-         ) 
-                   
+  header       = "To cite hergm in publications use:"
+)
+
