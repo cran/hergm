@@ -14,8 +14,10 @@ The function \code{hergm} estimates and simulates three classes of hierarchical 
 
 3. The exponential-family random graph models with local dependence of Schweinberger and Handcock (2015), with and without covariates, and with parametric and nonparametric priors (see \code{arcs_i}, \code{arcs_j}, \code{edges_i}, \code{edges_ij}, \code{mutual_i}, \code{mutual_ij}, \code{twostar_ijk}, \code{triangle_ijk}, \code{ttriple_ijk}, \code{ctriple_ijk}).
 The exponential-family random graph models with local dependence replace the long-range dependence of conventional exponential-family random graph models by short-range dependence. 
-Therefore, the exponential-family random graph models with local dependence replace the strong dependence of conventional exponential-family random graph models by weak dependence, 
+Therefore, exponential-family random graph models with local dependence replace the strong dependence of conventional exponential-family random graph models by weak dependence, 
 reducing the problem of model degeneracy (Handcock, 2003; Schweinberger, 2011) and improving goodness-of-fit (Schweinberger and Handcock, 2015).
+In addition, exponential-family random graph models with local dependence satisfy a weak form of self-consistency in the sense that these models are self-consistent under neighborhood sampling (Schweinberger and Handcock, 2015), 
+which enables consistent estimation of neighborhood-dependent parameters (Schweinberger and Stewart, 2017; Schweinberger, 2017).
 
 }
 
@@ -25,7 +27,13 @@ hergm(formula,
       max_number = NULL,
       hierarchical = TRUE,
       parametric = FALSE,
+      parameterization = "standard",
       initialize = FALSE,
+      initialization_method = 1,
+      estimate_parameters = TRUE,
+      initial_estimate = NULL,
+      n_em_step_max = 100,
+      max_iter = 4,
       perturb = FALSE,
       scaling = NULL,
       alpha = NULL,
@@ -42,8 +50,13 @@ hergm(formula,
       indicator = NULL,
       parallel = 1,
       simulate = FALSE,
+      method = "bayes",
       seeds = NULL,
       sample_size = 1e+5,
+      sample_size_multiplier_blocks = 20,
+      NR_max_iter = 200,
+      NR_step_len = 1,
+      NR_step_len_multiplier = 0.2, 
       interval = 1024,
       burnin = 16*interval,
       mh.scale = 0.25,
@@ -71,17 +84,29 @@ hergm(formula,
 
 \item{parametric}{parametric prior; if \code{parametric == FALSE}, prior is truncated Dirichlet process prior, otherwise parametric Dirichlet prior.}
 
-\item{initialize}{if \code{initialize == TRUE}, initialize block memberships of nodes by spectral clustering.}
+\item{parameterization}{if \code{parameterization == "offset"} or \code{parameterization == "size"}, additive or multiplicative size-dependent parameterizations are used, otherwise size-independent parameterizations are used; note that size-dependent parameterizations are useful when the network is sparse and the blocks do not have the same size.}
+
+\item{initialize}{if \code{initialize == TRUE}, initialize block memberships of nodes.}
+
+\item{initialization_method}{if \code{initialization_method == 1}, block memberships of nodes are initialized by walk trap, otherwise by spectral clustering.}
+
+\item{estimate_parameters}{if \code{method == "ml"} and \code{estimate_parameters == TRUE}, estimate parameters.}
+
+\item{initial_estimate}{if \code{method == "ml"} and \code{estimate_parameters == TRUE}, specifies starting point.}
+
+\item{n_em_step_max}{if \code{method == "ml"}, maximum number of iterations of Generalized Expectation Maximization algorithm estimating the block structure.}
+
+\item{max_iter}{if \code{method == "ml"}, maximum number of iterations of Monte Carlo maximization algorithm estimating parameters given block structure.}
 
 \item{perturb}{if \code{initialize == TRUE} and \code{perturb == TRUE}, initialize block memberships of nodes by spectral clustering and perturb.}
 
-\item{scaling}{if \code{scaling == TRUE}, use size-dependent parameterizations which ensure that the scaling of between- and within-neighborhood terms is consistent with sparse edge terms.}
+\item{scaling}{if \code{scaling == TRUE}, use size-dependent parameterizations which ensure that the scaling of between- and within-block terms is consistent with sparse edge terms.}
 
 \item{alpha}{concentration parameter of truncated Dirichlet process prior of natural parameters of exponential-family model.}
 
 \item{alpha_shape, alpha_rate}{shape and rate parameter of Gamma prior of concentration parameter.}
 
-\item{eta}{the parameters of \code{ergm.terms} and \code{hergm.terms}; the parameters of \code{hergm.terms} must consist of \code{max_number} within-neighborhood parameters and one between-neighborhood parameter.}
+\item{eta}{the parameters of \code{ergm.terms} and \code{hergm.terms}; the parameters of \code{hergm.terms} must consist of \code{max_number} within-block parameters and one between-block parameter.}
 
 \item{eta_mean, eta_sd}{means and standard deviations of Gaussian baseline distribution of Dirichlet process prior of natural parameters.}
 
@@ -95,11 +120,21 @@ hergm(formula,
 
 \item{parallel}{number of computing nodes; if \code{parallel > 1}, \code{hergm} is run on \code{parallel} computing nodes.}
 
-\item{simulate}{if \code{simulate == TRUE}, simulation of networks, otherwise Bayesian inference.}
+\item{simulate}{if \code{simulate == TRUE}, simulate networks from model, otherwise estimate model given observed network.}
+
+\item{method}{if \code{method == "bayes"}, Bayesian methods; if \code{method == "ml"}, approximate maximum likelihood methods; note that Bayesian methods are the gold standard but are too time-consuming to be applied to networks with more than 100 nodes, whereas the approximate maximum likelihood methods can be applied to networks with thousands of nodes.}
 
 \item{seeds}{seed of pseudo-random number generator; if \code{parallel > 1}, number of seeds must equal number of computing nodes.}
 
 \item{sample_size}{if \code{simulate == TRUE}, number of network draws, otherwise number of posterior draws; if \code{parallel > 1}, number of draws on each computing node.}
+
+\item{sample_size_multiplier_blocks}{if \code{method == "ml"}, multiplier of the number of network draws from within-block subgraphs; the total number of network draws from within-block subgraphs is \code{sample_size_multiplier_blocks} * number of possible edges of largest within-block subgraph; if \code{sample_size_multiplier_blocks == NULL}, then total number of network draws from within-block subgraphs is \code{sample_size}.}
+
+\item{NR_max_iter}{if \code{method == "ml"}, the maximum number of iterationns to be used in the estimation of parameters.}
+
+\item{NR_step_len}{if \code{method == "ml"}, the step-length to be used for increments in the estimation of parameters.}
+
+\item{NR_step_len_multiplier}{if \code{method == "ml"}, multiplier for adjusting the step-length in the estimation procedure after a divergent increment.} 
 
 \item{interval}{if \code{simulate == TRUE}, number of proposals between sampled networks.}
 
@@ -118,7 +153,7 @@ please note that \code{hergm} returns min(\code{sample_size}, 10000) sample poin
 
 \item{posterior.thinning}{if \code{posterior.thinning > 1}, every \code{posterior.thinning}-th sample point is used while all others discarded; if computing is parallel, \code{posterior.thinning} is applied to the sample generated by each processor; please note that \code{hergm} returns min(\code{sample_size}, 10000) sample points and the thinning is applied to the sample of size min(\code{sample_size}, 10000) - \code{posterior.burnin}, therefore \code{posterior.thinning} should be smaller than min(\code{sample_size}, 10000) - \code{posterior.burnin}.}
 
-\item{relabel}{if \code{relabel > 0}, relabel MCMC sample by minimizing the posterior expected loss of Schweinberger and Handcock (2015) (\code{relabel == 1}) or Peng and Carvalho (2015) (\code{relabel == 2}).}
+\item{relabel}{if \code{relabel > 0}, relabel MCMC sample by minimizing the posterior expected loss of Schweinberger and Handcock (2015) (\code{relabel == 1}) or Peng and Carvalho (2016) (\code{relabel == 2}).}
 
 \item{number_runs}{if \code{relabel == 1}, number of runs of relabeling algorithm.}
 
@@ -207,7 +242,7 @@ The function \code{hergm} returns an object of class \code{hergm} with component
 
 \item{indicator}{indicators of block memberships of nodes.}
 
-\item{relabel}{if \code{relabel > 0}, relabel MCMC sample by minimizing the posterior expected loss of Schweinberger and Handcock (2015) (\code{relabel == 1}) or Peng and Carvalho (2015) (\code{relabel == 2}).}
+\item{relabel}{if \code{relabel > 0}, relabel MCMC sample by minimizing the posterior expected loss of Schweinberger and Handcock (2015) (\code{relabel == 1}) or Peng and Carvalho (2016) (\code{relabel == 2}).}
 
 \item{relabeled.indicator}{relabeled indicators of block memberships of nodes by using \code{relabel = 1} or \code{relabel = 2}.}
 
@@ -237,9 +272,11 @@ The function \code{hergm} returns an object of class \code{hergm} with component
 
 }
 
-\seealso{network, ergm.terms, hergm.terms, hergm.postprocess, mcmc.diagnostics.hergm, summary.hergm, print.hergm, plot.hergm, gof.hergm, simulate.hergm}
+\seealso{network, ergm.terms, hergm.terms, hergm.postprocess, mcmc.diagnostics, summary, print, plot, gof, simulate}
 
 \references{
+
+Babkin, S. and M. Schweinberger (2017). Massive-scale estimation of exponential-family random graph models with additional structure. https://arxiv.org/abs/1703.09301.
 
 Handcock, M. S. (2003). Assessing degeneracy in statistical models of social networks. Technical report, Center for Statistics and the Social Sciences, University of Washington, Seattle, http://www.csss.washington.edu/Papers.
 
@@ -253,11 +290,15 @@ Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochast
 
 Schweinberger, M. (2011). Instability, sensitivity, and degeneracy of discrete exponential families. Journal of the American Statistical Association, Theory & Methods, 106, 1361--1370.
 
+Schweinberger, M. (2017). Consistent structure estimation of exponential-family random graph models with additional structure. http://arxiv.org/abs/1702.07801.
+
 Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical Inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
 
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response on September 11, 2001 through the lens of statistical network analysis. Social Networks, 37, 42--55.
+
+Schweinberger, M. and J. Stewart (2017). Finite-graph concentration and consistency results for random graphs with complex topological structures. http://arxiv.org/abs/1702.01812.
 
 Vu, D. Q., Hunter, D. R. and M. Schweinberger (2013). Model-based clustering of large networks. Annals of Applied Statistics, 7, 1010--1039.
 

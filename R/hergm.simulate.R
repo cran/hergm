@@ -48,10 +48,16 @@ simulate.hergm <- function(object,
     ergm_theta <- object$ergm_theta
     hergm_theta <- object$hergm_theta
     eta <- cbind(ergm_theta, hergm_theta)
-    sample_size <- object$sample_size
+    # If user input sample_size is not NULL, use sample_size; otherwise use sample_size <- object$sample_size; if object$sample_size == NULL, use sample_size <- 1
+    if (is.null(sample_size)) sample_size <- ifelse(length(object$sample_size) > 0, object$sample_size, 1)
     verbose <- object$verbose
+    method <- object$method
     }
-  else formula <- object
+  else 
+    {
+    formula <- object
+    method <- 0 # Important: it must not be "ml"
+    }
   if (sample_size == 1)
     {
     if (is.vector(indicator)) indicator <- t(as.matrix(indicator))
@@ -73,35 +79,53 @@ simulate.hergm <- function(object,
       }
     }
   n <- ncol(indicator)
-
-  # Sample
-  edgelists <- list()
-  edgelists$edgelist <- list()
-  for (i in 1:sample_size)
-    { 
-    if (verbose == 1) 
+  if (method == "ml") 
+    {
+    edgelists <- list()
+    edgelists$edgelist <- list()
+    for (i in 1:sample_size)
       {
-      cat("\nSample", i)
-      cat("\n------------------------------------------------------------------")
-      cat("\nInput:")
-      cat("\n- parameters:", eta[i,]) 
-      if (length(indicator) > 0) 
+      simulated_network <- simulate_hergm(formula = formula, coef_w = object$results$parameters, coef_b = object$results$between_parameter, z_memb = object$results$partition, parameterization = object$parameterization)
+      simulated_network <- as.network(simulated_network, matrix.type="adjacency")
+      edgelists$edgelist[[i]] <- as.matrix.network.edgelist(simulated_network, n=n)[,]
+      if (verbose == 1)
         {
-        cat("\n- block memberships:", indicator[i,])
+        cat("\nSample", i)
+        cat("\n------------------------------------------------------------------\n")
+        cat("\nSimulated number of edges: ", summary(simulated_network ~ edges), "\n", sep="")
         }
-      cat("\n")
       }
-    object.hergm <- hergm(formula, 
-      max_number = max_number, 
-      eta = eta[i,], 
-      indicator = indicator[i,], 
-      simulate = TRUE, 
-      sample_size = 1,
-      verbose = verbose
-      )
-    edgelists$edgelist[[i]] <- object.hergm$edgelist
     }
-  
+  else
+    {  
+    # Sample
+    edgelists <- list()
+    edgelists$edgelist <- list()
+    for (i in 1:sample_size)
+      { 
+      if (verbose == 1) 
+        {
+        cat("\nSample", i)
+        cat("\n------------------------------------------------------------------")
+        cat("\nInput:")
+        cat("\n- parameters:", eta[i,]) 
+        if (length(indicator) > 0) 
+          {
+          cat("\n- block memberships:", indicator[i,])
+          }
+        cat("\n")
+        }
+      object.hergm <- hergm(formula, 
+        max_number = max_number, 
+        eta = eta[i,], 
+        indicator = indicator[i,], 
+        simulate = TRUE, 
+        sample_size = 1,
+        verbose = verbose
+        )
+      edgelists$edgelist[[i]] <- object.hergm$edgelist
+      }
+    }
   edgelists
 }
 

@@ -1,18 +1,23 @@
-
 useDynLib(hergm, .registration = TRUE)
 
+importFrom(Rcpp, evalCpp)
 importFrom(utils, packageDescription)
+importFrom(Matrix, bdiag, Matrix)
+importFrom(igraph, cluster_walktrap)
+importFrom(intergraph, asIgraph)
+importFrom(stats, median, qlogis, rbinom, glm, update)
 import(ergm)
 importFrom(latentnet, ergmm.drawpie)
 import(mcgibbsit)
 import(network)
-importFrom(parallel, makePSOCKcluster, clusterEvalQ, clusterApplyLB, stopCluster)
+importFrom(parallel, makePSOCKcluster, clusterEvalQ, clusterApplyLB, stopCluster, clusterApply, mclapply, makeCluster)
 importFrom(sna, gplot, component.dist, geodist)
 importFrom(grDevices, "dev.off", "pdf")
 importFrom(graphics, "abline", "boxplot", "hist", "matplot", "par", "pie", "plot", "points")
 importFrom(stats, "as.formula", "kmeans", "quantile", "runif", "sd", "simulate", "terms")
 importFrom(utils, "capture.output", "flush.console")
 importFrom(methods, "is")
+importFrom(mlergm, mlergm, set_options) 
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")

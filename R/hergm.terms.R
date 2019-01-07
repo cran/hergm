@@ -301,7 +301,7 @@ InitErgmTerm.transitiveties_ijk <- function(nw, arglist, ...) # Michael
   #print(indicator)
   number <- nw$max_number # (Maximum) number of categories
   if (is.null(number)) number <- 1 # (Maximum) number of categories
-  # print(number)
+  #print(number)
   theta <- vector(mode = "numeric", length = number + 1) # Within- and between-category parameters
   for (i in 1:length(theta)) theta[i] <- 0
   #print(theta)

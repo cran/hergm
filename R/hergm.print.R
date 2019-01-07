@@ -18,9 +18,10 @@
 #                                                                         # 
 ###########################################################################
 
-print.hergm <- function(x, ...)
+print.hergm <- function (x, 
+                         ...)
 {
- if (x$simulate == FALSE) 
+ if (x$simulate == FALSE)
    {
    max_number <- x$max_number
    if (x$relabel %in% c(1, 2)) hergm_theta <- x$relabeled.hergm_theta
@@ -31,79 +32,109 @@ print.hergm <- function(x, ...)
    cat("\nFormula: ")
    formula <- deparse(x$formula)
    cat(formula, "\n")
-   cat("\nSize of MCMC sample from posterior: ", x$sample_size)
-   cat("\n")
-   cat("\nPosterior quantiles                         2.5%        50%      97.5%")
-   cat("\n----------------------------------------------------------------------")
-   if (x$hyper_prior == 1)
+   if (x$method == "bayes") # Bayes method
      {
-     if (!(is.null(x$alpha))) 
+     cat("\nSize of MCMC sample from posterior: ", x$sample_size)
+     cat("\n")
+     cat("\nPosterior quantiles                         2.5%        50%      97.5%")
+     cat("\n----------------------------------------------------------------------")
+     if (x$hyper_prior == 1)
        {
-       cat("\nConcentration parameter alpha:           ")
-       cat(formatC(quantile(x$alpha, .025), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(x$alpha, .500), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(x$alpha, .975), format="f", width=7, digits=3))
-       }
-     if (!(is.null(x$eta_mean))) 
-       {
-       for (i in 1:ncol(x$eta_mean))
+       if (!(is.null(x$alpha))) 
          {
-         cat("\nMean of parameters of hergm term ", i, ":      ", sep="")
-         cat(formatC(quantile(x$eta_mean[,i], .025), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(x$eta_mean[,i], .500), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(x$eta_mean[,i], .975), format="f", width=7, digits=3))
+         cat("\nConcentration parameter alpha:           ")
+         cat(formatC(quantile(x$alpha, .025), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$alpha, .500), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$alpha, .975), format="f", width=7, digits=3))
          }
-       }
-     if (!(is.null(x$eta_precision)))
-       {
-       for (i in 1:ncol(x$eta_precision))
+       if (!(is.null(x$eta_mean))) 
          {
-         cat("\nPrecision of parameters of hergm term ", i, ": ", sep="")
-         cat(formatC(quantile(x$eta_precision[,i], .025), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(x$eta_precision[,i], .500), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(x$eta_precision[,i], .975), format="f", width=7, digits=3))
-         }
-       cat("\n----------------------------------------------------------------------")
-       }
-     }
-   if (!(is.null(hergm_theta)))
-     {
-     for (i in 1:ncol(hergm_theta))
-       {
-       term <- ceiling(i / (max_number + 1))
-       k <- i - (term - 1) * (max_number + 1)
-       if (k <= max_number) # Within-block parameter 
-         {
-         cat("\nhergm term ", term, ": parameter of block ", k, ":      ", sep="")
-         cat(formatC(quantile(hergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(hergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
-         cat(formatC(quantile(hergm_theta[,i], .975), format="f", width=7, digits=3))
-         }
-       else # Between-block parameter
-         {
-         if (max_number > 2) 
+         for (i in 1:ncol(x$eta_mean))
            {
-           cat("\nhergm term ", term, ": between-block parameter:   ", sep="")
+           cat("\nMean of parameters of hergm term ", i, ":      ", sep="")
+           cat(formatC(quantile(x$eta_mean[,i], .025), format="f", width=7, digits=3), "   ")
+           cat(formatC(quantile(x$eta_mean[,i], .500), format="f", width=7, digits=3), "   ")
+           cat(formatC(quantile(x$eta_mean[,i], .975), format="f", width=7, digits=3))
+           }
+         }
+       if (!(is.null(x$eta_precision)))
+         {
+         for (i in 1:ncol(x$eta_precision))
+           {
+           cat("\nPrecision of parameters of hergm term ", i, ": ", sep="")
+           cat(formatC(quantile(x$eta_precision[,i], .025), format="f", width=7, digits=3), "   ")
+           cat(formatC(quantile(x$eta_precision[,i], .500), format="f", width=7, digits=3), "   ")
+           cat(formatC(quantile(x$eta_precision[,i], .975), format="f", width=7, digits=3))
+           }
+         cat("\n----------------------------------------------------------------------")
+         }
+       }
+     if (!(is.null(hergm_theta)))
+       {
+       for (i in 1:ncol(hergm_theta))
+         {
+         term <- ceiling(i / (max_number + 1))
+         k <- i - (term - 1) * (max_number + 1)
+         if (k <= max_number) # Within-block parameter 
+           {
+           cat("\nhergm term ", term, ": parameter of block ", k, ":      ", sep="")
            cat(formatC(quantile(hergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
            cat(formatC(quantile(hergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
            cat(formatC(quantile(hergm_theta[,i], .975), format="f", width=7, digits=3))
            }
-         } 
+         else # Between-block parameter
+           {
+           if (max_number >= 2) 
+             {
+             cat("\nhergm term ", term, ": between-block parameter:   ", sep="")
+             cat(formatC(quantile(hergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
+             cat(formatC(quantile(hergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
+             cat(formatC(quantile(hergm_theta[,i], .975), format="f", width=7, digits=3))
+             }
+           } 
+         }
+       cat("\n----------------------------------------------------------------------")
        }
-     cat("\n----------------------------------------------------------------------")
-     }
-   if (!(is.null(x$ergm_theta)))
-     {
-     for (i in 1:ncol(x$ergm_theta)) 
+     if (!(is.null(x$ergm_theta)))
        {
-       cat("\nergm term ", i, " parameter:                   ", sep="")
-       cat(formatC(quantile(x$ergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(x$ergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
-       cat(formatC(quantile(x$ergm_theta[,i], .975), format="f", width=7, digits=3))
-       }
-     cat("\n----------------------------------------------------------------------")
-     } 
-   cat("\n\n")
+       for (i in 1:ncol(x$ergm_theta)) 
+         {
+         cat("\nergm term ", i, " parameter:                   ", sep="")
+         cat(formatC(quantile(x$ergm_theta[,i], .025), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$ergm_theta[,i], .500), format="f", width=7, digits=3), "   ")
+         cat(formatC(quantile(x$ergm_theta[,i], .975), format="f", width=7, digits=3))
+         }
+       cat("\n----------------------------------------------------------------------")
+       } 
+     cat("\n\n")
+    }
+  else # ML method
+    {
+    if (x$estimate_parameters == TRUE)
+      {
+      if (x$parameterization == "size") cat("\nSize-dependent parameterization: estimates must be multiplied by log(size of block).\n")
+      else cat("\nSize-independent parameterization.\n")
+      cat("\nEstimates (S.E)                           ")
+      cat("\n------------------------------------------")
+      for (i in 1:length(x$results$parameters))
+        {
+        cat("\nwithin-block parameter ", i, ":   ", sep="")
+        cat(formatC(x$results$parameters[[i]], format="f", width=6, digits=3), " ")
+        if (x$results$st.error[[i]] < .001) cat("<0.001")
+        else cat(formatC(x$results$st.error[[i]], format="f", width=6, digits=3), " ")
+        }
+      if (max_number >= 2) 
+        {
+        cat("\nbetween-block parameter:    ", sep="")
+        cat(formatC(x$results$between_parameter, format="f", width=6, digits=3), " ")
+        if (x$results$st.error.between < .001) cat("<0.001")
+        else cat(formatC(x$results$st.error.between, format="f", width=6, digits=3), " ")
+        }
+      cat("\n------------------------------------------")
+      cat("\n\n")
+      }
+    else cat("\nThe parameters of the model have not been estimated.\n\n")
+    }
   }
 }
 

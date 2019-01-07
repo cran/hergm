@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
+hergm.preprocess <- function(method, max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
 {
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms
@@ -222,7 +222,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       theta[i] <- 1 
       }
     }
-  if (d2 == 0) max_number <- 1 # No hergm terms
+  if ((d2 == 0) && (method == "bayes")) max_number <- 1 # No hergm terms
   else # hergm terms
     {
     if (is.null(max_number)) max_number <- Clist$n # Unspecified by user: default
@@ -411,7 +411,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       model$maxval <- summary(f1)
       }
     }
-  if ((simulate == FALSE) && (prior_assumptions[1] == 1) && (d2 > 0) && (verbose >= 0))
+  if ((simulate == FALSE) && (prior_assumptions[1] == 1) && (d2 > 0) && (verbose >= 0) && (method == "bayes"))
     {
     cat("\nPrior:")
     cat("\n- alpha ~ Gamma(", alpha_shape, ",", alpha_rate, ")", sep="")
@@ -446,12 +446,12 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
     if (is.null(temperature))
       {
       temperature <- default
-      warning("minimum and maximum temperature are NULL and are replaced by ",temperature[1]," and ",temperature[2],", respectively.",sep="")
+      warning("minimum and maximum temperature are NULL and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
       }
     else if (length(temperature) < 2)
       {
       temperature <- default
-      warning("either minimum or maximum temperature are unspecified and are replaced by ",temperature[1]," and ",temperature[2],", respectively.",sep="")
+      warning("either minimum or maximum temperature are unspecified and are replaced by ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
       }
     temperature[1] <- abs(temperature[1])
     temperature[2] <- abs(temperature[2])
@@ -462,7 +462,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
       temperature[1] <- min
       temperature[2] <- max
       }
-    if (verbose == 1)
+    if ((verbose == 1) && (simulate == FALSE) && (method == "bayes"))
       {
       cat("\nMinimum or maximum temperature: ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
       }
@@ -511,6 +511,7 @@ hergm.preprocess <- function(max_number, initialize, network, model, hyper_prior
   hergm_list$maxedges <- 5*maxedges # Please note: the multiplication is motivated by the fact that otherwise, when ERGM simulates complete graphs, it will return empty graphs; therefore, by adding 1, we are tricking ERGM into believing that complete graphs are not complete graphs; ERGM does the same in ergm.san.R: if(z$status==1) maxedges <- 5*maxedges 
   hergm_list$Clist <- Clist
   hergm_list$simulate <- simulate
+  hergm_list$all_indicators_fixed <- all_indicators_fixed
   hergm_list$mh_accept <- mh_accept
   hergm_list$q_i <- q_i
   hergm_list$parallel <- parallel

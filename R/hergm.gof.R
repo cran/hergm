@@ -18,7 +18,9 @@
 #                                                                         # 
 ###########################################################################
 
-gof.hergm <- function(object, ...)
+gof.hergm <- function(object, 
+                      sample_size = 1000,
+                      ...)
 {
   # Extract
   network <- object$network
@@ -26,7 +28,11 @@ gof.hergm <- function(object, ...)
   directed <- is.directed(d)
   n <- d$gal$n
   indicator <- object$indicator
-  sample_size <- nrow(indicator)
+  if (object$method == "bayes") { 
+    sample_size <- nrow(indicator) # Otherwise nrow(indicator) = 1: use either default or user input
+  } else { 
+    object$sample_size <- sample_size # Make sure to set sample size to default or user input
+  }
   verbose <- object$verbose
  
   # Observed network
@@ -40,21 +46,18 @@ gof.hergm <- function(object, ...)
   observed.distance.label <- rownames(observed.frequencies_distances)[2:(number+1)]
   observed.distance <- observed.frequencies_distances[2:(number+1)] # Frequencies of finite distances
   observed.edges <- summary(d ~ edges)
-  if (directed == TRUE)
-    {
+  if (directed == TRUE) {
     observed.degree <- summary(d ~ odegree(1:n-1)) # Degree distribution
     observed.star <- summary(d ~ ostar(2))
     observed.triangle <- summary(d ~ ttriple)
-    }
-  else
-    {
+  } else {
     observed.degree <- summary(d ~ degree(1:n-1)) # Degree distribution
     observed.star <- summary(d ~ kstar(2))
     observed.triangle <- summary(d ~ triangle)
-    }
+  }
 
   # Simulated networks
-  object.hergm <- simulate.hergm(object, verbose=verbose)
+  object.hergm <- simulate.hergm(object, verbose=verbose, sample_size = sample_size)
   output <- summary_sample_network(edgelists=object.hergm$edgelist, sample_size=sample_size, directed=directed, n=n)
 
   # Goodness-of-fit plots

@@ -22,13 +22,20 @@
 {
   info <- packageDescription("hergm")
   packageStartupMessage(
-  paste('\nhergm: version ', info$Version, ', created on ', info$Date, '\n',
+  paste('hergm: version ', info$Version, ', created on ', info$Date, '\n',
           "Copyright (c) 2018, Michael Schweinberger, Rice University\n", 
           "                    with contributions from:\n",
           "                    Mark S. Handcock, University of California - Los Angeles\n",
+          "                    Sergii Babkin, Rice University\n",
+          "                    Jonathan Stewart, Rice University\n",
+          "                    Duy Vu, University of Melbourne\n",
           "                    Pamela Luna, Rice University\n",
           "To start hergm: enter help(package=\"hergm\")\n",
-          'For license and citation information type citation("hergm").\n', sep="")
+          'For license and citation information type citation("hergm").\n',
+          '\n',
+          'PLEASE NOTE: hergm: version ', info$Version, ' can estimate hierarchical exponential-family random graph models from large networks with thousands or tens of thousands of nodes.\n',
+          'To do so, use the option \'method = "ml"\' of function hergm().',  
+           sep="")
  )
 }
 

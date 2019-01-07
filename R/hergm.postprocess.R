@@ -30,6 +30,7 @@ hergm.postprocess <- function(object,
   object.hergm <- object
 
   # Extract 
+  method <- object$method
   n <- object$n
   max_number <- object$max_number
   number_fixed <- object$number_fixed
@@ -50,6 +51,8 @@ hergm.postprocess <- function(object,
     thinning <- 1
     }
  
+  if (method == "bayes")
+  {
   # Preprocess MCMC sample: delete burn-in iterations and transform vector into matrix, where rows correspond to MCMC draws
   d <- d1 + d2
   terms <- length_mcmc(d1, d2, max_number, n, predictions)  
@@ -189,7 +192,7 @@ hergm.postprocess <- function(object,
       if (verbose >= 0) cat("\n")
       }
     }
-
+ 
   # Store
   object.hergm$extract <- FALSE # If hergm.postprocess() is called hereafter, we will not extract the MCMC sample again, because otherwise we will get runtime errors
   object.hergm$n <- object$n
@@ -217,6 +220,24 @@ hergm.postprocess <- function(object,
     object.hergm$relabel <- object$relabel # Restore original relabel choice
     object.hergm$relabeled.hergm_theta <- object$relabeled.hergm_theta # In other words, if we have been here before and have relabeled the MCMC sample, then store sample; note: is used in mcmc.diagnostics() to thin sample when sample too large
     }
+  }
+  else
+  {
+  # Store
+  object.hergm$extract <- FALSE # If hergm.postprocess() is called hereafter, we will not extract the MCMC sample again, because otherwise we will get runtime errors
+  object.hergm$n <- object$n
+  object.hergm$network <- object$network
+  object.hergm$model <- object$model
+  object.hergm$max_number <- object$max_number
+  object.hergm$number_fixed <- object$number_fixed
+  object.hergm$d1 <- object$d1
+  object.hergm$d2 <- object$d2
+  object.hergm$hyper_prior <- object$hyper_prior
+  object.hergm$parallel <- object$parallel
+  object.hergm$simulate <- object$simulate
+  object.hergm$relabel <- relabel
+  object.hergm$verbose <- object$verbose
+  }
 
   object.hergm
 }

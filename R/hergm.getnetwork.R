@@ -56,7 +56,7 @@ hergm.getnetwork <- function (form, max_number, loopswarning=TRUE) {
   else nw$max_number <- max_number
   #print("nw$max_number")
   #print(nw$max_number)
-  model <- ergm.getmodel(form, nw, drop=FALSE, expanded=TRUE)
+  model <- ergm_model(form, nw, drop=FALSE, expanded=TRUE)
   Clist <- ergm.Cprepare(nw, model)
   nw$terms <- Clist$nterms
   #print("nw$terms")
