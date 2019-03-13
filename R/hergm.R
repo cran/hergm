@@ -45,7 +45,7 @@ hergm <- function(formula,
                   indicator = NULL,
                   parallel = 1, 
                   simulate = FALSE, 
-                  method = "bayes",
+                  method = "ml",
                   seeds = NULL, 
                   sample_size = 1e+5, 
                   sample_size_multiplier_blocks = 20,
@@ -75,9 +75,8 @@ hergm <- function(formula,
   model <- ergm_model(formula, network, drop=control$drop, expanded=TRUE)
   MCMCsamplesize <- sample_size
   Clist <- ergm.Cprepare(network, model)
-  ## Change_1+
-  ## shimi: Commenting old line and putting changed line underneath 
-  ##        ergm.design changed in ergm-master / changing for compatibility 
+  ## Commenting old line and putting changed line underneath 
+  ## ergm.design changed in ergm-master / changing for compatibility 
   #Clist.miss <- ergm.design(network, model, verbose=FALSE)
   Clist.miss <- ergm.design(network, verbose=FALSE)
   constraints <- ~.

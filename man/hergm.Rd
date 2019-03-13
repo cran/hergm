@@ -50,7 +50,7 @@ hergm(formula,
       indicator = NULL,
       parallel = 1,
       simulate = FALSE,
-      method = "bayes",
+      method = "ml",
       seeds = NULL,
       sample_size = 1e+5,
       sample_size_multiplier_blocks = 20,
@@ -88,7 +88,7 @@ hergm(formula,
 
 \item{initialize}{if \code{initialize == TRUE}, initialize block memberships of nodes.}
 
-\item{initialization_method}{if \code{initialization_method == 1}, block memberships of nodes are initialized by walk trap, otherwise by spectral clustering.}
+\item{initialization_method}{if \code{initialization_method == 1}, block memberships of nodes are initialized by walk trap; if \code{initialization_method == 2}, block memberships of nodes are initalized by spectral clustering.}
 
 \item{estimate_parameters}{if \code{method == "ml"} and \code{estimate_parameters == TRUE}, estimate parameters.}
 
@@ -278,6 +278,9 @@ The function \code{hergm} returns an object of class \code{hergm} with component
 
 Babkin, S. and M. Schweinberger (2017). Massive-scale estimation of exponential-family random graph models with additional structure. https://arxiv.org/abs/1703.09301.
 
+Cao, M., Chen, Y., Fujimoto, K., and M. Schweinberger (2018). A two-stage working model strategy for network analysis under hierarchical exponential random graph models. Proceedings of the 2018 IEEE/ACM International Conference on Advances in Social Networks Analysis and Mining,
+290--298. Acceptance rate: 15\%.
+
 Handcock, M. S. (2003). Assessing degeneracy in statistical models of social networks. Technical report, Center for Statistics and the Social Sciences, University of Washington, Seattle, http://www.csss.washington.edu/Papers.
 
 Holland, P. W. and S. Leinhardt (1981). An exponential family of probability distributions for directed graphs. Journal of the American Statistical Association, Theory \& Methods, 76, 33--65.
@@ -292,13 +295,17 @@ Schweinberger, M. (2011). Instability, sensitivity, and degeneracy of discrete e
 
 Schweinberger, M. (2017). Consistent structure estimation of exponential-family random graph models with additional structure. http://arxiv.org/abs/1702.07801.
 
-Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical Inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
+Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
+
+Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2018). Exponential-family models of random graphs: Inference in finite-, super-, and infinite-population scenarios. https://arxiv.org/abs/1707.04800
 
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response on September 11, 2001 through the lens of statistical network analysis. Social Networks, 37, 42--55.
 
-Schweinberger, M. and J. Stewart (2017). Finite-graph concentration and consistency results for random graphs with complex topological structures. http://arxiv.org/abs/1702.01812.
+Schweinberger, M. and J. Stewart (2019). Concentration and consistency results for canonical and curved exponential-family random graphs. The Annals of Statistics, to appear.
+
+Stewart, J., Schweinberger, M., Bojanowski, M., and M. Morris (2019). Multilevel network data facilitate statistical inference for curved {ERGM}s with geometrically weighted terms. Social Networks, to appear.
 
 Vu, D. Q., Hunter, D. R. and M. Schweinberger (2013). Model-based clustering of large networks. Annals of Applied Statistics, 7, 1010--1039.
 

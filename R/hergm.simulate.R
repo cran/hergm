@@ -87,7 +87,7 @@ simulate.hergm <- function(object,
       {
       simulated_network <- simulate_hergm(formula = formula, coef_w = object$results$parameters, coef_b = object$results$between_parameter, z_memb = object$results$partition, parameterization = object$parameterization)
       simulated_network <- as.network(simulated_network, matrix.type="adjacency")
-      edgelists$edgelist[[i]] <- as.matrix.network.edgelist(simulated_network, n=n)[,]
+      edgelists$edgelist[[i]] <- as.matrix.network.edgelist(simulated_network, n)[,]
       if (verbose == 1)
         {
         cat("\nSample", i)
