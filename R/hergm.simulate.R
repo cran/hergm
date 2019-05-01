@@ -18,18 +18,22 @@
 #                                                                         # 
 ###########################################################################
 
-simulate <- function(object,
-                     max_number = NULL,
-                     indicator = NULL,
-                     eta = NULL,
-                     sample_size = 1,
-                     verbose = 0,
-                     ...)
- {
- UseMethod("simulate")
- }
+#simulate <- function(object,
+#                     nsim = 1,
+#                     seed = NULL,
+#                     max_number = NULL,
+#                     indicator = NULL,
+#                     eta = NULL,
+#                     sample_size = 1,
+#                     verbose = 0,
+#                     ...)
+# {
+# UseMethod("simulate")
+# }
 
 simulate.hergm <- function(object,
+                           nsim = 1,
+                           seed = NULL,
                            max_number = NULL, 
                            indicator = NULL,
                            eta = NULL,
@@ -83,6 +87,12 @@ simulate.hergm <- function(object,
     {
     edgelists <- list()
     edgelists$edgelist <- list()
+  
+    form_chr <- as.character(formula)
+    form_chr <- str_remove(form_chr, "_ij")
+    form_chr <- str_remove(form_chr, "_ijk")
+    formula <- as.formula(paste(form_chr[2], form_chr[1], form_chr[3]))
+
     for (i in 1:sample_size)
       {
       simulated_network <- simulate_hergm(formula = formula, coef_w = object$results$parameters, coef_b = object$results$between_parameter, z_memb = object$results$partition, parameterization = object$parameterization)

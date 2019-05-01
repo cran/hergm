@@ -28,11 +28,14 @@ gof.hergm <- function(object,
   directed <- is.directed(d)
   n <- d$gal$n
   indicator <- object$indicator
-  if (object$method == "bayes") { 
+  if (object$method == "bayes") 
+    { 
     sample_size <- nrow(indicator) # Otherwise nrow(indicator) = 1: use either default or user input
-  } else { 
+    } 
+  else 
+    { 
     object$sample_size <- sample_size # Make sure to set sample size to default or user input
-  }
+    }
   verbose <- object$verbose
  
   # Observed network

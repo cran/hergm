@@ -175,7 +175,7 @@ simulate_hergm <- function(formula, coef_w, coef_b, z_memb, parameterization = "
     }
     edge_loc <- which(param_names == "edges")
   }
-  #we assume coef_b always has log n parameterization // adjusting this for other parameterizations 
+  
   if (parameterization == "size") { 
     coef_b <- coef_b * log(n_nodes)
   } else if (parameterization == "offset") { 
@@ -515,6 +515,13 @@ hergm.large <- function(network,
     } else {
       parallel <- TRUE
     }
+
+    # Check parameterization for _ij and _ijk elememnts 
+    formula_given <- formula 
+    form_chr <- as.character(formula) 
+    form_chr <- str_remove(form_chr, "_ij")
+    form_chr <- str_remove(form_chr, "_ijk")
+    formula <- as.formula(paste(form_chr[2], form_chr[1], form_chr[3]))
 
     sbm_pi <- NULL
     if (is.null(indicator)) { 

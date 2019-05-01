@@ -47,7 +47,7 @@ hergm <- function(formula,
                   simulate = FALSE, 
                   method = "ml",
                   seeds = NULL, 
-                  sample_size = 1e+5, 
+                  sample_size = NULL, 
                   sample_size_multiplier_blocks = 20,
                   NR_max_iter = 200,
                   NR_step_len = 1,
@@ -73,6 +73,11 @@ hergm <- function(formula,
   # if (sum(network[,] == 1) == 0) stop("\nNetwork is extreme: terminating...\n\n") # Simplistic check
   control$drop <- FALSE
   model <- ergm_model(formula, network, drop=control$drop, expanded=TRUE)
+  if (is.null(sample_size)) 
+    {
+    if (method == "ml") sample_size <- 2500
+    else sample_size = 1e+5 
+    }
   MCMCsamplesize <- sample_size
   Clist <- ergm.Cprepare(network, model)
   ## Commenting old line and putting changed line underneath 

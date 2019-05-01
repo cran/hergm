@@ -18,6 +18,7 @@ importFrom(stats, "as.formula", "kmeans", "quantile", "runif", "sd", "simulate",
 importFrom(utils, "capture.output", "flush.console")
 importFrom(methods, "is")
 importFrom(mlergm, mlergm, set_options) 
+importFrom(stringr, str_remove)
 
 # Export all names that do not begin with a dot.
 exportPattern("^[^\\.]")
