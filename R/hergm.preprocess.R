@@ -65,6 +65,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       }
     else if (model$terms[[i]]$name == "edges_i") # hergm term
       {
+      method <- "bayes"
       edges_i <- 1
       hierarchical[i] <- 1
       scaling[i] <- 2 # Order of subgraph count
@@ -98,6 +99,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       }
     else if (model$terms[[i]]$name == "arcs_i") # hergm term
       {
+      method <- "bayes"
       hierarchical[i] <- 1 
       scaling[i] <- 2 # Order of subgraph count
       min_size_i <- 1
@@ -105,6 +107,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       }     
     else if (model$terms[[i]]$name == "arcs_j") # hergm term
       {
+      method <- "bayes"
       hierarchical[i] <- 1 
       scaling[i] <- 2 # Order of subgraph count
       min_size_i <- 1
@@ -165,6 +168,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       }     
     else if (model$terms[[i]]$name == "ttriple_ijk") # hergm term
       {
+      method <- "bayes"
       ttriple_ijk <- 1
       hierarchical[i] <- 1 
       scaling[i] <- 3 # Order of subgraph count
@@ -174,6 +178,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       }     
     else if (model$terms[[i]]$name == "ctriple_ijk") # hergm term
       {
+      method <- "bayes"
       hierarchical[i] <- 1 
       scaling[i] <- 3 # Order of subgraph count
       dependence <- 1
@@ -222,12 +227,8 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       theta[i] <- 1 
       }
     }
-  if ((d2 == 0) && (method == "bayes")) max_number <- 1 # No hergm terms
-  else # hergm terms
-    {
-    if (is.null(max_number)) max_number <- Clist$n # Unspecified by user: default
-    else max_number <- min(max_number, Clist$n) # Specified by user by using max_number; first option 
-    }
+  if (is.null(max_number)) max_number <- Clist$n # Unspecified by user: default
+  else max_number <- min(max_number, Clist$n) # Specified by user by using max_number; first option 
   if (!is.null(indicator)) indicator <- as.integer(indicator) # If non-null, make sure all elements of indicator are integers
   # ...otherwise leave indicator NULL, because NULL means non-fixed, whereas non-NULL means fixed
   if (simulate == TRUE) all_indicators_fixed <- TRUE # To simulate data, use given indicators

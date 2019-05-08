@@ -89,13 +89,25 @@ simulate.hergm <- function(object,
     edgelists$edgelist <- list()
   
     form_chr <- as.character(formula)
-    form_chr <- str_remove(form_chr, "_ij")
-    form_chr <- str_remove(form_chr, "_ijk")
+    form_chr <- str_remove_all(form_chr, "_ijk")
+    form_chr <- str_remove_all(form_chr, "_ij")
+    form_chr <- str_remove_all(form_chr, "_i") 
+    form_chr <- str_remove_all(form_chr, "_j")
     formula <- as.formula(paste(form_chr[2], form_chr[1], form_chr[3]))
+    
+    if (!is.numeric(object$results$between_parameter)) { 
+      coef_b <- -Inf 
+    } else { 
+      coef_b <- object$results$between_parameter
+    }
 
     for (i in 1:sample_size)
       {
-      simulated_network <- simulate_hergm(formula = formula, coef_w = object$results$parameters, coef_b = object$results$between_parameter, z_memb = object$results$partition, parameterization = object$parameterization)
+      simulated_network <- simulate_hergm(formula = formula, 
+                                          coef_w = object$results$parameters, 
+                                          coef_b = coef_b, 
+                                          z_memb = object$results$partition, 
+                                          parameterization = object$parameterization)
       simulated_network <- as.network(simulated_network, matrix.type="adjacency")
       edgelists$edgelist[[i]] <- as.matrix.network.edgelist(simulated_network, n)[,]
       if (verbose == 1)

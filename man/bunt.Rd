@@ -34,7 +34,8 @@ Van de Bunt, G. G., Van Duijn, M. A. J., and T. A. B. Snijders (1999). Friendshi
 
 \examples{
 \dontrun{data(bunt)
-hergm(bunt ~ edges_ij + ttriple_ijk)
+object <- hergm(bunt ~ edges_ij + mutual_ij + ttriple_ijk, max_number=32, method="bayes")
+summary(object)
 }
 }
 

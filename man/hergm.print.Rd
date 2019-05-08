@@ -8,7 +8,7 @@
 
 \description{
 
-The function \code{print.hergm} accepts an object of class \code{hergm} as argument and prints a summary of parameters from the posterior.
+The function \code{print.hergm} accepts an \code{object} of class \code{hergm} as argument and prints a summary of parameters from the posterior.
 Please note that the function \code{hergm} should have been called with \code{relabel > 0} to solve the so-called label-switching problem, 
 which is done by default.
 If the function \code{hergm} has not been called with option \code{relabel > 0},
@@ -40,8 +40,7 @@ Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family ran
 
 \examples{
 \dontrun{data(example)
-object <- hergm(d ~ edges_ij + triangle_ijk)
+object <- hergm(d ~ edges_ij)
 print(object)
 }
 }
-

@@ -24,8 +24,8 @@ Example data set: synthetic, undirected network with 15 nodes.
 
 \examples{
 \dontrun{data(example)
-hergm(d ~ edges_i)
-hergm(d ~ edges_ij + triangle_ijk)
+object <- hergm(d ~ edges_i, max_number=3)
+summary(object)
 }
 }
 

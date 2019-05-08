@@ -21,10 +21,10 @@
 hergm.mcmc <- function(parameterization, method, sample_size_multiplier_blocks, formula, max_number, initialize, initialization_method, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, variational, temperature, predictions, perturb, estimate_parameters, n_em_step_max, max_iter, initial_estimate, NR_step_len, NR_step_len_multiplier, NR_max_iter) 
 {
   # Prepare
-  if ((simulate == FALSE) && (method == "bayes")) scalefactor <- hergm.set.mcmc(method, max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, indicator, scaling, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, simulate, parallel, seeds, predictions, variational, temperature, mh_scale, perturb) # The last argument is the initial value of the scale factor
   Clist <- ergm.Cprepare(network, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected
   else maxedges <- Clist$n * (Clist$n - 1) # Directed
+  if ((simulate == FALSE) && (method == "bayes")) scalefactor <- hergm.set.mcmc(method, max_number, initialize, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, indicator, scaling, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, simulate, parallel, seeds, predictions, variational, temperature, mh_scale, perturb) # The last argument is the initial value of the scale factor
   if ((simulate == TRUE) || (method == "bayes")) hergm_list <- hergm.preprocess(method, max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha,  eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
   if ((simulate == FALSE) && (method == "bayes")) 
     {
@@ -81,7 +81,7 @@ hergm.mcmc <- function(parameterization, method, sample_size_multiplier_blocks, 
       if (is.null(indicator) == TRUE) max_number <- 1
       else max_number <- length(unique(indicator))
     }
-    if (max_number == 1) {all_indicators_fixed = TRUE;indicator = rep(1,network$gal$n)}
+    if (max_number == 1) {all_indicators_fixed = TRUE; indicator = rep(1,network$gal$n)}
     if ((!is.null(indicator)) && (length(indicator) == Clist$n) && (sum(is.na(indicator)) == 0) && (min(indicator) >= 0) && (max(indicator) <= max_number)) all_indicators_fixed <- TRUE # ...use given indicator if indicator is not NULL and the length is correct and there are no NA
     else all_indicators_fixed <- FALSE # ...otherwise estimate all of them
     if (all_indicators_fixed == FALSE) indicator <- NULL

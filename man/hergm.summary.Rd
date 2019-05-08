@@ -38,8 +38,7 @@ Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family ran
 
 \examples{
 \dontrun{data(example)
-object <- hergm(d ~ edges_ij + triangle_ijk)
+object <- hergm(d ~ edges_ij)
 summary(object)
 }
 }
-

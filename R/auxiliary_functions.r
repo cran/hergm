@@ -518,9 +518,11 @@ hergm.large <- function(network,
 
     # Check parameterization for _ij and _ijk elememnts 
     formula_given <- formula 
-    form_chr <- as.character(formula) 
-    form_chr <- str_remove(form_chr, "_ij")
-    form_chr <- str_remove(form_chr, "_ijk")
+    form_chr <- as.character(formula)
+    form_chr <- str_remove_all(form_chr, "_ijk")
+    form_chr <- str_remove_all(form_chr, "_ij")
+    form_chr <- str_remove_all(form_chr, "_i")
+    form_chr <- str_remove_all(form_chr, "_j")
     formula <- as.formula(paste(form_chr[2], form_chr[1], form_chr[3]))
 
     sbm_pi <- NULL

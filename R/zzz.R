@@ -33,8 +33,13 @@
           "To start hergm: enter help(package=\"hergm\")\n",
           'For license and citation information type citation("hergm").\n',
           '\n',
-          'PLEASE NOTE: hergm: version ', info$Version, ' can estimate hierarchical exponential-family random graph models from large networks with thousands or tens of thousands of nodes.\n',
-          'To do so, use the option \'method = "ml"\' of function hergm().',  
+          'PLEASE NOTE 1: hergm versions >=4 can handle networks with thousands of nodes by using the method = "ml".\n',  
+          'PLEASE NOTE 2: hergm versions >=4 use the method = "ml" by default, unless the model includes model terms that cannot be handled by "ml".\n',
+          'To reproduce results of hergm versions <4, please use method = "bayes".\n',
+          'PLEASE NOTE 3: It is possible that there are issues arising from two recent changes:\n',
+          '1. We split hergm into two packages, hergm (unobserved blocks) and mlergm (observed blocks).\n',
+          '2. We changed the default method from "bayes" to "ml".\n',
+          'If you encounter issues, please contact us, so that we can address them.\n',
            sep="")
  )
 }

@@ -31,7 +31,8 @@ Press, Manchester, U.K.
 
 \examples{
 \dontrun{data(kapferer)
-hergm(kapferer ~ edges_ij + triangle_ijk)
+object <- hergm(kapferer ~ edges_ij + transitiveties_ijk, max_number=3)
+summary(object)
 }
 }
 

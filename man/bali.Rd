@@ -30,7 +30,8 @@ Studies in Conflict and Terrorism, 29, 559--575.
 
 \examples{
 \dontrun{data(bali)
-hergm(bali ~ edges_ij + triangle_ijk)
+object <- hergm(bali ~ edges_ij + triangle_ijk, max_number=3, method="bayes")
+summary(object)
 }
 }
 
