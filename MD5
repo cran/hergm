@@ -1,9 +1,9 @@
-d9dbd7b4e3d7489e06c919fbd32b0cb2 *DESCRIPTION
+d8b381692308d00afb03e7cd422b9630 *DESCRIPTION
 991657484fd0496b8de2e9462b4146e2 *NAMESPACE
 2f0aa001d8128ea03d20befb91f9ab82 *R/RcppExports.R
 d432c696c24fc55e40ed1bbe9d573085 *R/auxiliary_functions.r
 2fa1c90db1ad12f6acd94be4ca3d8b99 *R/helper_functions.R
-b87285ff149d7d758528a4e7a9142f94 *R/hergm.R
+4f42b97f89de39f980062ec19202c606 *R/hergm.R
 0128383f30e68ea01fd98cbb39e3fbce *R/hergm.getnetwork.R
 212e08af416f5883d3f20d9a96d9f1b0 *R/hergm.gof.R
 8b1293090cfd2b6efa89d5e6afefab14 *R/hergm.initialize.R
@@ -15,7 +15,7 @@ ede951ac6db934c66bc9da5d07579a9d *R/hergm.mcmc.R
 5c6516d3e54b3b55db06931d6c18c8ad *R/hergm.plot.R
 5227c5aac2205554bff94f91564eda15 *R/hergm.postprocess.R
 c7079d044c84d2f3be90b755ddc31b01 *R/hergm.preprocess.R
-77d3816dc3c96f6352edcb2e6e446cd7 *R/hergm.print.R
+aaf1b20b09f82e7614cad894ff893919 *R/hergm.print.R
 12aeccf1aa274c7c115f22e7f1c4c67b *R/hergm.relabel.R
 0a2648b42dff4805d7bc748e687dc11f *R/hergm.set.mcmc.R
 7e6435b1153c6826464fd39c118b725b *R/hergm.simulate.R
@@ -34,7 +34,7 @@ e57778e80e93ed2ff6bb1e54e5579ff4 *man/bali.Rd
 22e9dd50704fce0323295857e5434c05 *man/bunt.Rd
 bd080229d065be1541c0db9c4c5d3c5a *man/example.Rd
 52b5947707651db9b1f357cd84ad01d8 *man/hergm-internal.Rd
-e63dc9380e5015dad76cec109a026acf *man/hergm.Rd
+42a667facb90d69c151a99bd47999298 *man/hergm.Rd
 65f4cbac9bcf76ca1fe83ea188768e57 *man/hergm.gof.Rd
 8305124cf4ca6b8453a196cd8662eeb6 *man/hergm.mcmc.diagnostics.Rd
 ff6787ef8126cf4f5c582d82ed44363e *man/hergm.plot.Rd

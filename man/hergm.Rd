@@ -27,7 +27,7 @@ hergm(formula,
       max_number = 2,
       hierarchical = TRUE,
       parametric = FALSE,
-      parameterization = "standard",
+      parameterization = "offset",
       initialize = FALSE,
       initialization_method = 1,
       estimate_parameters = TRUE,
@@ -84,7 +84,7 @@ hergm(formula,
 
 \item{parametric}{parametric prior; if \code{parametric = FALSE}, prior is truncated Dirichlet process prior, otherwise parametric Dirichlet prior.}
 
-\item{parameterization}{if \code{parameterization = "offset"} or \code{parameterization = "size"}, additive or multiplicative size-dependent parameterizations are used, otherwise size-independent parameterizations are used; note that size-dependent parameterizations are useful when the network is sparse and the blocks do not have the same size.}
+\item{parameterization}{if \code{parameterization = "offset"}, size-dependent parameterizations of the form \code{parameter - log(size of block)} along the lines of Krivitsky, Handcock, and Morris (2011) and Krivitsky and Kolaczyk (2015) are used, otherwise size-independent parameterizations are used; note that size-dependent parameterizations are useful when the network is sparse and the blocks do not have the same size.}
 
 \item{initialize}{if \code{initialize = TRUE}, initialize block memberships of nodes.}
 
@@ -122,7 +122,7 @@ hergm(formula,
 
 \item{simulate}{if \code{simulate = TRUE}, simulate networks from model, otherwise estimate model given observed network.}
 
-\item{method}{if \code{method = "bayes"}, Bayesian methods; if \code{method = "ml"}, approximate maximum likelihood methods; note that Bayesian methods are the gold standard but are too time-consuming to be applied to networks with more than 100 nodes, whereas the approximate maximum likelihood methods can be applied to networks with thousands of nodes.}
+\item{method}{if \code{method = "bayes"}, Bayesian methods along the lines of Schweinberger and Handcock (2015) and Schweinberger and Luna (2018) are used; otherwise, if \code{method = "ml"}, then approximate maximum likelihood methods along the lines of Babkin and Schweinberger (2019) are used; note that Bayesian methods are the gold standard but are too time-consuming to be applied to networks with more than 100 nodes, whereas the approximate maximum likelihood methods can be applied to networks with thousands of nodes.}
 
 \item{seeds}{seed of pseudo-random number generator; if \code{parallel > 1}, number of seeds must equal number of computing nodes.}
 
@@ -285,6 +285,14 @@ Handcock, M. S. (2003). Assessing degeneracy in statistical models of social net
 http://www.csss.washington.edu/Papers.
 
 Holland, P. W. and S. Leinhardt (1981). An exponential family of probability distributions for directed graphs. Journal of the American Statistical Association, Theory & Methods, 76, 33--65.
+
+Krivitsky, P. N., Handcock, M. S., & Morris, M. (2011). 
+Adjusting for network size and composition effects in exponential-family random graph models. 
+Statistical methodology, 8(4), 319-339.
+
+Krivitsky, P.N, and Kolaczyk, E. D. (2015). 
+On the question of effective sample size in network modeling: An asymptotic inquiry. 
+Statistical science: a review journal of the Institute of Mathematical Statistics, 30(2), 184.
 
 Nowicki, K. and T. A. B. Snijders (2001). Estimation and prediction for stochastic blockstructures. Journal of the American Statistical Association, Theory & Methods, 96, 1077--1087.
 

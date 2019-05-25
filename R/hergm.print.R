@@ -113,9 +113,10 @@ print.hergm <- function (x,
     if (x$estimate_parameters == TRUE)
       {
       if (x$parameterization == "size") cat("\nSize-dependent parameterization: estimates must be multiplied by log(size of block).\n")
+      else if (x$parameterization == "offset") cat("\nSize-dependent parameterization of the form theta - log(size of block).\n")
       else cat("\nSize-independent parameterization.\n")
-      cat("\nEstimates (S.E)                           ")
-      cat("\n------------------------------------------")
+      cat("\nEstimates of theta (S.E)                           ")
+      cat("\n------------------------------------------------")
       for (i in 1:length(x$results$parameters))
         {
         cat("\nwithin-block parameter ", i, ":   ", sep="")
@@ -132,6 +133,12 @@ print.hergm <- function (x,
         }
       cat("\n------------------------------------------")
       cat("\n\n")
+      if (max_number >= 2) 
+        {
+        cat("Offset log(size of block) of block 1, 2, ...:")
+        for (i in 1:max_number) cat(" ", log(sum(x$results$partition==i)))
+        cat("\n\n")
+        }
       }
     else cat("\nThe parameters of the model have not been estimated.\n\n")
     }
