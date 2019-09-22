@@ -110,37 +110,38 @@ print.hergm <- function (x,
     }
   else # ML method
     {
-    if (x$estimate_parameters == TRUE)
-      {
-      if (x$parameterization == "size") cat("\nSize-dependent parameterization: estimates must be multiplied by log(size of block).\n")
-      else if (x$parameterization == "offset") cat("\nSize-dependent parameterization of the form theta - log(size of block).\n")
-      else cat("\nSize-independent parameterization.\n")
-      cat("\nEstimates of theta (S.E)                           ")
-      cat("\n------------------------------------------------")
-      for (i in 1:length(x$results$parameters))
-        {
-        cat("\nwithin-block parameter ", i, ":   ", sep="")
-        cat(formatC(x$results$parameters[[i]], format="f", width=6, digits=3), " ")
-        if (x$results$st.error[[i]] < .001) cat("<0.001")
-        else cat(formatC(x$results$st.error[[i]], format="f", width=6, digits=3), " ")
-        }
-      if (max_number >= 2) 
-        {
-        cat("\nbetween-block parameter:    ", sep="")
-        cat(formatC(x$results$between_parameter, format="f", width=6, digits=3), " ")
-        if (x$results$st.error.between < .001) cat("<0.001")
-        else cat(formatC(x$results$st.error.between, format="f", width=6, digits=3), " ")
-        }
-      cat("\n------------------------------------------")
-      cat("\n\n")
-      if (max_number >= 2) 
-        {
-        cat("Offset log(size of block) of block 1, 2, ...:")
-        for (i in 1:max_number) cat(" ", log(sum(x$results$partition==i)))
-        cat("\n\n")
-        }
-      }
-    else cat("\nThe parameters of the model have not been estimated.\n\n")
+    summary(x$mlergm_out)
+    #if (x$estimate_parameters == TRUE)
+    #  {
+    # if (x$parameterization == "size") cat("\nSize-dependent parameterization of the form theta * log(size of block).\n")
+    #  else if (x$parameterization == "offset") cat("\nSize-dependent parameterization of the form theta - log(size of block).\n")
+    #  else cat("\nSize-independent parameterization: all within-block parameters are constant across blocks.\n")
+    #  cat("\nEstimates of theta (S.E)                           ")
+    #  cat("\n------------------------------------------")
+    #  for (i in 1:length(x$results$parameters))
+    #    {
+    #    cat("\nwithin-block parameter ", i, ":   ", sep="")
+    #    cat(formatC(x$results$parameters[[i]], format="f", width=6, digits=3), " ")
+    #    if (x$results$st.error[[i]] < .001) cat("<0.001")
+    #    else cat(formatC(x$results$st.error[[i]], format="f", width=6, digits=3), " ")
+    #    }
+    #  if (max_number >= 2) 
+    #    {
+    #    cat("\nbetween-block parameter:    ", sep="")
+    #    cat(formatC(x$results$between_parameter, format="f", width=6, digits=3), " ")
+    #    if (x$results$st.error.between < .001) cat("<0.001")
+    #    else cat(formatC(x$results$st.error.between, format="f", width=6, digits=3), " ")
+    #    }
+    #  cat("\n------------------------------------------")
+    #  cat("\n\n")
+    #  if ((max_number >= 2) && ((x$parameterization == "size") || (x$parameterization == "offset"))) 
+    #    {
+    #    cat("Offset log(size of block) of block 1, 2, ...:")
+    #    for (i in 1:max_number) cat(" ", log(sum(x$results$partition==i)))
+    #    cat("\n\n")
+    #    }
+    #  }
+    #} else { cat("\nThe parameters of the model have not been estimated.\n\n")
     }
   }
 }

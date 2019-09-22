@@ -84,7 +84,10 @@ hergm(formula,
 
 \item{parametric}{parametric prior; if \code{parametric = FALSE}, prior is truncated Dirichlet process prior, otherwise parametric Dirichlet prior.}
 
-\item{parameterization}{if \code{parameterization = "offset"}, size-dependent parameterizations of the form \code{parameter - log(size of block)} along the lines of Krivitsky, Handcock, and Morris (2011) and Krivitsky and Kolaczyk (2015) are used, otherwise size-independent parameterizations are used; note that size-dependent parameterizations are useful when the network is sparse and the blocks do not have the same size.}
+\item{parameterization}{if \code{parameterization = "offset"}, size-dependent parameterizations of the form \code{parameter - log(size of block)} along the lines of Krivitsky, Handcock, and Morris (2011) and Krivitsky and Kolaczyk (2015) are used;
+if \code{parameterization = "size"}, size-dependent parameterizations of the form \code{parameter * log(size of block)} are used;
+otherwise size-independent parameterizations are used, so that all within-block parameters are constants across blocks; 
+note that size-dependent parameterizations are useful when the network is sparse and the blocks do not have the same size.}
 
 \item{initialize}{if \code{initialize = TRUE}, initialize block memberships of nodes.}
 
@@ -300,12 +303,11 @@ Peng, L. and L. Carvalho (2016). Bayesian degree-corrected stochastic block mode
 
 Schweinberger, M. (2011). Instability, sensitivity, and degeneracy of discrete exponential families. Journal of the American Statistical Association, Theory & Methods, 106, 1361--1370.
 
-Schweinberger, M. (2018). Consistent structure estimation of exponential-family random graph models with block structure. http://arxiv.org/abs/1702.07801.
+Schweinberger, M. (2019). Consistent structure estimation of exponential-family random graph models with block structure. Bernoulli, to appear.
 
 Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
 
-Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2018). Exponential-family models of random graphs: Inference in finite-, super-, and infinite-population scenarios.
-https://arxiv.org/abs/1707.04800
+Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2019). Exponential-family models of random graphs: Inference in finite-, super-, and infinite-population scenarios. Statistical Science, invited minor revision.
 
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
@@ -313,9 +315,9 @@ Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response o
 
 Schweinberger, M. and J. Stewart (2019). Concentration and consistency results for canonical and curved exponential-family random graphs. The Annals of Statistics, to appear.
 
-Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochastic blockmodels for graphs with latent block structure. Journal of Classification 14, 75--100.
+Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochastic blockmodels for graphs with latent block structure. Journal of Classification, 14, 75--100.
 
-Stewart, J., Schweinberger, M., Bojanowski, M., and M. Morris (2019). Multilevel network data facilitate statistical inference for curved {ERGM}s with geometrically weighted terms. Social Networks, to appear.
+Stewart, J., Schweinberger, M., Bojanowski, M., and M. Morris (2019). Multilevel network data facilitate statistical inference for curved {ERGM}s with geometrically weighted terms. Social Networks, 59, 98--119.
 
 Vu, D. Q., Hunter, D. R. and M. Schweinberger (2013). Model-based clustering of large networks. Annals of Applied Statistics, 7, 1010--1039.
 

@@ -18,7 +18,7 @@
 #                                                                         # 
 ###########################################################################
 
-hergm.relabel_1 <- function(max_number, indicator, number_runs, verbose)
+hergm.relabel_1 <- function(max_number, indicator, number_runs, verbose=1)
 # Relabeling algorithm, which aims to minimize posterior expected loss
 # input: number of categories, indicators, number of runs
 # output: minimum and minimizer of posterior expected loss 

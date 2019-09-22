@@ -555,7 +555,7 @@ hergm.large <- function(network,
         cat("\n\nStep 3: Estimate parameters conditional on z")
       } 
       
-      est_list <-  estimate_params(
+      params <-  estimate_params(
           formula,
           network,
           parameterization,
@@ -573,9 +573,8 @@ hergm.large <- function(network,
           NR_step_len_multiplier = NR_step_len_multiplier,
           NR_max_iter = NR_max_iter
         )
-        params <- est_list; rm(est_list) 
         estimation_status <- params$estimation_status
-        mcmc_path <- params$mcmc_chain 
+        mcmc_path <- params$mcmc_chain
         parameters = t(as.matrix(params$theta))
         st.error = params$se
         labels = 1:max_number
@@ -598,9 +597,10 @@ hergm.large <- function(network,
       st.error = st.error,
       mcmc_path = mcmc_path,
       between_parameter = params$between_theta,
-      st.error.between = params$between_theta,
+      st.error.between = params$between_se,
       labels = labels,
-      estimation_status = estimation_status
+      estimation_status = estimation_status,
+      mlergm_out = params
     )
   }
 

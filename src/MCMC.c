@@ -34,7 +34,10 @@ void MCMC_wrapper(int *dnumnets, int *nedges,
   Network nw[1];
   Model *m;
   MHproposal MH;
-  
+ 
+
+  *fVerbose = 5; /* 666666 */
+ 
   n_nodes = (Vertex)*dn; 
   n_networks = (Edge)*dnumnets; 
   nmax = (Edge)abs(*maxedges);

@@ -137,8 +137,15 @@ hergm.mcmc <- function(parameterization, method, sample_size_multiplier_blocks, 
       }
     }
   object$predictions <- predictions
-  if (method == "bayes") object$sample <- sample$mcmc
-  else object$results <- sample 
+  if (method == "bayes") 
+    {
+    object$sample <- sample$mcmc
+    }
+  else 
+    {
+    object$results <- sample
+    object$mlergm_out <- sample$mlergm_out 
+    }
   object$verbose <- verbose
   object
 }
