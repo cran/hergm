@@ -300,8 +300,14 @@ estimate_params <-
   {
     n_nodes <- length(z_memb)
     block_sizes <- table(z_memb)
-    max_number = length(block_sizes)
+    max_number <- length(block_sizes)
     
+    if (is.null(NR_step_len)) { 
+      adpt_step <- TRUE 
+      NR_step_len <- 1
+    } else { 
+      adpt_step <- FALSE
+    }
     params <- mlergm(form = formula, 
                      node_memb = z_memb, 
                      theta_init = initial_estimate, 
@@ -312,6 +318,9 @@ estimate_params <-
                        interval = MCMCparams$interval, 
                        sample_size = MCMCparams$samplesize,
                        NR_max_iter = NR_max_iter, 
+                       step_len = NR_step_len, 
+                       adaptive_step_len = adpt_step, 
+                       step_len_multiplier = NR_step_len_multiplier, 
                        MCMLE_max_iter = max_iter, 
                        do_parallel = parallel, 
                        number_cores = number_cores),

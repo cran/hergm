@@ -1936,7 +1936,7 @@ output: simulated graph
     {
     k = k + 1;
     ergm->theta[i] = eta[k];
-    /*
+    /* 
     Rprintf("\nergm->theta[%i] = %8.4f",i,ergm->theta[i]);
     */
     }
@@ -2025,7 +2025,7 @@ output: simulated graph
       }
     Set_Input(ergm->terms,ergm->hierarchical,ls->number,ls->n,ls->indicator,ls->theta,inputs);
     Set_Parameter(ergm->d,ergm->structural,ergm->theta,theta); 
-    for (i = 0; i < *maxpossibleedges; i++)
+    for (i = 0; i < *maxpossibleedges+1; i++)
       {
       newnetworkheads[i] = 0;
       newnetworktails[i] = 0;
@@ -2034,6 +2034,9 @@ output: simulated graph
       {
       pp[i] = 0.0;
       }
+    /*
+    Rprintf("\n\nh_ergm.c: Simulation: begin\n\n");
+    */
     if ((*dyaddependence == 0) && (*directed == 0)) /* Undirected dyad-independence ERGM */ 
       { 
       P_Edge_Independence(nterms,d,inputs,theta,dn,directed,bipartite,funnames,sonames,p);
@@ -2076,7 +2079,11 @@ output: simulated graph
                          sample,burnin,interval,newnetworkheads,newnetworktails,verbose,
                          attribs,maxout,maxin,minout,minin,condAllDegExact,attriblength,
                          maxedges,mheads,mtails,mdnedges,status);
+    /*
+    Rprintf("\n\nh_ergm.c: Simulation: end\n\n");
+    */
     degenerate_draws = degenerate_draws + *status;
+
     if (print >= 0)
       {
       if (*status == 1) Rprintf("\nWARNING: number of edges %i is outside of (1, %i).",newnetworkheads[0],*maxedges-1);
@@ -2176,27 +2183,69 @@ output: simulated graph
       }
     if (print >= 1) Rprintf("\n");
     }
+  /*
+  Rprintf("\n\nh_ergm.c: Simulation: reporting OK\n\n");
+  */
   /************/
   /* Finalize */
   /************/
+  /*
+  Rprintf("\n\ndegenerate_draws = %i\n\n", degenerate_draws);
+  */
   if (degenerate_draws > 0) Rprintf("\nWARNING: %i generated networks were extreme in terms of the number of edges. The corresponding draws should be discarded.\n\n", degenerate_draws);
   free(p);
+  /*
+  Rprintf("\n\nh_ergm.c: p OK\n\n");
+  */
   free(pseudo_indicator);
+  /*
+  Rprintf("\n\nh_ergm.c: pseudo OK\n\n");
+  */
   for (i = 0; i < ls->d; i++)
     {
     free(parameter[i]);
     }
   free(parameter);
+  /*
+  Rprintf("\n\nh_ergm.c: parameter OK\n\n");
+  */
   free(newnetworkheads);
+  /*
+  Rprintf("\n\nh_ergm.c: heads OK\n\n");
+  */
   free(newnetworktails);
+  /*
+  Rprintf("\n\nh_ergm.c: tails OK\n\n");
+  */
   free(pp);
+  /*
+  Rprintf("\n\nh_ergm.c: pp OK\n\n");
+  */
   free(shape1);
   free(shape2);
+  /*
+  Rprintf("\n\nh_ergm.c: shapes OK\n\n");
+  */
   Finalize_Ergm(ergm);
+  /*
+  Rprintf("\n\nh_ergm.c: ergm OK\n\n");
+  */
   Finalize_Latentstructure(ls,dim2);
+  /*
+  Rprintf("\n\nh_ergm.c: ls OK\n\n");
+  */
   Finalize_Prior_ls(prior_ls);
+  /*
+  Rprintf("\n\nh_ergm.c: prior_ls OK\n\n");
+  */
   Finalize_Priorstructure(prior,dim1,dim2);
+  /*
+  Rprintf("\n\nh_ergm.c: prior OK\n\n");
+  */
   PutRNGstate();
+  /* 
+  Rprintf("\n\nh_ergm.c: ALL OK\n\n");
+  */
 }
 
 void Inference(int *model_type,

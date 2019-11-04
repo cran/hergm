@@ -20,6 +20,10 @@
 
 hergm.mcmc <- function(parameterization, method, sample_size_multiplier_blocks, formula, max_number, initialize, initialization_method, network, model, hyper_prior, parametric, MHproposal, MCMCparams, verbose, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh_scale, variational, temperature, predictions, perturb, estimate_parameters, n_em_step_max, max_iter, initial_estimate, NR_step_len, NR_step_len_multiplier, NR_max_iter) 
 {
+
+  # print("hergm.mcmc.R: eta")
+  # print(eta)
+
   # Prepare
   Clist <- ergm.Cprepare(network, model)
   if (Clist$dir == FALSE) maxedges <- Clist$n * (Clist$n - 1) / 2 # Undirected

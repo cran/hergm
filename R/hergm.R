@@ -50,7 +50,7 @@ hergm <- function(formula,
                   sample_size = NULL, 
                   sample_size_multiplier_blocks = 20,
                   NR_max_iter = 200,
-                  NR_step_len = 1,
+                  NR_step_len = NULL,
                   NR_step_len_multiplier = 0.2, 
                   interval = 1024,
                   burnin = 16*interval, 
@@ -78,7 +78,7 @@ hergm <- function(formula,
     {
     if (model$terms[[i]]$name %in% c("edges_i", "arcs_i", "arcs_j", "ctriple_ijk", "ttriple_ijk")) method <- "bayes"
     }
-  if ((simulate == FALSE) && (is.null(indicator) == FALSE)) method <- "bayes" 
+  # if ((simulate == FALSE) && (is.null(indicator) == FALSE)) method <- "bayes" 
   if (is.null(sample_size)) 
     {
     if (method == "ml") sample_size <- 2500
@@ -86,9 +86,8 @@ hergm <- function(formula,
     }
   if ((method == "bayes") && (simulate == FALSE) && (sample_size < 100)) sample_size <- 100
   MCMCsamplesize <- sample_size
-  ## Commenting old line and putting changed line underneath 
-  ## ergm.design changed in ergm-master / changing for compatibility 
-  #Clist.miss <- ergm.design(network, model, verbose=FALSE)
+  # Outcommenting the following line: ergm.design changed in ergm-master:
+  # Clist.miss <- ergm.design(network, model, verbose=FALSE)
   Clist.miss <- ergm.design(network, verbose=FALSE)
   constraints <- ~.
   MHproposal <- ergm_proposal(constraints, weights=control$MCMC.prop.weights, control$MCMC.prop.args, network, class="c")
@@ -102,6 +101,8 @@ hergm <- function(formula,
   s <- min(MCMCparams$samplesize, 10000)
   MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=s)
   MCMCparams$target.stats <- Clist$target.stats
+  # print("hergm.R: eta")
+  # print(eta)
   object <- hergm.mcmc(parameterization, method, sample_size_multiplier_blocks, original.formula, max_number, initialize, initialization_method, network, model, hyper_prior=hierarchical, parametric, MHproposal, MCMCparams, verbose, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, parallel, simulate, seeds, mh.scale, variational, temperature, predictions, perturb, estimate_parameters, n_em_step_max, max_iter, initial_estimate = initial_estimate, NR_step_len = NR_step_len, NR_step_len_multiplier = NR_step_len_multiplier, NR_max_iter = NR_max_iter)
   if ((max_number >= 10) && (relabel == 1)) relabel <- 2 
   if ((simulate == FALSE) && (method == "bayes")) 

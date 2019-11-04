@@ -20,6 +20,10 @@
 
 hergm.preprocess <- function(method, max_number, initialize, network, model, hyper_prior, parametric, Clist, MHproposal, MCMCparams, maxedges, scaling, alpha_shape, alpha_rate, alpha, eta_mean_mean, eta_mean_sd, eta_precision_shape, eta_precision_rate, eta_mean, eta_sd, mean_between, eta, indicator, simulate, parallel, variational, temperature, predictions, verbose, perturb)
 {
+
+  # print("hergm.preprocess.R I: eta")
+  # print(eta)
+
   if (is.null(verbose)) verbose <- -1 
   terms <- Clist$nterms # Number of hergm terms
   hierarchical <- vector(mode = "integer", length = terms) # Indicator: hierarchical hergm term
@@ -308,7 +312,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
     else eta_sigma[i,i] <- eta_sd[i] * eta_sd[i]
     }
   length.eta <- d1 + ((max_number+1)*d2)
-  if (null$eta || (length(eta) != length.eta)) eta <- vector(mode = "numeric", length = length.eta)
+  if (null$eta || (length(eta) < length.eta)) eta <- vector(mode = "numeric", length = length.eta)
   # Marginal Gaussian priors:
   eta_mean1 <- vector(mode = "numeric", length = d1)
   eta_mean2 <- vector(mode = "numeric", length = d2) 
@@ -468,6 +472,9 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       cat("\nMinimum or maximum temperature: ",temperature[1]," and ",temperature[2],", respectively.\n",sep="")
       }
     }
+
+  # print("hergm.preprocess.R II: eta")
+  # print(eta)
  
   # Build object hergm_list
   hergm_list <- list()
@@ -523,6 +530,9 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
   hergm_list$sample_heads <- as.vector(sample_heads)
   hergm_list$sample_tails <- as.vector(sample_tails)
   hergm_list$mcmc <- as.vector(mcmc)
+
+  # print("hergm.preprocess.R III: hergm_list$eta")
+  # print(hergm_list$eta)
 
   hergm_list
 }

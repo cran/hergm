@@ -1651,7 +1651,7 @@ output: one sample from posterior predictive distribution
     sample[i] = 0.0;
     }
   number_networks = 1;
-  /*
+  /* 
   *fVerbose = 5;
   */
   MCMC_wrapper(&number_networks,dnedges,tails,heads, /* Sample one graph from posterior predictive distribution given input and theta */
@@ -1693,6 +1693,9 @@ output: one sample from posterior predictive distribution
       parameter[i][k] = 1.0; 
       }
     }
+  /*
+  Rprintf("\n\nh_ergm_mcmc.c: Sample_Graph: graph sampled\n\n");
+  */
   Set_Input(terms,hierarchical,number,n,indicator,parameter,input);
   nedges = newnetworkheads; /* First element of newnetworkheads = newnetworkheads[0] is number of edges */
   h = (int*) calloc(*nedges,sizeof(int));
@@ -1710,7 +1713,15 @@ output: one sample from posterior predictive distribution
   Rprintf("\ntimings=%p",&timings);
   Rprintf("\ntimings=%i",timings);
   */
+  /*
+  Rprintf("\n\nh_ergm_mcmc.c: Sample_Graph: graph stored");
+  Rprintf("\nnumber of nodes: %i",*dn);
+  Rprintf("\nnumber of edges: %i",*nedges);
+  */
   network_stats_wrapper(t,h,&timings,&time,&lasttoggle,nedges,dn,directed,bipartite,nterms,funnames,sonames,input,statistic); /* Compute non-structural function of graph */
+  /*
+  Rprintf("\n\nh_ergm_mcmc.c: Sample_Graph: graph statistics calculated\n\n");
+  */
   free(h);
   free(t);
   free(indicator);
