@@ -199,16 +199,16 @@ input: vector of integers
 output: maximum of vector of integers
 */
 {
-  int i, maximum;
-  maximum = vector[0];
+  int i, maximum_hergm;
+  maximum_hergm = vector[0];
   for (i = 1; i < n; i++)
     {
-    if (vector[i] > maximum)
+    if (vector[i] > maximum_hergm)
       {
-      maximum = vector[i];
+      maximum_hergm = vector[i];
       }
     }
-  return maximum;
+  return maximum_hergm;
 }
  
 void Get_Permutation(long int n, long int index, int *permutation)

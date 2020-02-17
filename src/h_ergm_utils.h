@@ -20,7 +20,7 @@
 
 #include "h_ergm_basics.h"
 
-double epsilon, maximum;
+double epsilon_hergm, maximum_hergm;
 
 double ln(double x);
 

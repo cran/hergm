@@ -98,7 +98,11 @@ hergm.postprocess <- function(object,
     object.hergm$p_k <- matrix(data = 0, nrow = mcmc_sample_size, ncol = max_number)
     object.hergm$alpha <- matrix(data = 0, nrow = mcmc_sample_size, ncol = 1)
     }
-  else object.hergm$indicator <- matrix(data = 0, nrow = mcmc_sample_size, ncol = n)
+  else 
+    {
+    object.hergm$indicator <- NULL
+    object.hergm$hergm_theta <- NULL
+    }
   if (predictions == TRUE) object.hergm$prediction <- matrix(data = 0, nrow = mcmc_sample_size, ncol = d)
 
   # Process MCMC sample

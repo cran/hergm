@@ -455,13 +455,13 @@ output: indicators
           }
         else log_p_i_k = log_p_i_k - center;
         p_i_k = e(log_p_i_k);
-        if ((ls->p[k] * p_i_k) < epsilon) p_i[k] = epsilon; /* Mass */
+        if ((ls->p[k] * p_i_k) < epsilon_hergm) p_i[k] = epsilon_hergm; /* Mass */
         else p_i[k] = ls->p[k] * p_i_k;
         sum = sum + p_i[k];
         }   
       for (k = 0; k < ls->number; k++) /* Probability mass */
         {
-        p_i[k] = p_i[k] / sum; /* Underflow impossible since sum is at least ls->number * epsilon: see above */
+        p_i[k] = p_i[k] / sum; /* Underflow impossible since sum is at least ls->number * epsilon_hergm: see above */
         /*
         Rprintf(" %f (%f)",p_i[k], ls->theta[0][k]);
         */
@@ -1509,7 +1509,7 @@ output: candidate-generating distribution
 */
 {
   int k, block, indicator;
-  double a_i, energy, lower_bound, lower_bound_k, *lower_bound_k_present, maximum, *q_i, *statistic, sum, *theta;
+  double a_i, energy, lower_bound, lower_bound_k, *lower_bound_k_present, maximum_hergm, *q_i, *statistic, sum, *theta;
   lower_bound_k_present = (double*) calloc(ls->number,sizeof(double));
   if (lower_bound_k_present == NULL) { Rprintf("\n\ncalloc failed: Candidate_Generating_Distribution_Indicators_Dependence, lower_bound_k_present\n\n"); error("Error: out of memory"); }
   q_i = (double*) calloc(ls->number,sizeof(double));
@@ -1525,7 +1525,7 @@ output: candidate-generating distribution
     lower_bound_k_present[k] = Within_Block_Partition_Function(model,ls,k,ergm,heads,tails,input,n,directed,nterms,funnames,sonames)
 ;
     }
-  maximum = -DBL_MAX;
+  maximum_hergm = -DBL_MAX;
   for (block = 0; block < ls->number; block++) /* Block */
     {
     ls->indicator[node] = block;
@@ -1551,13 +1551,13 @@ output: candidate-generating distribution
     /* Between-block log partition functions */
     lower_bound = lower_bound + Between_Block_Partition_Function(ls,ergm,input,theta,n,directed,bipartite,nterms,funnames,sonames);
     q_i[block] = energy - lower_bound;
-    if (q_i[block] > maximum) maximum = q_i[block];
+    if (q_i[block] > maximum_hergm) maximum_hergm = q_i[block];
     ls->size[block] = ls->size[block] - 1; /* Reset size */
     }   
   sum = 0.0;
   for (k = 0; k < ls->number; k++) /* Translate mass to forgo underflow */
     {   
-    q_i[k] = ln(ls->p[k]) + q_i[k] - maximum; 
+    q_i[k] = ln(ls->p[k]) + q_i[k] - maximum_hergm; 
     /*
     Rprintf(" %8.4f",q_i[k]);
     */

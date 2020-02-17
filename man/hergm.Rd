@@ -315,17 +315,17 @@ Peng, L. and L. Carvalho (2016). Bayesian degree-corrected stochastic block mode
 
 Schweinberger, M. (2011). Instability, sensitivity, and degeneracy of discrete exponential families. Journal of the American Statistical Association, Theory & Methods, 106, 1361--1370.
 
-Schweinberger, M. (2019). Consistent structure estimation of exponential-family random graph models with block structure. Bernoulli, to appear.
+Schweinberger, M. (2020). Consistent structure estimation of exponential-family random graph models with block structure. Bernoulli, 26, 1205--1233.
 
 Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
 
-Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2019). Exponential-family models of random graphs: Inference in finite-, super-, and infinite-population scenarios. Statistical Science, to appear.
+Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2020). Exponential-family models of random graphs: Inference in finite, super, and infinite population scenarios. Statistical Science, to appear.
 
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response on September 11, 2001 through the lens of statistical network analysis. Social Networks, 37, 42--55.
 
-Schweinberger, M. and J. Stewart (2019). Concentration and consistency results for canonical and curved exponential-family random graphs. The Annals of Statistics, to appear.
+Schweinberger, M. and J. Stewart (2020). Concentration and consistency results for canonical and curved exponential-family random graphs. The Annals of Statistics, to appear.
 
 Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochastic blockmodels for graphs with latent block structure. Journal of Classification, 14, 75--100.
 

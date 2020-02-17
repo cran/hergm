@@ -446,7 +446,7 @@ output: indicators
   Rprintf("\nEntropy of ls->p: %8.4f",entropy);
   */
   /* Temperature: note that the entropy of the full conditional distribution may be strongly peaked, and high temperatures are required to unfreeze the algorithm */
-  if ((entropy >= epsilon) && (entropy <= maximum)) t = 1.0 / entropy;
+  if ((entropy >= epsilon_hergm) && (entropy <= maximum_hergm)) t = 1.0 / entropy;
   else t = 1.0;
   if (t < temperature[0]) t = temperature[0]; 
   else if (t > temperature[1]) t = temperature[1];
@@ -1773,8 +1773,8 @@ output: draw from truncated Dirichlet process prior:
   /* Initialize */
   /**************/
   GetRNGstate();
-  epsilon = DBL_EPSILON;
-  maximum = DBL_MAX;
+  epsilon_hergm = DBL_EPSILON;
+  maximum_hergm = DBL_MAX;
   shape1 = (double*) calloc(*number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
   if (shape1 == NULL) { Rprintf("\n\ncalloc failed: Dirichlet, shape1\n\n"); error("Error: out of memory"); }
   shape2 = (double*) calloc(*number-1,sizeof(double)); /* Components 0..ls->number-2 suffice */
@@ -1864,13 +1864,13 @@ output: simulated graph
   GetRNGstate();
   print = *v; /* Console: no print; 0: short print; 1: long print */
   verbose = &null;
-  epsilon = DBL_EPSILON;
-  maximum = DBL_MAX;
+  epsilon_hergm = DBL_EPSILON;
+  maximum_hergm = DBL_MAX;
   if (print >= 2)
     {
     Rprintf("\nMachine precision:");
-    Rprintf("\n- epsilon = %e",epsilon);
-    Rprintf("\n- maximum = %e",maximum);
+    Rprintf("\n- epsilon = %e",epsilon_hergm);
+    Rprintf("\n- maximum = %e",maximum_hergm);
     Rprintf("\n");
     }
   terms = (int)*nterms; /* Number of ergm terms */
@@ -1967,10 +1967,10 @@ output: simulated graph
       underflow = 0;
       for (i = 0; i < ls->number; i++)
          {
-         if (ls->p[i] < epsilon) 
+         if (ls->p[i] < epsilon_hergm) 
            {
            underflow = 1;
-           ls->p[i] = epsilon;
+           ls->p[i] = epsilon_hergm;
            }
          sum = sum + ls->p[i];
          }
@@ -2306,13 +2306,13 @@ output: MCMC sample of unknowns from posterior
   GetRNGstate();
   console = *v; /* Console: -1: no print; 0: short print; 1: long print */
   verbose = &null;
-  epsilon = DBL_EPSILON;
-  maximum = DBL_MAX;
+  epsilon_hergm = DBL_EPSILON;
+  maximum_hergm = DBL_MAX;
   if (console >= 2)
     {
     Rprintf("\nMachine precision:");
-    Rprintf("\n- epsilon = %e",epsilon);
-    Rprintf("\n- maximum = %e",maximum);
+    Rprintf("\n- epsilon = %e",epsilon_hergm);
+    Rprintf("\n- maximum = %e",maximum_hergm);
     Rprintf("\n");
     }
   model = (int)*model_type;
@@ -2433,8 +2433,11 @@ output: MCMC sample of unknowns from posterior
           local_mh_accept[0] = local_mh_accept[0] + Sample_Ergm_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite, 
                                    nterms,funnames,sonames,inputs,print,scale_factor);
           }
-        accept = Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,
+        if (ergm->d2 > 0) 
+          {
+          accept = Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,
                                    funnames,sonames,inputs,inputs_h,print,scale_factor); /* M-H exploiting dyad-independence conditional on latent structure */
+          }
         for (i = 1; i < number_local_mh; i++)
           {
           local_mh[i] = local_mh[i] + 1; 
@@ -2510,10 +2513,10 @@ output: MCMC sample of unknowns from posterior
       underflow = 0;
       for (i = 0; i < ls->number; i++)
          {
-         if (ls->p[i] < epsilon) 
+         if (ls->p[i] < epsilon_hergm) 
            {
            underflow = 1;
-           ls->p[i] = epsilon;
+           ls->p[i] = epsilon_hergm;
            }
          sum = sum + ls->p[i];
          }

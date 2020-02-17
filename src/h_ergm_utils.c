@@ -23,8 +23,8 @@
 double ln(double x)
 {
   double y;
-  if (x < epsilon) y = log(epsilon);
-  else if (x > maximum) y = log(maximum);
+  if (x < epsilon_hergm) y = log(epsilon_hergm);
+  else if (x > maximum_hergm) y = log(maximum_hergm);
   else y = log(x);
   return y;
 }
@@ -32,8 +32,8 @@ double ln(double x)
 double e(double x)
 {
   double y;
-  if (x < log(epsilon)) y = epsilon;
-  else if (x > log(maximum)) y = maximum;
+  if (x < log(epsilon_hergm)) y = epsilon_hergm;
+  else if (x > log(maximum_hergm)) y = maximum_hergm;
   else y = exp(x);
   return y;
 }
@@ -85,7 +85,7 @@ output: probability vector
   for (i = 0; i < d; i++)
     { 
     g = rgamma(alpha,1.0);
-    if (g < epsilon) p[i] = epsilon;
+    if (g < epsilon_hergm) p[i] = epsilon_hergm;
     else p[i] = g;
     sum = sum + p[i];
     }

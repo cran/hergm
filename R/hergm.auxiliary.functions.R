@@ -243,7 +243,7 @@ simulate_hergm <- function(formula, coef_w, coef_b, z_memb, parameterization = "
       form <- as.formula(paste(lhs_sub, "~", rhs))
       if (parameterization == "size") {
         temp_network = simulate(form, coef = coef_w*log(n_nodes_in_block))
-      } else if (parameterization == "ofset") {
+      } else if (parameterization == "offset") {
         coef_w_ <- coef_w 
         coef_w_[edge_loc] <- coef_w_[edge_loc] - log(n_nodes_in_block)
         temp_network <- simulate(form, coef = coef_w_)
