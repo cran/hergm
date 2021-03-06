@@ -585,8 +585,11 @@ hergm.large <- function(network,
         estimation_status <- params$estimation_status
         mcmc_path <- params$mcmc_chain
         parameters = t(as.matrix(params$theta))
-        st.error = params$se
-        labels = 1:max_number
+        st.error <- params$se
+        between_parameter <- params$between_theta 
+        st.error.between <- params$between_se 
+        labels <- 1:max_number
+        mlergm_out <- params
 
     } else { 
     # estimate_parameters = FALSE: 
@@ -597,7 +600,8 @@ hergm.large <- function(network,
      between_parameter <- NULL
      st.error.between <- NULL
      mcmc_path <- NULL
-     }
+     mlergm_out <- NULL
+   }
 
     list(
       sbm.params = sbm_pi,
@@ -605,11 +609,11 @@ hergm.large <- function(network,
       parameters = parameters,
       st.error = st.error,
       mcmc_path = mcmc_path,
-      between_parameter = params$between_theta,
-      st.error.between = params$between_se,
+      between_parameter = between_parameter,
+      st.error.between = st.error.between,
       labels = labels,
       estimation_status = estimation_status,
-      mlergm_out = params
+      mlergm_out = mlergm_out
     )
   }
 

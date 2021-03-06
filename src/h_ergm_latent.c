@@ -61,6 +61,7 @@ ouput: latent structure
   ls->minimum_size = minimum_size; /* Minimum number of nodes so that structural parameters show up in PMF */
   ls->threshold = threshold; /* Category-bound PMF tractable as long as number of nodes in category is smaller than threshold */
   ls->d = d; /* Number of category-bound parameters */
+  if (ls->d < 1) ls->d = 1;
   ls->number_between = 0; /* Number of between-category parameters */
   for (i = 0; i < d; i++) 
     {
@@ -80,21 +81,21 @@ ouput: latent structure
         } 
       }
     }
-  ls->scaling = (double*) calloc(ls->d,sizeof(double));
-  if (ls->scaling == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->scaling\n\n"); error("Error: out of memory"); }
-  for (i = 0; i < ls->d; i++)
-    {
-    ls->scaling[i] = scaling[i];
-    }
+  /*
   if (d == 0) k = 1; 
   else k = d;
-  ls->theta = (double**) calloc(k,sizeof(double*));
-  if (ls->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta\n\n"); error("Error: out of memory"); }
-  for (i = 0; i < k; i++)
+  */
+  if (ls->d >= 1)
     {
-    ls->theta[i] = (double*) calloc(number+1,sizeof(double)); /* Category-bound parameters */
-    if (ls->theta[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta[%i]\n\n",i); error("Error: out of memory"); }
+    ls->theta = (double**) calloc(ls->d,sizeof(double*));
+    if (ls->theta == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta\n\n"); error("Error: out of memory"); }
+    for (i = 0; i < ls->d; i++)
+      {
+      ls->theta[i] = (double*) calloc(number+1,sizeof(double)); /* Category-bound parameters */
+      if (ls->theta[i] == NULL) { Rprintf("\n\ncalloc failed: Initialize_Latentstructure, ls->theta[%i]\n\n",i); error("Error: out of memory"); }
+      }
     }
+  else ls = NULL;
   return ls;
 }
 
@@ -134,7 +135,6 @@ ouput: latent structure
   free(ls->indicator);
   free(ls->fixed);
   if (ls->number_between > 0) free(ls->between);
-  free(ls->scaling);
   for (i = 0; i < d; i++)
     {
     free(ls->theta[i]);

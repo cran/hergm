@@ -24,8 +24,9 @@ void logTransposedMatrix(NumericMatrix& pi,NumericMatrix& logPi) {
 
 void normalizeVector(NumericVector& vector, double minValue) {
   for (int k = 0; k < vector.size(); k++)
-    if (vector(k) < minValue)
-      vector(k) = minValue;
+    {
+    if (vector(k) < minValue) vector(k) = minValue;
+    }
     double sumAlpha = 0;
     for (int k = 0; k < vector.size(); k++)
       sumAlpha += vector(k);
@@ -53,8 +54,12 @@ void normalizeLogTau2Tau(NumericMatrix& tau, double minValue) {
     // First it holds the max value
     double slidingValue = tau(i, 0);
     for (int k = 1; k < numOfClasses; k++)
+      {
       if (slidingValue < tau(i, k))
+        {
         slidingValue = tau(i, k);
+        }
+      } 
       // Now it actually holds the sliding value
       slidingValue = logDoubleMax - slidingValue;
       for (int k = 0; k < numOfClasses; k++)
@@ -150,9 +155,12 @@ void solveQP(const NumericMatrix& m, const NumericMatrix& s,
       // Step 2:
       double value1 = 0, value2 = 0;
       for (int j = 0; j < n; j++)
-        if (J_k[j]) {
+        {
+        if (J_k[j]) 
+          {
           value1 += 1 / m(rowIndex, j);
           value2 += s(rowIndex, j) / m(rowIndex, j);
+          }
         }
         lambda_k = (value2 - 2) / value1;
         
@@ -237,11 +245,16 @@ bool isTauSignificantlyChanged(double tauPrecision, NumericMatrix tau, NumericMa
 {
   int numOfVertices = tau.nrow();
   int numOfClasses = tau.ncol();
+  int value = false;
   for (int i = 0; i < numOfVertices; i++)
+    {
     for (int k = 0; k < numOfClasses; k++)
-      if (fabs(tau(i, k) - prevTau(i, k)) > tauPrecision)
-        return true;
-      return false;
+      {
+      if (fabs(tau(i, k) - prevTau(i, k)) > tauPrecision) value = true;
+      else value = false;
+      }
+    }
+  return value;
 }
 
 
@@ -424,12 +437,16 @@ NumericMatrix runFixedPointEstimationEStepMM(int numOfVertices, int numOfClasses
   NumericVector tauL = NumericVector(numOfClasses);
   sumDoubleMatrixByRow(tau, tauL);
   for (int i = 0; i < numOfVertices; i++)
-    for (int k = 0; k < numOfClasses; k++) {
+    {
+    for (int k = 0; k < numOfClasses; k++) 
+      {
       A(i, k) = 0;
       for (int l = 0; l < numOfClasses; l++)
+        {
         A(i, k) += (logPi00(k, l) * (tauL(l) - tau(i, l)));
+        }
+      }
     }
-    
     
     // y_ij = 1, y_ji = 0 AND y_ij = 0, y_ji = 1
     NumericMatrix logPi10 = NumericMatrix(numOfClasses, numOfClasses);
@@ -467,12 +484,17 @@ NumericMatrix runFixedPointEstimationEStepMM(int numOfVertices, int numOfClasses
   
   // Finalize by subtracting half of from 1 dividing tau_{ik}
   for (int i = 0; i < numOfVertices; i++)
-    for (int k = 0; k < numOfClasses; k++) {
+    {
+    for (int k = 0; k < numOfClasses; k++) 
+      {
       // In theory, A(i, k) must be negative or 0.
       if (A(i, k) > 0) // In reality, A(i, k) can be greater than 0 because of numerical precision.
+        {
         A(i, k) = 0; // Therefore, we cut it off to 0 in this case
+        }
       A(i, k) = 1 - A(i, k) / 2;
       A(i, k) /= tau(i, k);
+      }
     }
     
     // Calculate the linear coefficients
@@ -559,23 +581,38 @@ List runModelEstimationMStep(int numOfVertices, int numOfClasses,
   updatePi(pi11, stat11, tau, sumTaus);
   
   for (int k = 0; k < numOfClasses; k++)
-    for (int l = 0; l <= k; l++) {
+    {
+    for (int l = 0; l <= k; l++) 
+      {
       pi00(k, l) = 1 - pi10(k, l) - pi10(l, k) - pi11(k, l);
       pi00(l, k) = pi00(k, l);
+      }
     }
-    
+
     // check min and normalize again
     for (int k = 0; k < numOfClasses; k++)
-      for (int l = 0; l < numOfClasses; l++) {
+      {
+      for (int l = 0; l < numOfClasses; l++) 
+        {
         if (pi10(k, l) < minPi)
+          {
           pi10(k, l) = minPi;
+          }
         if (pi11(k, l) < minPi)
+          {
           pi11(k, l) = minPi;
+          }
         if (pi00(k, l) < minPi)
+          {
           pi00(k, l) = minPi;
+          }
+        }
       }
+
       for (int k = 0; k < numOfClasses; k++)
-        for (int l = 0; l <= k; l++) {
+        {
+        for (int l = 0; l <= k; l++) 
+          {
           double norms = pi00(k, l) + pi10(k, l) + pi10(l, k) + pi11(k, l);
           pi10(k, l) = pi10(k, l) / norms;
           pi10(l, k) = pi10(l, k) / norms;
@@ -583,8 +620,9 @@ List runModelEstimationMStep(int numOfVertices, int numOfClasses,
           pi11(l, k) = pi11(k, l);
           pi00(k, l) = pi00(k, l) / norms;
           pi00(l, k) = pi00(k, l);
-        }
-        
+          }
+        } 
+
         NumericMatrix pi_new(numOfClasses, numOfClasses);
 
         for (int k = 0; k < numOfClasses; k++)
@@ -605,10 +643,15 @@ normalizeVector(alpha, 1e-6);
 
 NumericMatrix sumTaus(numOfClasses, numOfClasses);
 for (int k = 0; k < numOfClasses; k++)
-  for (int l = 0; l < numOfClasses; l++) {
+  {
+  for (int l = 0; l < numOfClasses; l++) 
+    {
     sumTaus(k, l) = 0;
     for (int i = 0; i < numOfVertices; i++)
+      { 
       sumTaus(k, l) += tau(i, k) * (tauL(l) - tau(i, l));
+      }
+    }
   }
   return sumTaus;
 }

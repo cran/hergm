@@ -97,7 +97,7 @@ and Stewart, Schweinberger, Bojanowski, and Morris (2019),
 where \code{n[k]} is the number of nodes in block \code{k}.
 The parameters of all other within-block terms are constant across blocks.
 \item \code{size}: 
-The parameters of all within-block terms are multiplied by \code{log(n[k])} along the lines of Babkin and Schweinberger (2019),
+The parameters of all within-block terms are multiplied by \code{log(n[k])} along the lines of Babkin et al. (2020),
 where \code{n[k]} is the number of nodes in block \code{k}.
 }}
 
@@ -137,7 +137,7 @@ where \code{n[k]} is the number of nodes in block \code{k}.
 
 \item{simulate}{if \code{simulate = TRUE}, simulate networks from model, otherwise estimate model given observed network.}
 
-\item{method}{if \code{method = "bayes"}, Bayesian methods along the lines of Schweinberger and Handcock (2015) and Schweinberger and Luna (2018) are used; otherwise, if \code{method = "ml"}, then approximate maximum likelihood methods along the lines of Babkin and Schweinberger (2019) are used; note that Bayesian methods are the gold standard but are too time-consuming to be applied to networks with more than 100 nodes, whereas the approximate maximum likelihood methods can be applied to networks with thousands of nodes.}
+\item{method}{if \code{method = "bayes"}, Bayesian methods along the lines of Schweinberger and Handcock (2015) and Schweinberger and Luna (2018) are used; otherwise, if \code{method = "ml"}, then approximate maximum likelihood methods along the lines of Babkin et al. (2020) are used; note that Bayesian methods are the gold standard but are too time-consuming to be applied to networks with more than 100 nodes, whereas the approximate maximum likelihood methods can be applied to networks with thousands of nodes.}
 
 \item{seeds}{seed of pseudo-random number generator; if \code{parallel > 1}, number of seeds must equal number of computing nodes.}
 
@@ -291,7 +291,7 @@ The function \code{hergm} returns an object of class \code{hergm} with component
 
 \references{
 
-Babkin, S. and M. Schweinberger (2019). Large-scale estimation of random graph models with local dependence. https://arxiv.org/abs/1703.09301.
+Babkin, S., Stewart, J., Long, X., and M. Schweinberger (2020). Large-scale estimation of random graph models with local dependence. Computational Statistics and Data Analysis, 152, 1--19.
 
 Cao, M., Chen, Y., Fujimoto, K., and M. Schweinberger (2018). A two-stage working model strategy for network analysis under hierarchical exponential random graph models. Proceedings of the 2018 IEEE/ACM International Conference on Advances in Social Networks Analysis and Mining,
 290--298. 
@@ -303,7 +303,7 @@ Holland, P. W. and S. Leinhardt (1981). An exponential family of probability dis
 
 Krivitsky, P. N., Handcock, M. S., & Morris, M. (2011). 
 Adjusting for network size and composition effects in exponential-family random graph models. 
-Statistical methodology, 8(4), 319-339.
+Statistical Methodology, 8(4), 319-339.
 
 Krivitsky, P.N, and Kolaczyk, E. D. (2015). 
 On the question of effective sample size in network modeling: An asymptotic inquiry. 
@@ -319,13 +319,13 @@ Schweinberger, M. (2020). Consistent structure estimation of exponential-family 
 
 Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph models: characterization, properties, and statistical inference. Journal of the Royal Statistical Society, Series B (Statistical Methodology), 7, 647-676.
 
-Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2020). Exponential-family models of random graphs: Inference in finite, super, and infinite population scenarios. Statistical Science, to appear.
+Schweinberger, M., Krivitsky, P. N., Butts, C.T. and J. Stewart (2020). Exponential-family models of random graphs: Inference in finite, super, and infinite population scenarios. Statistical Science, 35, 627-662.
 
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 Schweinberger, M., Petrescu-Prahova, M. and D. Q. Vu (2014). Disaster response on September 11, 2001 through the lens of statistical network analysis. Social Networks, 37, 42--55.
 
-Schweinberger, M. and J. Stewart (2020). Concentration and consistency results for canonical and curved exponential-family random graphs. The Annals of Statistics, to appear.
+Schweinberger, M. and J. Stewart (2020). Concentration and consistency results for canonical and curved exponential-family random graphs. The Annals of Statistics, 48, 374--396.
 
 Snijders, T. A. B. and K. Nowicki (1997). Estimation and prediction for stochastic blockmodels for graphs with latent block structure. Journal of Classification, 14, 75--100.
 

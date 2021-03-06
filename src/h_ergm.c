@@ -294,6 +294,9 @@ output: structural, non-structural parameters showing up in ergm pmf
 {
   int accept, i;
   double **cf, *present, *ergm_theta, log_present, log_proposal, log_ratio, **ls_theta, *proposal, *theta_present, *theta_proposal;
+  theta_present = NULL;
+  theta_proposal = NULL;
+  ergm_theta = NULL;
   /* Proposal:
   note 1: all ls->theta such that ls->size >= ls->minimum_size and all ergm->theta are updated by random walk Metropolis-Hastings algorithm
   note 2: ratio of proposal pdfs cancels under random walk Metropolis-Hastings algorithm */
@@ -398,7 +401,7 @@ input: ergm structure, latent structure, prior
 output: indicators
 */
 {
-  int burn_in, maxpossibleedges_block, *block, **edge_list_block, number_edges_block, *heads_block, *tails_block, size, number_networks, accept, mdnedges_block, *mheads_block, *mtails_block, auxiliary, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
+  int burn_in, maxpossibleedges_block, *block, **edge_list_block, number_edges_block, *heads_block, *tails_block, size, number_networks, accept, auxiliary, i, k, large, *ls_indicator, *ls_size, n_input, present_block, proposal_block, proposal_distribution, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size;
   double a_i, entropy, *input_proposal, log_denominator, log_numerator, log_present, log_proposal, log_ratio, *input_present_block, *input_proposal_block, *p, *q_i, present_a, proposal_a, present_energy, proposal_energy, sum, t, *theta, *statistic;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
@@ -640,9 +643,6 @@ output: indicators
     Print_D(n_input,input_proposal_block);
     */
     free(block);
-    mdnedges_block = 0;
-    mheads_block = NULL;
-    mtails_block = NULL;
     number_networks = 1;
     sample_size = 1;
     if (20 * maxpossibleedges_block < 10000) burn_in = 10000;
@@ -1040,7 +1040,7 @@ input: ergm structure, latent structure, prior
 output: structural, non-structural parameters showing up in ergm pmf
 */
 {
-  int burn_in, *block, number_networks, accept, auxiliary, **edge_list_block, i, k, *heads_block, *tails_block, mdnedges_block, *mheads_block, *mtails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, update_size;
+  int burn_in, *block, number_networks, accept, auxiliary, **edge_list_block, i, k, *heads_block, *tails_block, number_edges_block, maxpossibleedges_block, n_input, proposal_n_edges, *proposal_heads, *proposal_tails, sample_size, update_size;
   double **cf, *present, *input_proposal, *input_present_block, *input_proposal_block, log_denominator, log_numerator, log_present, log_proposal, log_ratio, **ls_theta, *proposal, *theta_present, *theta_proposal, *statistic, present_a, proposal_a, present_energy, proposal_energy;
   n_input = Number_Input(ergm->terms,input_present);
   input_proposal = (double*) calloc(n_input,sizeof(double));
@@ -1147,9 +1147,6 @@ output: structural, non-structural parameters showing up in ergm pmf
     Print_D(n_input,input_proposal_block);
     */
     free(block);
-    mdnedges_block = 0;
-    mheads_block = NULL;
-    mtails_block = NULL;
     number_networks = 1;
     sample_size = 1;
     if (20 * maxpossibleedges_block < 10000) burn_in = 10000;
@@ -1532,10 +1529,9 @@ output: means of parameters
 {
   int i, k;
   /* PLEASE NOTE: FUNCTION NOT THOROUGHLY TESTED AND CURRENTLY NOT USED */
-  double sum, mean, numerator, denominator, precision, *sample, std, tau;
+  double sum, mean, numerator, denominator, precision, *sample, std;
   sample = (double*) calloc(ls->d,sizeof(double));
   if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Means_Conditional, sample\n\n"); error("Error: out of memory"); }
-  tau = 1.0; /* Must match Gibbs_Parameters_Precisions_Marginal */
   for (i = 0; i < ls->d; i++)
     {
     sum = 0.0;
@@ -1606,7 +1602,6 @@ output: precisions of parameters
   sample = (double*) calloc(ls->d,sizeof(double)); 
   if (sample == NULL) { Rprintf("\n\ncalloc failed: Gibbs_Parameters_Precisions_Marginal, sample\n\n"); error("Error: out of memory"); }
   tau = 1.0; /* Must match Gibbs_Parameters_Means_Conditional */
-  tau = 1.0;
   for (i = 0; i < ls->d; i++)
     {
     shape = prior->precision2_shape + (ls->number / 2.0);
@@ -1852,7 +1847,7 @@ output: simulated graph
 */
 {
   int null = 0;
-  int coordinate, degenerate_draws, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, parametric, hyper_prior, underflow;
+  int coordinate, degenerate_draws, dim, dim1, dim2, edges, element, h, i, j, dyad_dependence, *n_edges, *pseudo_indicator, iteration, k, max_iteration, *mdnedges, *mheads, *mtails, minimum_size, n, *newnetworkheads, *newnetworktails, number, print, threshold, terms, *verbose, parametric, underflow;
   double between_edge_parameter, *draw, *p, **parameter, *pp, progress, *shape1, *shape2, prob_between, sum;	
   priorstructure_ls *prior_ls;
   latentstructure *ls;
@@ -1925,7 +1920,7 @@ output: simulated graph
   if (newnetworkheads == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworkheads\n\n"); error("Error: out of memory"); }
   newnetworktails = (int*) calloc(*maxpossibleedges+1,sizeof(int));
   if (newnetworktails == NULL) { Rprintf("\n\ncalloc failed: Simulation, newnetworktails\n\n"); error("Error: out of memory"); }
-  hyper_prior = prior_assumptions[0]; /* If 1, hierarchical prior, otherwise non-hierarchical prior */
+  // hyper_prior = prior_assumptions[0]; /* If 1, hierarchical prior, otherwise non-hierarchical prior */
   parametric = prior_assumptions[1]; /* If 1, parametric prior */
   /****************/
   /* Sample graph */
@@ -2438,6 +2433,7 @@ output: MCMC sample of unknowns from posterior
           accept = Sample_Ls_Theta_Independence(ergm,ls,prior,heads,tails,dnedges,dn,directed,bipartite,nterms,
                                    funnames,sonames,inputs,inputs_h,print,scale_factor); /* M-H exploiting dyad-independence conditional on latent structure */
           }
+        else accept = 0; // Added
         for (i = 1; i < number_local_mh; i++)
           {
           local_mh[i] = local_mh[i] + 1; 

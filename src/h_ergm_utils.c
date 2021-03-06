@@ -20,6 +20,8 @@
 
 #include "h_ergm_utils.h"
 
+double epsilon_hergm=DBL_EPSILON, maximum_hergm=DBL_MAX;
+
 double ln(double x)
 {
   double y;
