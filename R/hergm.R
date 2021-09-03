@@ -66,7 +66,6 @@ hergm <- function(formula,
                   ...) 
 {
   original.formula <- formula
-  oopts <- options(warn = -1)
   control <- control.ergm()
   options()
   network <- hergm.getnetwork(formula, max_number)
@@ -98,8 +97,8 @@ hergm <- function(formula,
     posterior.burnin <- 0
     posterior.thinning <- 1
     }
-  s <- min(MCMCparams$samplesize, 10000)
-  MCMCparams$stats <- matrix(0,ncol=Clist$nstats,nrow=s)
+  s <- min(MCMCparams$samplesize, 10000, rm.na=TRUE)
+  MCMCparams$stats <- matrix(0, ncol=Clist$nterms, nrow=s)
   MCMCparams$target.stats <- Clist$target.stats
   # print("hergm.R: eta")
   # print(eta)
@@ -110,7 +109,6 @@ hergm <- function(formula,
     object <- hergm.postprocess(object=object, burnin=posterior.burnin, thinning=posterior.thinning, relabel=relabel, number_runs=number_runs)
     object$mcmc.diagnostics <- mcmc.diagnostics.hergm(object)
     }
-  on.exit(options(oopts))
 
   return(structure(object, class="hergm"))
 }

@@ -196,7 +196,7 @@ hergm.preprocess <- function(method, max_number, initialize, network, model, hyp
       }
     }
   if ((size.dependent == TRUE) && (verbose >= 0)) cat("\nSize-dependent parameterizations.\n") 
-  d <- Clist$nstats # Number of parameters
+  d <- Clist$nterms # Number of parameters
   structural <- vector(mode = "integer", length = d) # Indicator: structural parameters 
   theta <- vector(mode = "numeric", length = d) 
   d1 <- 0

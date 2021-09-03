@@ -23,15 +23,10 @@ The network is taken from Koschade (2006).
 
 \references{
 
+Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
+
 Koschade, S. (2006). A social network analysis of Jemaah Islamiyah: The applications to counter-terrorism and intelligence.
 Studies in Conflict and Terrorism, 29, 559--575.
 
-}
-
-\examples{
-\dontrun{data(bali)
-object <- hergm(bali ~ edges_ij + triangle_ijk, max_number=3, method="bayes")
-summary(object)
-}
 }
 

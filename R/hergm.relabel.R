@@ -187,8 +187,8 @@ hergm.min_loss_1 <- function(n_categories, indicator, stop_criterion, verbose)
 {
   if (verbose >= 0) 
     {
-    cat("\nRelabeling MCMC sample...")
-    cat("\n-------------------------")
+    cat("\nRelabeling MCMC sample")
+    cat("\n----------------------")
     }
   n_permutations <- factorial(n_categories)
   permutations <- hergm.permutation.wrapper(n_categories) # Generate possible permutations of the category labels

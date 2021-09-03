@@ -336,12 +336,10 @@ Vu, D. Q., Hunter, D. R. and M. Schweinberger (2013). Model-based clustering of 
 }
 
 \examples{
-\dontrun{data(example)
-object <- hergm(d ~ edges_ij, max_number=3)
-summary(object)
 
-data(sampson)
-object <- hergm(samplike ~ edges_ij + transitiveties_ijk, max_number=3)
-summary(object)
-}
+\donttest{
+data(example) 
+m <- summary(d ~ edges)
+} 
+
 }

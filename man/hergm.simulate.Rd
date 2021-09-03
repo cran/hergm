@@ -62,27 +62,3 @@ The function \code{simulate.hergm} returns the simulated networks in the form of
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 }
-
-\examples{
-\dontrun{set.seed(123456789)
-
-# Simulate 100 networks from model:
-d <- matrix(rbinom(n=45*45, size=1, prob=.1), 45, 45)
-d <- as.network(d, directed=TRUE, loops = FALSE)
-N <- 100
-indicator <- c(rep.int(1, 10), rep.int(2, 15), rep.int(3, 20))
-eta <- c(-1.5, -2, -2.5, -4, .5, .5, .5, 0)
-edgelists <- simulate.hergm(d ~ edges_ij + transitiveties_ijk,
-    max_number=3, indicator=indicator, eta=eta, sample_size=N)
-d <- lapply(as.network, X=edgelists$edgelist)
-coord <- plot(d[[1]], vertex.col=indicator, edge.col=same_clusters(indicator))
-for (i in 1:N) plot(d[[i]], vertex.col=indicator, edge.col=same_clusters(indicator), coord=coord)
-
-# Estimate model from first simulated network:
-network <- d[[1]]
-object <- hergm(network ~ edges_ij + transitiveties_ijk, max_number=3)
-# Plot network with estimated block structure:
-plot(object)
-}
-}
-

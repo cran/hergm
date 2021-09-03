@@ -1,5 +1,6 @@
 useDynLib(hergm, .registration = TRUE)
 
+importFrom("stats", "na.omit")
 importFrom(Rcpp, evalCpp)
 importFrom(utils, packageDescription)
 importFrom(Matrix, bdiag, Matrix)

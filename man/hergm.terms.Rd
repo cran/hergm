@@ -82,9 +82,3 @@ Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family ran
 }
 
 \seealso{hergm, ergm.terms}
-
-\examples{
-\dontrun{data(sampson) 
-hergm(samplike ~ edges + transitiveties_ijk)
-}
-}

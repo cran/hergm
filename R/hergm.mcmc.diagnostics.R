@@ -86,6 +86,8 @@ mcmc.diagnostics.hergm <- function(object, ...)
     if (!(is.null(object$ergm_theta))) count <- count + 1
     if (!(is.null(hergm_theta))) count <- count + 1
     if (hyper_prior == 1) count <- count + 3
+    oldpar <- par(no.readonly = TRUE)    
+    on.exit(par(oldpar))           
     par(mfrow=c(ceiling(count/2), 2))
     if (!(is.null(object$ergm_theta))) 
       {

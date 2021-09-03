@@ -64,6 +64,8 @@ gof.hergm <- function(object,
   output <- summary_sample_network(edgelists=object.hergm$edgelist, sample_size=sample_size, directed=directed, n)
 
   # Goodness-of-fit plots
+  oldpar <- par(no.readonly = TRUE)
+  on.exit(par(oldpar))
   par(mfrow = c(2, 3))
   #hist(output$component.number, 50, prob = T, xlim = c(0, max(abs(output$component.number))), main = "", xlab = "number of components", ylab = "", cex.lab=1.25) 
   #abline(v = c(quantile(output$component.number, 0.025), quantile(output$component.number, 0.975)), col = "blue")

@@ -22,6 +22,8 @@ plot.hergm <- function(x,
                        threshold = c(.7, .8, .9),
                        ...)
 {
+  oldpar <- par(no.readonly = TRUE)    
+  on.exit(par(oldpar))           
   par(mfrow=c(1,1))
   formula <- x$formula
   max_number <- x$max_number

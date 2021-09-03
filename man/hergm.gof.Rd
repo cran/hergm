@@ -55,11 +55,3 @@ The function \code{gof.hergm} returns a list with components:
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 }
-
-\examples{
-\dontrun{data(example)
-object <- hergm(d ~ edges_i)
-gof(object)
-}
-}
-

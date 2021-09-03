@@ -37,10 +37,3 @@ call the function \code{hergm.postprocess} with \code{relabel > 0}.
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 }
-
-\examples{
-\dontrun{data(example)
-object <- hergm(d ~ edges_ij)
-print(object)
-}
-}

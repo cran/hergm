@@ -85,11 +85,3 @@ Schweinberger, M. and M. S. Handcock (2015). Local dependence in random graph mo
 Schweinberger, M. and P. Luna (2018). HERGM: Hierarchical exponential-family random graph models. Journal of Statistical Software, 85, 1--39.
 
 }
-
-\examples{
-\dontrun{data(example)
-object <- hergm(d ~ edges_ij + triangle_ijk)
-hergm.postprocess(object)
-}
-}
-

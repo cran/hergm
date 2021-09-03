@@ -50,6 +50,8 @@
 
 \alias{hergm.step_2}
 
+\alias{mcmc.diagnostics.hergm}
+
 \alias{summary_sample_network}
 
 \alias{hergm.wrapper} 
@@ -192,6 +194,7 @@
 
 \alias{nvl_mimic}
 
+\alias{ergm.Cprepare}
 
 \description{
 
@@ -208,4 +211,3 @@ Internal function which is called by user-level function.
 \seealso{User-level functions: hergm, hergm.terms, hergm.gof, hergm.summary}
 
 \keyword{internal}
-

@@ -23,13 +23,14 @@
   info <- packageDescription("hergm")
   packageStartupMessage(
   paste('hergm: version ', info$Version, ', created on ', info$Date, '\n',
-          "Copyright (c) 2019, Michael Schweinberger, Rice University\n", 
+          "Copyright (c) 2021, Michael Schweinberger, University of Missouri, Columbia\n", 
           "                    with contributions from:\n",
           "                    Mark S. Handcock, University of California - Los Angeles\n",
           "                    Sergii Babkin, Rice University\n",
-          "                    Jonathan Stewart, Rice University\n",
+          "                    Jonathan Stewart, Florida State University\n",
           "                    Duy Vu, University of Melbourne\n",
-          "                    Pamela Luna, Rice University\n",
+          "                    Pamela Luna, Baylor College of Medicine\n",
+          "                    and selected source files from R package ergm\n",
           "To start hergm: enter help(package=\"hergm\")\n",
           'For license and citation information type citation("hergm").\n',
           '\n',
