@@ -222,7 +222,7 @@ hergm.postprocess <- function(object,
   if ((relabel == 0) && (!is.null(object$relabeled.hergm_theta))) 
     {
     object.hergm$relabel <- object$relabel # Restore original relabel choice
-    object.hergm$relabeled.hergm_theta <- object$relabeled.hergm_theta # In other words, if we have been here before and have relabeled the MCMC sample, then store sample; note: is used in mcmc.diagnostics() to thin sample when sample too large
+    object.hergm$relabeled.hergm_theta <- object$relabeled.hergm_theta # In other words, if we have been here before and have relabeled the MCMC sample, then store sample
     }
   }
   else

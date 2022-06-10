@@ -50,8 +50,6 @@
 
 \alias{hergm.step_2}
 
-\alias{mcmc.diagnostics.hergm}
-
 \alias{summary_sample_network}
 
 \alias{hergm.wrapper} 

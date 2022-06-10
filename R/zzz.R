@@ -23,10 +23,10 @@
   info <- packageDescription("hergm")
   packageStartupMessage(
   paste('hergm: version ', info$Version, ', created on ', info$Date, '\n',
-          "Copyright (c) 2021, Michael Schweinberger, University of Missouri, Columbia\n", 
+          "Copyright (c) 2009, Michael Schweinberger, Penn State University\n", 
           "                    with contributions from:\n",
           "                    Mark S. Handcock, University of California - Los Angeles\n",
-          "                    Sergii Babkin, Rice University\n",
+          "                    Sergii Babkin, Microsoft\n",
           "                    Jonathan Stewart, Florida State University\n",
           "                    Duy Vu, University of Melbourne\n",
           "                    Pamela Luna, Baylor College of Medicine\n",

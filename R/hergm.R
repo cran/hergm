@@ -107,7 +107,6 @@ hergm <- function(formula,
   if ((simulate == FALSE) && (method == "bayes")) 
     {
     object <- hergm.postprocess(object=object, burnin=posterior.burnin, thinning=posterior.thinning, relabel=relabel, number_runs=number_runs)
-    object$mcmc.diagnostics <- mcmc.diagnostics.hergm(object)
     }
 
   return(structure(object, class="hergm"))
