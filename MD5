@@ -1,8 +1,8 @@
-76d501496c8229123a4a02c3a8087430 *DESCRIPTION
+5aeb19e8d3b19d5253cfbf0436f94ac5 *DESCRIPTION
 63bdac19bae4704ab6be060909f2340d *NAMESPACE
 2f0aa001d8128ea03d20befb91f9ab82 *R/RcppExports.R
 7774a334d217713e668cf778cfea4f4d *R/ergm.Cprepare.R
-2fa1c90db1ad12f6acd94be4ca3d8b99 *R/helper.functions.R
+50c34378e540282634620c282cb39661 *R/helper.functions.R
 cfa6b1b4565c82b13e5c7ac023c749a6 *R/hergm.R
 749545de8a109ba058b31f13af966017 *R/hergm.auxiliary.functions.R
 0128383f30e68ea01fd98cbb39e3fbce *R/hergm.getnetwork.R
@@ -41,7 +41,7 @@ ca39f08a98dc73bb36a5960ff57cad99 *man/hergm.Rd
 2b58388b7ab0640f5870ef8c756c6017 *man/hergm.print.Rd
 fe8ea24861136120ff37fe3047c911c4 *man/hergm.simulate.Rd
 9aff90264b623b97b80d02148a9cfa01 *man/hergm.summary.Rd
-2249d48cb82b452e87b4ae4e40aee7af *man/hergm.terms.Rd
+93e1b970e87e557fa5e0cfa1d233ef9d *man/hergm.terms.Rd
 97fb91d00b1f8823c426b63743b90aea *man/kapferer.Rd
 0f97d943c5610b1c1afe7e0d010acbc9 *src/E_step.cpp
 48302a9c46fd38add295fcf1116074ef *src/MCMC.c

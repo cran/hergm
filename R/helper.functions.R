@@ -165,7 +165,7 @@ make_return_obj <- function(obj, labels, sort_order) {
   n_ <- length(unique(labels))
   return_list <- rep(list(NULL), n_)
   len_ <- length(obj$est$eta) / n_
-  names(return_list) <- sprintf("group%i", 1:n_)
+  # names(return_list) <- Rprintf("group%i", 1:n_)
   grad <- obj$est$eta_grad(obj$est$eta)
   info_mat <- t(solve(grad)) %*% obj$est$info_mat %*% solve(grad)
   se_vec <- sqrt(diag(solve(info_mat)))
